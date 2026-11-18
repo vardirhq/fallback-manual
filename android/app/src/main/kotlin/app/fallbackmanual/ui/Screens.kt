@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -75,6 +76,7 @@ fun HomeScreen(go: (String) -> Unit) {
     val data = load(ids) { kb -> HomeData(kb.info.releaseBuild, kb.highRiskArticles(), kb.categories(), kb.summaries(ids)) }
     Scaffold(topBar = {
         Bar("Fallback Manual", onBack = null) {
+            IconButton(onClick = { go("share") }) { Icon(Icons.Filled.Share, contentDescription = "Share this app") }
             IconButton(onClick = { go("saved") }) { Icon(Icons.Filled.Star, contentDescription = "Saved articles") }
             IconButton(onClick = { go("about") }) { Icon(Icons.Filled.Info, contentDescription = "About") }
         }
@@ -295,6 +297,17 @@ fun AboutScreen(back: () -> Unit) {
                     "Works fully offline. The app has no internet permission, no accounts, no ads and no tracking. " +
                         "Your searches and saved articles never leave this phone.",
                     style = MaterialTheme.typography.bodyLarge,
+                )
+                SectionTitle("Signing fingerprint")
+                Text(
+                    LocalSharing.current.signingFingerprint() ?: "Unavailable",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                )
+                Text(
+                    "A copy received from another phone is genuine if it shows the same fingerprint as the sender's.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 SectionTitle("Content")
                 Text(

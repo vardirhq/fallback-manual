@@ -8,9 +8,10 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.concurrent.Executors
 
-class FallbackApp : Application() {
+open class FallbackApp : Application() {
     val knowledge by lazy { KnowledgeStore(this) }
     val bookmarks by lazy { Bookmarks(this) }
+    open val sharing by lazy { AppSharing(this) }
 }
 
 /**

@@ -14,6 +14,7 @@ An open-source, fully offline emergency and survival reference for Android. A cu
   <img src="docs/screenshots/03-article.png" width="200" alt="Article screen">
   <img src="docs/screenshots/04-search-match.png" width="200" alt="Search result">
   <img src="docs/screenshots/05-search-no-match.png" width="200" alt="No-match result">
+  <img src="docs/screenshots/07-share.png" width="200" alt="Share screen">
 </p>
 
 ## Layout
@@ -57,9 +58,22 @@ cd android
 ./gradlew :app:assembleRelease -PallowDrafts=true   # release-type build with drafts, for testing only
 ```
 
-What the app does today: emergency tiles for high-risk articles, browsing by category, articles with numbered steps, warnings, sources and review status, natural-language search that says "no match" instead of guessing, saved articles, light and dark themes. It has no internet permission.
+What the app does today: emergency tiles for high-risk articles, browsing by category, articles with numbered steps, warnings, sources and review status, natural-language search that says "no match" instead of guessing, saved articles, light and dark themes, and offline sharing (below). It has no internet permission.
 
-Sizes: debug APK 16.6 MB; release APK 6.8 MB containing three CPU architectures, roughly 3–4 MB per architecture if split.
+### Offline sharing
+
+**Share this app** (the share icon on the home screen) passes the app, with the whole manual inside, to a nearby phone without internet:
+
+- **Send:** opens the system share sheet with the app's own APK, so Quick Share / Nearby Share, Bluetooth or any other installed transport can carry it.
+- **Send as ZIP:** the same file wrapped in a ZIP, for phones that refuse app files over Bluetooth.
+- **Save a copy:** writes the APK to an SD card, USB stick or Downloads through the system file picker.
+- An install guide for the receiving phone, and the app's **signing fingerprint** (also under About) so the receiver can check the copy is genuine.
+
+It needs no permissions: an app can always read its own APK, and the receiving app only gets temporary read access to the one file sent. Copies installed from an app store as split APKs can't be passed on intact; the app detects this and says so.
+
+The fingerprint check only means something once releases are signed with one stable key. Debug builds use each developer's own debug key, and release builds are currently unsigned.
+
+Sizes: debug APK 17.1 MB; release APK 6.8 MB containing three CPU architectures, roughly 3–4 MB per architecture if split.
 
 Not yet verified: running on a real device or emulator (none was available where this was built). In particular, the Android build of the bundled SQLite library has only been packaged, not executed.
 

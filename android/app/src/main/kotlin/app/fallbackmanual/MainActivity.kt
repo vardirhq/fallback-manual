@@ -18,6 +18,8 @@ import app.fallbackmanual.ui.CategoryScreen
 import app.fallbackmanual.ui.FallbackTheme
 import app.fallbackmanual.ui.HomeScreen
 import app.fallbackmanual.ui.LocalBookmarks
+import app.fallbackmanual.ui.LocalSharing
+import app.fallbackmanual.ui.ShareScreen
 import app.fallbackmanual.ui.LocalStore
 import app.fallbackmanual.ui.SavedScreen
 import app.fallbackmanual.ui.SearchScreen
@@ -29,7 +31,11 @@ class MainActivity : ComponentActivity() {
         val app = application as FallbackApp
         setContent {
             FallbackTheme {
-                CompositionLocalProvider(LocalStore provides app.knowledge, LocalBookmarks provides app.bookmarks) {
+                CompositionLocalProvider(
+                    LocalStore provides app.knowledge,
+                    LocalBookmarks provides app.bookmarks,
+                    LocalSharing provides app.sharing,
+                ) {
                     App()
                 }
             }
@@ -37,7 +43,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/** Routes: home, category/<id>, article/<id>, search/<query>, saved, about. */
+/** Routes: home, category/<id>, article/<id>, search/<query>, saved, share, about. */
 @Composable
 fun App() {
     val stack = rememberSaveable(
@@ -58,6 +64,7 @@ fun App() {
         "article" -> ArticleScreen(arg, back)
         "search" -> SearchScreen(arg, go, replace, home, back)
         "saved" -> SavedScreen(go, back)
+        "share" -> ShareScreen(back)
         "about" -> AboutScreen(back)
         else -> HomeScreen(go)
     }
