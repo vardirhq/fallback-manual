@@ -15,6 +15,7 @@ An open-source, fully offline emergency and survival reference for Android. A cu
   <img src="docs/screenshots/04-search-match.png" width="200" alt="Search result">
   <img src="docs/screenshots/05-search-no-match.png" width="200" alt="No-match result">
   <img src="docs/screenshots/07-share.png" width="200" alt="Share screen">
+  <img src="docs/screenshots/08-link-sheet.png" width="200" alt="Linked article in a sheet">
 </p>
 
 ## Layout
@@ -58,7 +59,7 @@ cd android
 ./gradlew :app:assembleRelease -PallowDrafts=true   # release-type build with drafts, for testing only
 ```
 
-What the app does today: emergency tiles for high-risk articles, browsing by category, articles with numbered steps, warnings, sources and review status, natural-language search that says "no match" instead of guessing, saved articles, light and dark themes, and offline sharing (below). It has no internet permission.
+What the app does today: emergency tiles for high-risk articles, browsing by category, articles with numbered steps, warnings, sources and review status, links between articles that open in a sheet over the current one (e.g. "start CPR" in the carbon monoxide article), natural-language search that says "no match" instead of guessing, saved articles, light and dark themes, and offline sharing (below). It has no internet permission.
 
 ### Offline sharing
 
@@ -75,15 +76,15 @@ The fingerprint check only means something once releases are signed with one sta
 
 Sizes: debug APK 17.1 MB; release APK 6.8 MB containing three CPU architectures, roughly 3–4 MB per architecture if split.
 
-Not yet verified: running on a real device or emulator (none was available where this was built). In particular, the Android build of the bundled SQLite library has only been packaged, not executed.
+Tested on one real phone (Samsung, Android, dark mode): the app starts, loads the bundled database and shows articles. Not yet tested on a real device: offline sharing between two phones, and older or low-end phones.
 
 ## Current benchmark (Layer 0 only)
 
-8 draft articles, 52 questions, threshold 0.6:
+9 draft articles, 57 questions, threshold 0.6:
 
 | Set | Questions | Top-1 | Top-3 | Correct "no match" | Dangerous answers |
 |---|---:|---:|---:|---:|---:|
-| dev (tuned on) | 24 | 100% | 100% | 100% | 0 |
-| held-out | 28 | 95% | 100% | 100% | 0 |
+| dev (tuned on) | 26 | 100% | 100% | 100% | 0 |
+| held-out | 31 | 96% | 100% | 100% | 0 |
 
 These numbers flatter the system: the library is tiny and the questions were written by the same author as the articles. They become meaningful once the library grows and outsiders write questions.

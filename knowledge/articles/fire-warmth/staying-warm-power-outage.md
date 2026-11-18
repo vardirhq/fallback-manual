@@ -3,7 +3,7 @@ id: staying-warm-power-outage
 title: Staying warm when the power is out
 category: fire-warmth
 status: draft
-version: 1
+version: 2
 high_risk: false
 license: CC-BY-4.0
 situations:
@@ -48,9 +48,9 @@ Use this when your heating has stopped because of a power cut or fuel shortage a
 
 ## Warnings
 
-- Never use gas ovens, grills, camping stoves or generators to heat the inside of a home. See **Carbon monoxide poisoning**.
+- Never use gas ovens, grills, camping stoves or generators to heat the inside of a home. See [Carbon monoxide poisoning](article:carbon-monoxide).
 - Candles are a fire risk. Never leave them burning unattended or near fabric. Battery lights are safer.
-- Watch for signs of hypothermia: shivering, confusion, drowsiness, slurred speech.
+- Watch for signs of [hypothermia](article:hypothermia): shivering, confusion, drowsiness, slurred speech.
 
 ## Common mistakes
 
@@ -60,4 +60,4 @@ Use this when your heating has stopped because of a power cut or fuel shortage a
 
 ## Get help
 
-If anyone shows signs of hypothermia, follow **Hypothermia** and get medical help. Many areas open warming centres during long outages; local radio may announce them.
+If anyone shows signs of hypothermia, follow [Hypothermia](article:hypothermia) and get medical help. Many areas open warming centres during long outages; local radio may announce them.

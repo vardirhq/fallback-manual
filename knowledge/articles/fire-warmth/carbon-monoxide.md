@@ -3,7 +3,7 @@ id: carbon-monoxide
 title: Carbon monoxide poisoning
 category: fire-warmth
 status: draft
-version: 1
+version: 2
 high_risk: true
 license: CC-BY-4.0
 situations:
@@ -39,7 +39,7 @@ Use this when anyone is burning fuel indoors or nearby (generators, grills, camp
 2. Do not go back in to open windows if people are already ill. Get out first.
 3. Turn off the fuel-burning appliance only if you can do it on the way out.
 4. Call emergency services if anyone has symptoms, is drowsy, or is unconscious.
-5. If someone is unconscious and not breathing normally, start CPR in the fresh air.
+5. If someone is unconscious and not breathing normally, [start CPR](article:cpr) in the fresh air.
 6. Do not go back inside until the source is found and the building has aired out.
 
 ## Warnings

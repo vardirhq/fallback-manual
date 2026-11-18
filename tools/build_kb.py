@@ -34,6 +34,10 @@ REQUIRED_SECTIONS = ["When to use", "What you need", "Steps", "Warnings", "Commo
 STATUSES = {"draft", "reviewed"}
 ID_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 WORD_RE = re.compile(r"[^\W_]+(?:['-][^\W_]+)*", re.UNICODE)
+# Links between articles: [link text](article:target-id). No other link targets are allowed:
+# the app is offline, and every link must lead to reviewed content inside it.
+ARTICLE_LINK_RE = re.compile(r"\[([^\]]+)\]\(article:([^)\s]*)\)")
+ANY_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]*)\)")
 
 
 @dataclass
@@ -197,7 +201,21 @@ def load_articles(articles_dir: Path, report: Report, release: bool) -> list[Art
         articles.append(art)
     if not articles:
         report.error(articles_dir, "no articles found")
+    check_links(articles, report)
     return articles
+
+
+def check_links(articles: list[Article], report: Report) -> None:
+    ids = {a.meta.get("id") for a in articles}
+    for a in articles:
+        for m in ANY_LINK_RE.finditer(a.body):
+            target = m.group(2)
+            if not target.startswith("article:"):
+                report.error(a.path, f"link '{m.group(0)}' must point to another article as (article:<id>)")
+            elif target[len("article:"):] not in ids:
+                report.error(a.path, f"link '{m.group(0)}' points to an article that does not exist")
+            elif target[len("article:"):] == a.meta.get("id"):
+                report.error(a.path, f"link '{m.group(0)}' points to the article itself")
 
 
 def load_synonyms(path: Path, report: Report) -> list[list[str]]:
@@ -213,7 +231,8 @@ def load_synonyms(path: Path, report: Report) -> list[list[str]]:
 
 
 def _plain(markdown: str) -> str:
-    return re.sub(r"[*_`#>\[\]()]", " ", markdown)
+    text = ARTICLE_LINK_RE.sub(r"\1", markdown)  # index the link text, not the target id
+    return re.sub(r"[*_`#>\[\]()]", " ", text)
 
 
 def _opt_str(v) -> str | None:

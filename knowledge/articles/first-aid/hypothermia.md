@@ -3,7 +3,7 @@ id: hypothermia
 title: Hypothermia
 category: first-aid
 status: draft
-version: 1
+version: 2
 high_risk: true
 license: CC-BY-4.0
 situations:
@@ -50,7 +50,7 @@ Use this when someone has been cold for a while and shows signs such as shiverin
 5. Warm the centre of the body first: chest, neck, head and groin. Skin-to-skin contact under blankets works.
 6. If they are fully awake and can swallow, give warm, sweet drinks and some food.
 7. Stay with them and keep them lying down and wrapped until they are warm and alert.
-8. If they stop breathing normally, start CPR.
+8. If they stop breathing normally, [start CPR](article:cpr).
 
 ## Warnings
 

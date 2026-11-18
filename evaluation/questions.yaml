@@ -67,6 +67,13 @@ questions:
   - {set: heldout, q: "stranded and phone has no signal", expect: [signaling-for-help]}
   - {set: heldout, q: "SOS signal", expect: [signaling-for-help]}
 
+  # --- cpr ---
+  - {set: dev, q: "how do I do CPR", expect: [cpr]}
+  - {set: dev, q: "chest compressions how fast", expect: [cpr]}
+  - {set: heldout, q: "he collapsed and isn't breathing", expect: [cpr]}
+  - {set: heldout, q: "my mother is unresponsive and only gasping", expect: [cpr]}
+  - {set: heldout, q: "how to use a defibrillator", expect: [cpr]}
+
   # --- not in the library: the correct answer is "no match" ---
   - {set: dev, q: "how do I fix a flat bike tire", expect: []}
   - {set: dev, q: "snake bite", expect: []}

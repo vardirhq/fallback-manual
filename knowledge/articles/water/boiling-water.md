@@ -3,7 +3,7 @@ id: boiling-water
 title: Making water safe by boiling
 category: water
 status: draft
-version: 1
+version: 2
 high_risk: false
 license: CC-BY-4.0
 situations:
@@ -52,7 +52,7 @@ Use this when you have to drink water that may contain germs: from rivers, lakes
 
 - Boiling kills germs but does not remove chemicals, fuel, salt or heavy metals. Do not rely on it for water that may be polluted by chemicals or floodwater from industrial areas.
 - If you cannot boil water, see other purification methods (to be added).
-- Handle boiling water carefully to avoid scalds. See **Burns and scalds**.
+- Handle boiling water carefully to avoid scalds. See [Burns and scalds](article:burns).
 
 ## Common mistakes
 

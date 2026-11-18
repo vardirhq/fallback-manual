@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -29,7 +30,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -37,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import app.fallbackmanual.Bookmarks
 import app.fallbackmanual.KnowledgeStore
 import app.fallbackmanual.core.KnowledgeBase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 val LocalStore = staticCompositionLocalOf<KnowledgeStore> { error("no KnowledgeStore") }
 val LocalBookmarks = staticCompositionLocalOf<Bookmarks> { error("no Bookmarks") }
@@ -45,11 +53,16 @@ val LocalBookmarks = staticCompositionLocalOf<Bookmarks> { error("no Bookmarks")
 @Composable
 fun <T> load(vararg keys: Any?, block: (KnowledgeBase) -> T): State<Result<T>?> {
     val store = LocalStore.current
-    return produceState<Result<T>?>(null, *keys) { value = runCatching { store.use(block) } }
+    return produceState<Result<T>?>(null, *keys) {
+        val result = runCatching { store.use(block) }
+        // Publish on the main thread whatever context this coroutine resumed in, so the change is
+        // always picked up by the next recomposition.
+        withContext(Dispatchers.Main.immediate) { value = result }
+    }
 }
 
 @Composable
-private fun <T> Loaded(state: State<Result<T>?>, content: @Composable (T) -> Unit) {
+internal fun <T> Loaded(state: State<Result<T>?>, content: @Composable (T) -> Unit) {
     val r = state.value
     when {
         r == null -> Loading()
@@ -74,6 +87,7 @@ fun HomeScreen(go: (String) -> Unit) {
     val bookmarks = LocalBookmarks.current
     val ids = bookmarks.ids
     val data = load(ids) { kb -> HomeData(kb.info.releaseBuild, kb.highRiskArticles(), kb.categories(), kb.summaries(ids)) }
+    val list = rememberLazyListState()
     Scaffold(topBar = {
         Bar("Fallback Manual", onBack = null) {
             IconButton(onClick = { go("share") }) { Icon(Icons.Filled.Share, contentDescription = "Share this app") }
@@ -82,7 +96,7 @@ fun HomeScreen(go: (String) -> Unit) {
         }
     }) { pad ->
         Loaded(data) { d ->
-            LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = PaddingValues(bottom = 32.dp)) {
+            LazyColumn(Modifier.fillMaxSize().padding(pad), state = list, contentPadding = PaddingValues(bottom = 32.dp)) {
                 if (!d.release) item {
                     Callout(
                         CalloutKind.Caution,
@@ -132,9 +146,10 @@ fun HomeScreen(go: (String) -> Unit) {
 fun CategoryScreen(id: String, go: (String) -> Unit, back: () -> Unit) {
     val data = load(id) { kb -> kb.categoryTitle(id) to kb.articles(id) }
     val title = data.value?.getOrNull()?.first ?: ""
+    val list = rememberLazyListState()
     Scaffold(topBar = { Bar(title, back) }) { pad ->
         Loaded(data) { (_, articles) ->
-            LazyColumn(Modifier.fillMaxSize().padding(pad)) {
+            LazyColumn(Modifier.fillMaxSize().padding(pad), state = list) {
                 items(articles, key = { it.id }) { a -> ArticleRow(a) { go("article/${a.id}") } }
             }
         }
@@ -144,10 +159,14 @@ fun CategoryScreen(id: String, go: (String) -> Unit, back: () -> Unit) {
 // -- Article ------------------------------------------------------------------
 
 @Composable
-fun ArticleScreen(id: String, back: () -> Unit) {
+fun ArticleScreen(id: String, go: (String) -> Unit, back: () -> Unit) {
     val bookmarks = LocalBookmarks.current
+    val sheet = rememberSaveable(
+        saver = listSaver<SnapshotStateList<String>, String>({ it.toList() }, { it.toMutableStateList() }),
+    ) { mutableStateListOf<String>() }
     val data = load(id) { kb -> kb.article(id)?.let { it to kb.categoryTitle(it.category) } }
     val saved = id in bookmarks.ids
+    val scroll = rememberScrollState()
     Scaffold(topBar = {
         Bar(data.value?.getOrNull()?.second ?: "", back) {
             IconButton(onClick = { bookmarks.toggle(id) }) {
@@ -164,36 +183,44 @@ fun ArticleScreen(id: String, back: () -> Unit) {
                 LoadFailed(IllegalStateException("Article '$id' was not found."))
                 return@Loaded
             }
-            val a = pair.first
-            Column(
-                Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(Gutter).padding(bottom = 40.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Text(a.title, style = MaterialTheme.typography.headlineMedium)
-                if (a.highRisk) Callout(CalloutKind.Emergency, "If you can, call emergency services now", "Then follow these steps while you wait.")
-                if (!a.reviewed) Callout(
-                    CalloutKind.Caution,
-                    "Unreviewed draft",
-                    "No qualified person has checked this article yet. Do not rely on it.",
-                )
-                MarkdownBody(a.bodyMarkdown)
-                HorizontalDivider(Modifier.padding(top = 16.dp))
-                SectionTitle("Sources")
-                a.sources.forEach { s ->
-                    Text(
-                        "${s.title}, ${s.publisher}" + if (!s.checked) " (not yet checked against the original)" else "",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-                val reviewed = a.review.reviewer?.let { "Reviewed by $it on ${a.review.date}" } ?: "Not reviewed"
-                Text(
-                    "Version ${a.version} · $reviewed · ${a.license}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 8.dp),
-                )
-            }
+            ArticleContent(
+                pair.first,
+                onLink = { sheet.add(it) },
+                modifier = Modifier.fillMaxSize().padding(pad).verticalScroll(scroll).padding(Gutter).padding(bottom = 40.dp),
+            )
         }
+    }
+    // Linked articles open in a sheet on top, so the reader keeps their place here.
+    ArticleSheet(sheet, fromTitle = data.value?.getOrNull()?.first?.title ?: "", openFull = { go("article/$it") })
+}
+
+/** An article's full content. Shared by the article screen and the linked-article sheet. */
+@Composable
+fun ArticleContent(a: app.fallbackmanual.core.Article, onLink: (String) -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(a.title, style = MaterialTheme.typography.headlineMedium)
+        if (a.highRisk) Callout(CalloutKind.Emergency, "If you can, call emergency services now", "Then follow these steps while you wait.")
+        if (!a.reviewed) Callout(
+            CalloutKind.Caution,
+            "Unreviewed draft",
+            "No qualified person has checked this article yet. Do not rely on it.",
+        )
+        MarkdownBody(a.bodyMarkdown, onLink = onLink)
+        HorizontalDivider(Modifier.padding(top = 16.dp))
+        SectionTitle("Sources")
+        a.sources.forEach { s ->
+            Text(
+                "${s.title}, ${s.publisher}" + if (!s.checked) " (not yet checked against the original)" else "",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+        val reviewed = a.review.reviewer?.let { "Reviewed by $it on ${a.review.date}" } ?: "Not reviewed"
+        Text(
+            "Version ${a.version} · $reviewed · ${a.license}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp),
+        )
     }
 }
 
@@ -202,9 +229,10 @@ fun ArticleScreen(id: String, back: () -> Unit) {
 @Composable
 fun SearchScreen(query: String, go: (String) -> Unit, replace: (String) -> Unit, home: () -> Unit, back: () -> Unit) {
     val data = load(query) { kb -> kb.searcher.search(query, limit = 5) }
+    val list = rememberLazyListState()
     Scaffold(topBar = { Bar("Search", back) }) { pad ->
         Loaded(data) { r ->
-            LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = PaddingValues(bottom = 32.dp)) {
+            LazyColumn(Modifier.fillMaxSize().padding(pad), state = list, contentPadding = PaddingValues(bottom = 32.dp)) {
                 item { Column(Modifier.padding(Gutter)) { SearchBox(query) { replace("search/$it") } } }
                 if (r.corrections.isNotEmpty()) item {
                     Text(

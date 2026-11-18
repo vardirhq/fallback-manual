@@ -16,7 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -63,21 +68,36 @@ fun parseMarkdown(md: String): List<Block> {
     return out
 }
 
-fun inline(text: String): AnnotatedString = buildAnnotatedString {
-    var rest = text
-    while (true) {
-        val start = rest.indexOf("**")
-        val end = if (start >= 0) rest.indexOf("**", start + 2) else -1
-        if (start < 0 || end < 0) { append(rest); break }
-        append(rest.substring(0, start))
-        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(rest.substring(start + 2, end)) }
-        rest = rest.substring(end + 2)
+private val INLINE = Regex("""\*\*(.+?)\*\*|\[([^\]]+)\]\(article:([a-z0-9-]+)\)""")
+
+/** **bold** and [text](article:id) links. Without [onLink], links render as plain text. */
+fun inline(text: String, linkColor: Color = Color.Unspecified, onLink: ((String) -> Unit)? = null): AnnotatedString =
+    buildAnnotatedString {
+        var last = 0
+        for (m in INLINE.findAll(text)) {
+            append(text.substring(last, m.range.first))
+            if (m.groups[1] != null) {
+                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(m.groupValues[1]) }
+            } else {
+                val label = m.groupValues[2]
+                val id = m.groupValues[3]
+                if (onLink == null) {
+                    append(label)
+                } else {
+                    val style = SpanStyle(color = linkColor, fontWeight = FontWeight.SemiBold, textDecoration = TextDecoration.Underline)
+                    withLink(LinkAnnotation.Clickable("article:$id", TextLinkStyles(style)) { onLink(id) }) { append(label) }
+                }
+            }
+            last = m.range.last + 1
+        }
+        append(text.substring(last))
     }
-}
 
 @Composable
-fun MarkdownBody(markdown: String, modifier: Modifier = Modifier) {
+fun MarkdownBody(markdown: String, modifier: Modifier = Modifier, onLink: ((String) -> Unit)? = null) {
     val blocks = remember(markdown) { parseMarkdown(markdown) }
+    val linkColor = MaterialTheme.colorScheme.primary
+    fun rich(text: String) = inline(text, linkColor, onLink)
     var section = ""
     Column(modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         for (b in blocks) {
@@ -99,7 +119,7 @@ fun MarkdownBody(markdown: String, modifier: Modifier = Modifier) {
                     ) {
                         Text(b.number, color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.titleMedium)
                     }
-                    Text(inline(b.text), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 12.dp, top = 2.dp))
+                    Text(rich(b.text), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 12.dp, top = 2.dp))
                 }
                 is Block.Bullet -> Row {
                     val warn = section == "Warnings"
@@ -109,9 +129,9 @@ fun MarkdownBody(markdown: String, modifier: Modifier = Modifier) {
                         color = if (warn) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(end = 10.dp),
                     )
-                    Text(inline(b.text), style = MaterialTheme.typography.bodyLarge)
+                    Text(rich(b.text), style = MaterialTheme.typography.bodyLarge)
                 }
-                is Block.Paragraph -> Text(inline(b.text), style = MaterialTheme.typography.bodyLarge)
+                is Block.Paragraph -> Text(rich(b.text), style = MaterialTheme.typography.bodyLarge)
             }
         }
     }

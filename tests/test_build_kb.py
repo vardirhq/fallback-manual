@@ -113,3 +113,24 @@ def test_unchecked_source_warns(kb):
 def test_real_knowledge_base_is_valid():
     report = build_kb.build(check_only=True)
     assert report.errors == []
+
+
+def test_links_must_point_to_existing_articles(kb):
+    report, _ = kb(article(body=GOOD_BODY.replace("Then this.", "Then see [CPR](article:cpr).")))
+    assert any("does not exist" in e for e in report.errors)
+
+
+def test_links_must_be_article_links(kb):
+    report, _ = kb(article(body=GOOD_BODY.replace("Then this.", "Then see [this](https://example.com).")))
+    assert any("must point to another article" in e for e in report.errors)
+
+
+def test_valid_link_builds_and_indexes_link_text_only(kb, tmp_path):
+    other = article(id_="other-article").replace("title: Test article", "title: Other")
+    (tmp_path / "articles" / "first-aid" / "other-article.md").write_text(other)
+    report, out = kb(article(body=GOOD_BODY.replace("Then this.", "Then see [the other one](article:other-article).")))
+    assert report.errors == []
+    con = sqlite3.connect(out)
+    hits = lambda q: con.execute("SELECT count(*) FROM articles_fts WHERE articles_fts MATCH ?", (q,)).fetchone()[0]
+    assert hits('body : "the other one"') == 1
+    assert hits('body : article') == 0
