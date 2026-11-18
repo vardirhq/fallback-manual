@@ -188,7 +188,7 @@ def test_tracking_parameters_in_urls_are_rejected(kb):
     (("- Careful.", "| a | b |"), "tables are not supported"),
     (("- Careful.", "  - Careful."), "nested or indented"),
     (("- Careful.", "* Careful."), "must start with '- '"),
-    (("- Careful.", "![pic](x.png)"), "images are not supported"),
+    (("- Careful.", "![pic](x.png)"), "written exactly like"),
     (("2. Then this.", "3. Then this."), "without gaps"),
     (("## Get help", "## Notes"), "exactly these six headings"),
 ])
@@ -227,3 +227,93 @@ def test_long_steps_are_rejected_and_medium_ones_warned(kb):
     medium = "1. " + " ".join(["word"] * 22) + "."
     report, _ = kb(article(body=GOOD_BODY.replace("1. Do this.", medium)))
     assert report.errors == [] and any("aim for 20" in w for w in report.warnings)
+
+
+# --- pictures --------------------------------------------------------------------------------
+
+def _png(path: Path, size=(8, 8)) -> Path:
+    from PIL import Image
+    Image.new("RGB", size, (200, 30, 30)).save(path)
+    return path
+
+
+@pytest.fixture
+def kb_img(tmp_path: Path):
+    """Like kb, plus an image registry. images: list of dicts written to images.yaml."""
+    import yaml
+    articles = tmp_path / "articles" / "first-aid"
+    articles.mkdir(parents=True)
+    (tmp_path / "images").mkdir()
+    syn = tmp_path / "synonyms.yaml"
+    syn.write_text("groups:\n  - [bleeding, blood]\n")
+
+    def make(text: str, images: list[dict], files: dict[str, int] | None = None):
+        (articles / "test-article.md").write_text(text)
+        for name, kib in (files or {}).items():
+            f = tmp_path / "images" / name
+            if kib:
+                f.write_bytes(b"0" * kib * 1024)
+            else:
+                _png(f)
+        (tmp_path / "images.yaml").write_text(yaml.safe_dump({"images": images}))
+        out = tmp_path / "kb.db"
+        report = build_kb.build(out, articles_dir=tmp_path / "articles", synonyms_file=syn,
+                                images_file=tmp_path / "images.yaml", images_dir=tmp_path / "images")
+        return report, out
+    return make
+
+
+IMG = {"id": "test-pic", "file": "test-pic.png", "license": "public-domain", "creator": "US Army",
+       "source": "https://example.org/fm", "ai_generated": False}
+WITH_PIC = GOOD_BODY.replace("1. Do this.", "1. Do this.\n![Hands pressing on a wound with a cloth](image:test-pic)")
+
+
+def test_picture_under_a_step_builds_into_database(kb_img):
+    report, out = kb_img(article(body=WITH_PIC), [IMG], {"test-pic.png": 0})
+    assert report.errors == []
+    con = sqlite3.connect(out)
+    mime, size, lic = con.execute("SELECT mime, length(data), license FROM images WHERE id='test-pic'").fetchone()
+    assert mime == "image/png" and size > 0 and lic == "public-domain"
+    # the picture's markup is not indexed as searchable text
+    assert con.execute("SELECT count(*) FROM articles_fts WHERE articles_fts MATCH 'image'").fetchone() == (0,)
+
+
+@pytest.mark.parametrize("change,expected", [
+    ({"ai_generated": True}, "AI-generated pictures are not allowed"),
+    ({"license": "unknown"}, "license must be one of"),
+    ({"creator": ""}, "creator is empty"),
+    ({"file": "missing.png"}, "does not exist"),
+    ({"file": "test-pic.gif"}, "must be .webp"),
+])
+def test_picture_registry_rules(kb_img, change, expected):
+    errs = " | ".join(kb_img(article(body=WITH_PIC), [{**IMG, **change}], {"test-pic.png": 0})[0].errors)
+    assert expected in errs
+
+
+def test_picture_missing_ai_generated_field_is_rejected(kb_img):
+    img = {k: v for k, v in IMG.items() if k != "ai_generated"}
+    errs = " | ".join(kb_img(article(body=WITH_PIC), [img], {"test-pic.png": 0})[0].errors)
+    assert "missing 'ai_generated'" in errs
+
+
+def test_oversized_picture_is_rejected(kb_img):
+    errs = " | ".join(kb_img(article(body=WITH_PIC), [IMG], {"test-pic.png": 200})[0].errors)
+    assert "the maximum is 150 KB" in errs
+
+
+@pytest.mark.parametrize("body,expected", [
+    (GOOD_BODY.replace("1. Do this.", "1. Do this.\n![pic](image:test-pic)"), "must say what it shows"),
+    (GOOD_BODY.replace("1. Do this.", "1. Do this. ![A hand on a wound](image:test-pic)"), "on a line of its own"),
+    (GOOD_BODY.replace("When it applies.", "When it applies.\n\n![A hand on a wound](image:test-pic)"),
+     "only allowed in '## Steps'"),
+    (GOOD_BODY.replace("1. Do this.", "![A hand on a wound](image:test-pic)\n1. Do this."), "directly under the step"),
+    (GOOD_BODY.replace("1. Do this.", "1. Do this.\n![A hand on a wound](image:other-pic)"), "is not in"),
+])
+def test_picture_placement_and_description(kb_img, body, expected):
+    errs = " | ".join(kb_img(article(body=body), [IMG], {"test-pic.png": 0})[0].errors)
+    assert expected in errs
+
+
+def test_unused_and_unlisted_pictures_are_rejected(kb_img):
+    errs = " | ".join(kb_img(article(), [IMG], {"test-pic.png": 0, "stray.png": 0})[0].errors)
+    assert "not used by any article" in errs and "not listed in" in errs

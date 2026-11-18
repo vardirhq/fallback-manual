@@ -27,6 +27,7 @@ If it prints `RESULT: FAIL`, it lists every problem with a "Fix:". Do what it sa
    - `knowledge/articles/**/*.md` (articles)
    - `evaluation/questions.yaml` (only add `set: dev` lines)
    - `knowledge/synonyms.yaml` (only if a check tells you to)
+   - `knowledge/images/` and `knowledge/images.yaml`, **only through** `python -m tools.add_image` (see "Adding a picture")
 
    Do not edit anything in `android/`, `tools/`, `retrieval/`, `tests/`, `.github/`, or `knowledge/categories.yaml`, unless the person you work for explicitly asks.
 
@@ -122,7 +123,7 @@ Writing rules:
 - You may use `**bold**` for a few critical words.
 - To refer to another article, link it: `[start CPR](article:cpr)`. Use only ids from `python -m tools.new_article --list`.
 
-Not allowed (the check rejects them): other headings (`#`, `###`), tables, images, code blocks, HTML, indented or nested lists, `*` or `•` bullets, citation markers like `[1]` or `【...】` or `cite...`, and any leftover `TODO`.
+Not allowed (the check rejects them): other headings (`#`, `###`), tables, code blocks, HTML, indented or nested lists, `*` or `•` bullets, citation markers like `[1]` or `【...】` or `cite...`, and any leftover `TODO`. Pictures are allowed only as described in "Adding a picture".
 
 Look at `knowledge/articles/water/boiling-water.md` for a complete, correct example.
 
@@ -151,6 +152,44 @@ python -m tools.check
 Fix every problem it lists, then run it again. Repeat until it prints `RESULT: PASS`.
 
 If it says a question doesn't find your article: add the missing words to the article's `situations` or `keywords`. Do **not** change the question.
+
+---
+
+## Adding a picture
+
+Pictures help with things that are hard to describe, such as hand positions or where to tie a tourniquet. A wrong picture is worse than none, so the rules are strict.
+
+**Never use a picture made by an AI image generator.** They often get hands, bodies and positions wrong.
+
+**Only use a picture if you can confirm its license.** Allowed licenses: `public-domain`, `CC0-1.0`, `CC-BY-4.0`, `CC-BY-SA-4.0`. Good places to look:
+
+- US government works, which are public domain: CDC Public Health Image Library (phil.cdc.gov), US Army field manuals, FEMA
+- Wikimedia Commons, but only files whose page states one of the licenses above
+
+If you can't find a suitable picture with a confirmed license, don't add one. List it under `diagrams_needed` instead, so a person can find or draw it.
+
+### Step 1. Add the file
+
+```sh
+python -m tools.add_image --id <image-id> --file <path-to-picture> \
+    --license <license> --creator "<who made it>" --source "<URL, plus page or figure number>" --not-ai-generated
+```
+
+This converts the picture to the right format and size, and records its license, creator and source in `knowledge/images.yaml`. Never edit those files by hand.
+
+### Step 2. Put it in the article
+
+In `## Steps`, on its own line **directly under the step it belongs to**:
+
+```markdown
+5. Put the heel of one hand on the center of the chest.
+![Heel of one hand on the center of the chest, other hand on top](image:cpr-hand-position)
+6. Lock your fingers together.
+```
+
+The text in the square brackets describes what the picture shows, in 10–200 characters. People using a screen reader hear only this, so describe the picture, not just "diagram".
+
+Then remove that picture from the article's `diagrams_needed` list, and run `python -m tools.check`.
 
 ---
 

@@ -1,0 +1,14 @@
+# Pictures used in articles. Add entries with:  python -m tools.add_image ...
+# Every picture needs a license you have confirmed, the creator, and where it came from.
+# AI-generated pictures are never allowed (ai_generated must be false).
+#
+# Example:
+#   images:
+#     - id: cpr-hand-position
+#       file: cpr-hand-position.webp
+#       license: public-domain
+#       creator: US Department of the Army
+#       source: https://...
+#       ai_generated: false
+
+images: []

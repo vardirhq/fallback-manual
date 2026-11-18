@@ -49,6 +49,10 @@ The body must contain these sections, in any order:
 
 Inside the body, link to another article with `[link text](article:<id>)`, for example `[start CPR](article:cpr)`. The app opens the target in a sheet over the current article. The build fails if a link points to an article that doesn't exist, or anywhere other than another article.
 
+## Pictures
+
+Pictures live in `images/`, registered in `images.yaml` with their license, creator and source. Add them only with `python -m tools.add_image`, and place them in an article's `## Steps` as `![description](image:<id>)` on the line under the step they show. AI-generated pictures are not allowed. See [AGENTS.md](../AGENTS.md#adding-a-picture).
+
 ## Synonyms
 
 `synonyms.yaml` holds groups of words that mean the same thing to a person in trouble ("shivering", "freezing", "hypothermia"). A query that uses any word in a group also searches for the rest of the group. This is the cheapest way to make search understand everyday language. Add to it whenever the benchmark shows a miss.
