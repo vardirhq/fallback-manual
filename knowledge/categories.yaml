@@ -1,12 +1,14 @@
 # Categories in the order the app shows them. Article folders must use one of these ids.
+# code: the 2-letter prefix of article codes (e.g. FA-02). Never change a code once used.
+# icon: a name from icons.yaml.
 categories:
-  - {id: first-aid, title: First aid}
-  - {id: water, title: Water}
-  - {id: fire-warmth, title: Fire and warmth}
-  - {id: shelter, title: Shelter}
-  - {id: food, title: Food}
-  - {id: navigation-signaling, title: Navigation and signaling}
-  - {id: electricity, title: Electricity}
-  - {id: sanitation, title: Sanitation}
-  - {id: repairs, title: Repairs}
-  - {id: preparedness, title: Preparedness}
+  - {id: first-aid, title: First aid, code: FA, icon: cross}
+  - {id: water, title: Water, code: WA, icon: water}
+  - {id: fire-warmth, title: Fire and warmth, code: FW, icon: flame}
+  - {id: shelter, title: Shelter, code: SH, icon: house}
+  - {id: food, title: Food, code: FO, icon: food}
+  - {id: navigation-signaling, title: Navigation and signaling, code: NS, icon: compass}
+  - {id: electricity, title: Electricity, code: EL, icon: bolt}
+  - {id: sanitation, title: Sanitation, code: SA, icon: soap}
+  - {id: repairs, title: Repairs, code: RE, icon: wrench}
+  - {id: preparedness, title: Preparedness, code: PR, icon: checklist}

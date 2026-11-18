@@ -39,13 +39,13 @@ class InstallSourceTest {
     }
 
     private fun aboutShows(installing: String?, initiating: String?, expected: String) {
-        rule.waitUntilAtLeastOneExists(hasText("Emergency"), 30_000)
+        rule.waitUntilAtLeastOneExists(hasText("EMERGENCY"), 30_000)
         // Set only after the app has loaded: changing package info earlier interferes with how
         // Robolectric serves the app's assets (the knowledge database).
         val app = rule.activity.application
         shadowOf(app.packageManager).setInstallSourceInfo(app.packageName, initiating, installing)
         rule.onNodeWithContentDescription("About").performClick()
-        rule.waitUntilAtLeastOneExists(hasText("Installation"), 10_000)
+        rule.waitUntilAtLeastOneExists(hasText("INSTALLATION"), 10_000)
         rule.onNodeWithText(expected, substring = true).performScrollTo().assertExists()
         rule.onNodeWithText("never checks for updates", substring = true).assertExists()
     }

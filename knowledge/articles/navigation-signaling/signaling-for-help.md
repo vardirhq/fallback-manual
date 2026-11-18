@@ -2,6 +2,8 @@
 id: signaling-for-help
 title: Signaling for help
 category: navigation-signaling
+code: NS-01
+icon: signal
 status: draft
 version: 3
 high_risk: false

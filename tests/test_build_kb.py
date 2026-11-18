@@ -30,7 +30,7 @@ GOOD_BODY = textwrap.dedent("""
 
 def article(status="draft", reviewer=None, body=GOOD_BODY, id_="test-article", **overrides):
     meta = {
-        "id": id_, "title": "Test article", "category": "first-aid", "status": status,
+        "id": id_, "title": "Test article", "category": "first-aid", "code": "FA-01", "status": status,
         "version": 1, "high_risk": False, "license": "CC-BY-4.0",
         "situations": ["something happened", "something else happened"], "keywords": ["test", "example", "sample"],
         "sources": [{"title": "A source", "publisher": "A publisher", "url": "https://example.org/a", "checked": False}],
@@ -129,7 +129,7 @@ def test_links_must_be_article_links(kb):
 
 
 def test_valid_link_builds_and_indexes_link_text_only(kb, tmp_path):
-    other = article(id_="other-article").replace("title: Test article", "title: Other")
+    other = article(id_="other-article", code="FA-02").replace("title: Test article", "title: Other")
     (tmp_path / "articles" / "first-aid" / "other-article.md").write_text(other)
     report, out = kb(article(body=GOOD_BODY.replace("Then this.", "Then see [the other one](article:other-article).")))
     assert report.errors == []
@@ -317,3 +317,44 @@ def test_picture_placement_and_description(kb_img, body, expected):
 def test_unused_and_unlisted_pictures_are_rejected(kb_img):
     errs = " | ".join(kb_img(article(), [IMG], {"test-pic.png": 0, "stray.png": 0})[0].errors)
     assert "not used by any article" in errs and "not listed in" in errs
+
+
+# --- codes, icons, rhythm ----------------------------------------------------------------------
+
+@pytest.mark.parametrize("code,expected", [("fa-1", "is invalid"), ("WA-01", "does not match category")])
+def test_code_rules(kb, code, expected):
+    assert expected in _errors(kb, article(code=code))
+
+
+def test_duplicate_codes_rejected(kb, tmp_path):
+    (tmp_path / "articles" / "first-aid" / "other-article.md").write_text(
+        article(id_="other-article").replace("title: Test article", "title: Other"))
+    assert "already used by" in _errors(kb, article())
+
+
+def test_unknown_icon_rejected(kb):
+    assert "not in knowledge/icons.yaml" in _errors(kb, article(icon="unicorn"))
+
+
+@pytest.mark.parametrize("rhythm,expected", [
+    ({"bpm": 110, "from_step": 1}, "rhythm must be"),
+    ({"bpm": 500, "from_step": 1, "to_step": 2}, "bpm must be 30-200"),
+    ({"bpm": 110, "from_step": 1, "to_step": 9}, "only 2 steps"),
+])
+def test_rhythm_rules(kb, rhythm, expected):
+    assert expected in _errors(kb, article(rhythm=rhythm))
+
+
+def test_rhythm_and_icon_stored(kb):
+    report, out = kb(article(icon="heart-pulse", rhythm={"bpm": 110, "from_step": 1, "to_step": 2}))
+    assert report.errors == []
+    row = sqlite3.connect(out).execute(
+        "SELECT a.code, a.icon, a.rhythm_bpm, a.rhythm_from, a.rhythm_to, i.path IS NOT NULL, a.lead "
+        "FROM articles a LEFT JOIN icons i ON i.name = a.icon").fetchone()
+    assert row == ("FA-01", "heart-pulse", 110, 1, 2, 1, "something happened")
+
+
+def test_new_article_assigns_next_code():
+    from tools.new_article import next_code
+    assert next_code("first-aid") == "FA-06"   # FA-01..FA-05 exist
+    assert next_code("shelter") == "SH-01"     # no shelter articles yet

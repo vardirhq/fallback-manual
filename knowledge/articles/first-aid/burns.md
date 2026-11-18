@@ -2,6 +2,8 @@
 id: burns
 title: Burns and scalds
 category: first-aid
+code: FA-01
+icon: flame
 status: draft
 version: 2
 high_risk: true

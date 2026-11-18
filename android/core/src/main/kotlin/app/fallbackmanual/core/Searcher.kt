@@ -21,6 +21,8 @@ class Searcher internal constructor(private val connection: SQLiteConnection) {
         val coverage: Double,
         val bm25: Double,
         val strongSynonymHit: Boolean,
+        /** The words of the question this article matched (for showing why it was chosen). */
+        val matched: List<String> = emptyList(),
     )
 
     data class Result(
@@ -129,15 +131,18 @@ class Searcher internal constructor(private val connection: SQLiteConnection) {
         val matches = rows.map { r ->
             var total = 0.0
             var synHit = false
+            val matched = mutableListOf<String>()
             concepts.zip(exprs).forEach { (c, e) ->
                 if (hit(r.rowid, "$STRONG_COLUMNS : $e")) {
                     total += 1.0
                     synHit = synHit || c.fromSynonyms
+                    matched += c.words
                 } else if (hit(r.rowid, "body : $e")) {
                     total += 0.5
+                    matched += c.words
                 }
             }
-            Match(r.id, r.title, r.category, r.highRisk, total / exprs.size, r.bm25, synHit)
+            Match(r.id, r.title, r.category, r.highRisk, total / exprs.size, r.bm25, synHit, matched)
         }.sortedWith(compareBy<Match> { -it.coverage }.thenBy { it.bm25 })
 
         val top = matches.firstOrNull()

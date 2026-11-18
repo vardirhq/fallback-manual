@@ -16,7 +16,11 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import app.fallbackmanual.ui.AboutScreen
 import app.fallbackmanual.ui.ArticleScreen
+import app.fallbackmanual.ui.BottomNav
 import app.fallbackmanual.ui.CategoryScreen
+import app.fallbackmanual.ui.ManualScreen
+import app.fallbackmanual.ui.StepModeScreen
+import app.fallbackmanual.ui.Tab
 import app.fallbackmanual.ui.FallbackTheme
 import app.fallbackmanual.ui.HomeScreen
 import app.fallbackmanual.ui.LocalBookmarks
@@ -45,7 +49,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/** Routes: home, category/<id>, article/<id>, search/<query>, saved, share, about. */
+/**
+ * Routes: home, manual, saved, share (the four tabs), category/<id>, article/<id>, steps/<id>,
+ * search/<query>, about. Switching tabs resets the stack to that tab, with Home underneath.
+ */
 @Composable
 fun App() {
     val stack = rememberSaveable(
@@ -65,6 +72,11 @@ fun App() {
     val back: () -> Unit = { if (stack.size > 1) pop() }
     val replace: (String) -> Unit = { states.removeState(entryKey(stack.lastIndex)); stack[stack.lastIndex] = it }
     val home: () -> Unit = { while (stack.size > 1) pop() }
+    val selectTab: (Tab) -> Unit = { tab ->
+        home()
+        if (tab != Tab.Home) go(tab.route)
+    }
+    val nav: @Composable (Tab) -> Unit = { current -> BottomNav(current, selectTab) }
     BackHandler(enabled = stack.size > 1, onBack = back)
 
     val route = stack.last()
@@ -76,11 +88,13 @@ fun App() {
             when (kind) {
                 "category" -> CategoryScreen(arg, go, back)
                 "article" -> ArticleScreen(arg, go, back)
+                "steps" -> StepModeScreen(arg, back)
                 "search" -> SearchScreen(arg, go, replace, home, back)
-                "saved" -> SavedScreen(go, back)
-                "share" -> ShareScreen(back)
+                "manual" -> ManualScreen(go) { nav(Tab.Manual) }
+                "saved" -> SavedScreen(go) { nav(Tab.Saved) }
+                "share" -> ShareScreen { nav(Tab.Share) }
                 "about" -> AboutScreen(back)
-                else -> HomeScreen(go)
+                else -> HomeScreen(go) { nav(Tab.Home) }
             }
         }
     }

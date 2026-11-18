@@ -2,6 +2,8 @@
 id: dehydration
 title: Dehydration
 category: first-aid
+code: FA-03
+icon: cup
 status: draft
 version: 2
 high_risk: true

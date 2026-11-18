@@ -2,6 +2,8 @@
 id: staying-warm-power-outage
 title: Staying warm when the power is out
 category: fire-warmth
+code: FW-02
+icon: thermometer
 status: draft
 version: 3
 high_risk: false

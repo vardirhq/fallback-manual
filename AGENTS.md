@@ -19,7 +19,7 @@ If it prints `RESULT: FAIL`, it lists every problem with a "Fix:". Do what it sa
 1. **Never set `status: reviewed`.** New and edited articles are always `status: draft`. Only a human expert reviews articles.
 2. **Never fill in `reviewer`, `date` or `review_by`.** Leave all three as `null`.
 3. **Never set `checked: true` on a source.** Always `checked: false`.
-4. **Never edit `knowledge/reviewers.yaml`.**
+4. **Never edit `knowledge/reviewers.yaml`, and never change an article's `code`** (e.g. `FA-02`). `python -m tools.new_article` assigns codes; they never change.
 5. **Never invent facts.** Every instruction, number, time, temperature, distance and amount must come from one of the sources you list. If the sources don't say it, leave it out, even if it seems like good advice.
 6. **Never copy text word for word** from a source. Write it in your own plain words. (Sources are often copyrighted; the articles are CC-BY-4.0.)
 7. **Never change a question to make a check pass**, and never add or change questions with `set: heldout`. Only add `set: dev` questions.
@@ -98,9 +98,10 @@ Replace every `TODO` between the two `---` lines:
 | `situations` | 2–5 sentences describing the problem **the way a frightened person would say it**, e.g. `my child swallowed something and is coughing`. Search relies heavily on these. |
 | `keywords` | 3–12 lowercase words or short phrases people might type, e.g. `[choking, food stuck, can't breathe, coughing]`. |
 | `diagrams_needed` | Pictures that would make the steps clearer, e.g. `where to place your hands`. Remove the field if none. |
+| `icon` (optional) | One icon name from `python -m tools.new_article --list`, e.g. `icon: snowflake`. Leave it out to use the category's icon. |
 | `sources` | One entry per source: `title` (the page title), `publisher` (the organisation), `url` (the full `https://` address, with no `?utm_source=...`), and `checked: false`. |
 
-Leave `status: draft`, `version: 1`, `license: CC-BY-4.0` and the `review` block exactly as they are.
+Leave `code`, `status: draft`, `version: 1`, `license: CC-BY-4.0` and the `review` block exactly as they are.
 
 ### Step 5. Write the body
 

@@ -2,9 +2,13 @@
 id: cpr
 title: CPR (adults)
 category: first-aid
+code: FA-02
+icon: heart-pulse
 status: draft
-version: 3
+version: 4
 high_risk: true
+# Beat guide in step-by-step mode for the compression steps (sources: 100-120 a minute).
+rhythm: {bpm: 110, from_step: 9, to_step: 13}
 license: CC-BY-4.0
 situations:
   - someone collapsed and is not breathing

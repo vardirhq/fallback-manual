@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 val LocalSharing = staticCompositionLocalOf<AppSharing> { error("no AppSharing") }
 
 @Composable
-fun ShareScreen(back: () -> Unit) {
+fun ShareScreen(bottomBar: @Composable () -> Unit = {}) {
     val sharing = LocalSharing.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -68,7 +68,7 @@ fun ShareScreen(back: () -> Unit) {
         }
     }
 
-    Scaffold(topBar = { Bar("Share this app", back) }) { pad ->
+    Scaffold(containerColor = fm.bg, topBar = { Bar("Share this app", null) }, bottomBar = bottomBar) { pad ->
         Column(
             Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),

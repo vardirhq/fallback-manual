@@ -2,6 +2,7 @@
 id: {id}
 title: {title}
 category: {category}
+code: {code}
 status: draft
 version: 1
 high_risk: {high_risk}

@@ -2,6 +2,8 @@
 id: boiling-water
 title: Making water safe by boiling
 category: water
+code: WA-01
+icon: pot
 status: draft
 version: 3
 high_risk: false

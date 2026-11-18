@@ -2,6 +2,8 @@
 id: emergency-water-storage
 title: Emergency water storage
 category: water
+code: WA-02
+icon: jug
 status: draft
 version: 1
 high_risk: false
