@@ -3,7 +3,7 @@ id: staying-warm-power-outage
 title: Staying warm when the power is out
 category: fire-warmth
 status: draft
-version: 2
+version: 3
 high_risk: false
 license: CC-BY-4.0
 situations:
@@ -60,4 +60,4 @@ Use this when your heating has stopped because of a power cut or fuel shortage a
 
 ## Get help
 
-If anyone shows signs of hypothermia, follow [Hypothermia](article:hypothermia) and get medical help. Many areas open warming centres during long outages; local radio may announce them.
+If anyone shows signs of hypothermia, follow [Hypothermia](article:hypothermia) and get medical help. Many areas open warming centers during long outages; local radio may announce them.

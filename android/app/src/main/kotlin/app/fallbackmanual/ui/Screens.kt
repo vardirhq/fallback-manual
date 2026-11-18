@@ -343,7 +343,42 @@ fun AboutScreen(back: () -> Unit) {
                         if (info.releaseBuild) "release build" else "development build (unreviewed drafts)",
                     style = MaterialTheme.typography.bodyMedium,
                 )
+                InstallationSection()
             }
         }
     }
+}
+
+// -- Installation (part of About) ---------------------------------------------
+
+private const val RELEASES = "github.com/vardirhq/fallback-manual/releases"
+
+@Composable
+private fun InstallationSection() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val source = androidx.compose.runtime.remember { app.fallbackmanual.InstallSources.detect(context) }
+    val version = androidx.compose.runtime.remember {
+        runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "unknown"
+    }
+    val (where, update) = when (source.channel) {
+        app.fallbackmanual.InstallChannel.PlayStore ->
+            "Installed from Google Play." to "Updates come through Google Play."
+        app.fallbackmanual.InstallChannel.FDroid ->
+            "Installed from F-Droid." to "Updates come through F-Droid."
+        app.fallbackmanual.InstallChannel.ApkFile ->
+            "Installed from an app file (APK)." to
+                "This app never updates itself. To update, install a newer APK from $RELEASES, " +
+                "or get one from someone with a newer version using Share this app."
+        app.fallbackmanual.InstallChannel.Unknown ->
+            "Android didn't record where this app came from." to
+                "This app never updates itself. To update, install a newer APK from $RELEASES."
+    }
+    SectionTitle("Installation")
+    Text("Version $version. $where", style = MaterialTheme.typography.bodyMedium)
+    Text(update, style = MaterialTheme.typography.bodyMedium)
+    Text(
+        "The app has no internet access and never checks for updates.",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }

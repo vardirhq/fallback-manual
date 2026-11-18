@@ -25,3 +25,5 @@ groups:
   - [not breathing, stopped breathing, isn't breathing, no breathing, gasping]
   - [unresponsive, unconscious, passed out, collapsed, not responding]
   - [aed, defibrillator, defib]
+  - [diarrhea, diarrhoea, the runs, loose stools]
+  - [diaper, diapers, nappy, nappies]

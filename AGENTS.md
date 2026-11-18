@@ -117,7 +117,7 @@ Writing rules:
 - Short sentences. Plain words. Write for someone who is scared and reading on a phone.
 - Steps are instructions: start with a verb ("Press...", "Call...", "Move...").
 - One action per step. **Aim for 20 words or fewer per step; more than 25 is rejected.** If a step is too long, split it into two steps.
-- **British spelling** in titles and article text: colour, centre, litre, diarrhoea, recognise, signalling, grey. The check rejects common American spellings. (In `keywords` and `situations`, American spellings are fine, because people type both.)
+- **American English** in titles and article text: color, center, liter, meter, diarrhea, recognize, signaling, gray, diapers (not nappies), plastic wrap (not cling film), soda (not fizzy drinks). The check rejects common British spellings and words. (In `keywords` and `situations`, British spellings are fine, because people type both.)
 - Give measurements in metric first, then imperial in brackets: `5–6 cm (about 2 inches)`.
 - You may use `**bold**` for a few critical words.
 - To refer to another article, link it: `[start CPR](article:cpr)`. Use only ids from `python -m tools.new_article --list`.
