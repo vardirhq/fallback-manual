@@ -74,6 +74,11 @@ questions:
   - {set: heldout, q: "my mother is unresponsive and only gasping", expect: [cpr]}
   - {set: heldout, q: "how to use a defibrillator", expect: [cpr]}
 
+  # --- dehydration ---
+  - {set: dev, q: "I feel dizzy and have barely peed all day", expect: [dehydration]}
+  - {set: dev, q: "my baby has fewer wet nappies and seems sleepy", expect: [dehydration]}
+  - {set: dev, q: "vomiting and thirsty with a dry mouth", expect: [dehydration]}
+
   # --- not in the library: the correct answer is "no match" ---
   - {set: dev, q: "how do I fix a flat bike tire", expect: []}
   - {set: dev, q: "snake bite", expect: []}
