@@ -204,3 +204,24 @@ def test_all_problems_reported_in_one_pass(kb):
     text = article(id_="test-article", license="MIT", version="1").replace("situations:", "situation:")
     errs = _errors(kb, text)
     assert "license" in errs and "version" in errs and "situation" in errs
+
+
+def test_titles_must_name_the_problem(kb):
+    errs = _errors(kb, article().replace("title: Test article", "title: Recognizing and responding to dehydration"))
+    assert "name the problem itself" in errs
+
+
+def test_american_spelling_is_rejected_in_text_but_allowed_in_keywords(kb):
+    errs = _errors(kb, article(body=GOOD_BODY.replace("When it applies.", "Check the color of the skin.")))
+    assert "'color' is American spelling" in errs and "'colour'" in errs
+    report, _ = kb(article(keywords=["diarrhea", "test", "example"]))
+    assert not any("American" in e for e in report.errors)
+
+
+def test_long_steps_are_rejected_and_medium_ones_warned(kb):
+    long_step = "1. " + " ".join(["word"] * 26) + "."
+    errs = _errors(kb, article(body=GOOD_BODY.replace("1. Do this.", long_step)))
+    assert "step 1 has 26 words" in errs and "split it into two" in errs
+    medium = "1. " + " ".join(["word"] * 22) + "."
+    report, _ = kb(article(body=GOOD_BODY.replace("1. Do this.", medium)))
+    assert report.errors == [] and any("aim for 20" in w for w in report.warnings)
