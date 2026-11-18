@@ -79,6 +79,11 @@ questions:
   - {set: dev, q: "my baby has fewer wet nappies and seems sleepy", expect: [dehydration]}
   - {set: dev, q: "vomiting and thirsty with a dry mouth", expect: [dehydration]}
 
+  # --- emergency-water-storage ---
+  - {set: dev, q: "how many bottles of water do we need for a week with no tap water", expect: [emergency-water-storage]}
+  - {set: dev, q: "can I fill containers with tap water for emergencies", expect: [emergency-water-storage]}
+  - {set: dev, q: "how often should I replace my stored drinking water", expect: [emergency-water-storage]}
+
   # --- not in the library: the correct answer is "no match" ---
   - {set: dev, q: "how do I fix a flat bike tire", expect: []}
   - {set: dev, q: "snake bite", expect: []}
