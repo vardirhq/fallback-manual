@@ -1,9 +1,9 @@
 ---
 id: signaling-for-help
-title: Signaling for help
+title: Signalling for help
 category: navigation-signaling
 status: draft
-version: 1
+version: 2
 high_risk: false
 license: CC-BY-4.0
 situations:
@@ -38,13 +38,15 @@ Use this when you are lost, stranded or injured and need rescuers to find you, e
 ## Steps
 
 1. Stay where you are unless it is unsafe. Searchers look first where you were last known to be.
-2. Try your local emergency number anyway. In many countries emergency calls (such as 112 or 911) can connect through any available network, even when your own provider has no signal.
-3. If calls fail, try sending a text message. Texts sometimes get through when calls do not.
-4. Save battery: turn on low-power mode, and turn the phone off between attempts.
-5. Use signals in threes, the international sign for distress: three whistle blasts, three fires in a triangle, three flashes of light.
-6. Make a large ground signal in an open area, such as SOS or a big X, using rocks, branches or bright cloth that contrasts with the ground. Make each letter several metres long.
-7. In daylight, flash sunlight at aircraft or searchers with a mirror or any shiny object.
-8. If you light a signal fire, add green leaves in daytime for white smoke; keep it bright at night.
+2. Try your local emergency number anyway, even if your phone shows no signal.
+3. In many countries emergency calls (such as 112 or 911) can connect through any available network, not just your own provider's.
+4. If calls fail, try sending a text message. Texts sometimes get through when calls do not.
+5. Save battery: turn on low-power mode, and turn the phone off between attempts.
+6. Use signals in threes, the international sign for distress: three whistle blasts, three fires in a triangle, three flashes of light.
+7. Make a large ground signal in an open area, such as SOS or a big X.
+8. Use rocks, branches or bright cloth that contrasts with the ground. Make each letter several metres long.
+9. In daylight, flash sunlight at aircraft or searchers with a mirror or any shiny object.
+10. If you light a signal fire, add green leaves in daytime for white smoke; keep it bright at night.
 
 ## Warnings
 

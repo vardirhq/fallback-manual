@@ -3,7 +3,7 @@ id: severe-bleeding
 title: Severe bleeding
 category: first-aid
 status: draft
-version: 1
+version: 2
 high_risk: true
 license: CC-BY-4.0
 situations:
@@ -48,9 +48,11 @@ Use this when blood is flowing steadily, spurting, pooling on the ground, or soa
 4. Press hard, directly on the wound, with a pad of cloth. Use the heel of your hand and your body weight.
 5. Keep pressing without stopping for at least 10 minutes. Do not lift the pad to check.
 6. If blood soaks through, put more cloth on top and keep pressing. Do not remove the first pad.
-7. If the wound is on an arm or leg and the bleeding is life-threatening and pressure is not stopping it, apply a tourniquet 5–7 cm (2–3 in) above the wound, not over a joint. Tighten it until the bleeding stops. Write down the time it was applied.
-8. Once bleeding is controlled, bandage the pad firmly in place.
-9. Lay the person down, keep them warm, and watch their breathing until help arrives.
+7. Use a tourniquet only if the wound is on an arm or leg, the bleeding is life-threatening, and pressure is not stopping it.
+8. Apply the tourniquet 5–7 cm (2–3 in) above the wound, not over a joint.
+9. Tighten it until the bleeding stops. Write down the time it was applied.
+10. Once bleeding is controlled, bandage the pad firmly in place.
+11. Lay the person down, keep them warm, and watch their breathing until help arrives.
 
 ## Warnings
 

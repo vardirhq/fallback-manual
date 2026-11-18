@@ -3,7 +3,7 @@ id: food-safety-power-outage
 title: Keeping food safe without a refrigerator
 category: food
 status: draft
-version: 1
+version: 2
 high_risk: false
 license: CC-BY-4.0
 situations:
@@ -37,12 +37,13 @@ Use this when the power is out and your fridge or freezer has stopped, or when y
 ## Steps
 
 1. Keep the fridge and freezer doors closed as much as possible.
-2. A closed fridge keeps food cold for about 4 hours. A full closed freezer keeps food frozen for about 48 hours, a half-full one for about 24 hours.
-3. Eat perishable food from the fridge first, then from the freezer, then non-perishable food.
-4. If the outage will last longer than 4 hours, move milk, meat, fish and leftovers into a cooler with ice.
-5. Group frozen items together in the freezer so they stay cold longer.
-6. When power returns, throw out perishable food that has been above 4 °C (40 °F) for more than 2 hours.
-7. Frozen food that still has ice crystals or is at 4 °C (40 °F) or below can be refrozen or cooked.
+2. Remember that a closed fridge keeps food cold for about 4 hours.
+3. A full, closed freezer keeps food frozen for about 48 hours; a half-full one for about 24 hours.
+4. Eat perishable food from the fridge first, then from the freezer, then non-perishable food.
+5. If the outage will last longer than 4 hours, move milk, meat, fish and leftovers into a cooler with ice.
+6. Group frozen items together in the freezer so they stay cold longer.
+7. When power returns, throw out perishable food that has been above 4 °C (40 °F) for more than 2 hours.
+8. Frozen food that still has ice crystals or is at 4 °C (40 °F) or below can be refrozen or cooked.
 
 ## Warnings
 

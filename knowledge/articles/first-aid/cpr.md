@@ -3,7 +3,7 @@ id: cpr
 title: CPR (adults)
 category: first-aid
 status: draft
-version: 1
+version: 2
 high_risk: true
 license: CC-BY-4.0
 situations:
@@ -46,13 +46,17 @@ This article is for adults. Children and babies need a different technique (arti
 1. Make sure it is safe for you to approach.
 2. Shout to the person and tap their shoulders. If they do not respond, shout for help.
 3. Tilt their head back gently and lift the chin. Look, listen and feel for normal breathing for no more than 10 seconds.
-4. If they are not breathing normally, call emergency services. Put the phone on speaker so your hands are free. Send someone to find an AED if possible.
-5. Kneel beside them. Put the heel of one hand on the centre of the chest, on the lower half of the breastbone. Put your other hand on top and lock your fingers together.
-6. Keep your arms straight with your shoulders directly above your hands. Push straight down 5–6 cm (about 2 inches), then let the chest come all the way back up.
-7. Push hard and fast: 100–120 times a minute, about two pushes a second.
-8. If you are trained and willing, give 2 rescue breaths after every 30 pushes. If not, just keep pushing without stopping.
-9. As soon as an AED arrives, switch it on and do what it says. Keep pushing until it tells you to stand clear.
-10. Keep going until professional help takes over, the person starts breathing normally, or you are physically unable to continue. If someone else can help, swap every 2 minutes.
+4. If they are not breathing normally, call emergency services. Put the phone on speaker so your hands are free.
+5. Send someone to find an AED if possible.
+6. Kneel beside them. Put the heel of one hand on the centre of the chest, on the lower half of the breastbone.
+7. Put your other hand on top and lock your fingers together.
+8. Keep your arms straight with your shoulders directly above your hands.
+9. Push straight down 5–6 cm (about 2 inches), then let the chest come all the way back up.
+10. Push hard and fast: 100–120 times a minute, about two pushes a second.
+11. If you are trained and willing, give 2 rescue breaths after every 30 pushes. If not, just keep pushing without stopping.
+12. As soon as an AED arrives, switch it on and do what it says. Keep pushing until it tells you to stand clear.
+13. Keep going until professional help takes over, the person starts breathing normally, or you are physically unable to continue.
+14. If someone else can help, swap every 2 minutes.
 
 ## Warnings
 

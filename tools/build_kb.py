@@ -122,6 +122,31 @@ SOURCE_FIELDS = {"title", "publisher", "url", "checked"}
 REVIEW_FIELDS = {"reviewer", "date", "review_by"}
 LICENSES = {"CC-BY-4.0"}
 LIST_SECTIONS = {"What you need", "Warnings", "Common mistakes"}
+STEP_WORDS_WARN = 20   # aim for this or fewer
+STEP_WORDS_MAX = 25    # longer steps are rejected: one action per step
+
+# Articles use British spelling. American -> British. Only titles and article text are checked;
+# keywords and situations may use any spelling, because people type both.
+US_TO_UK = {
+    "color": "colour", "colors": "colours", "colored": "coloured", "colorless": "colourless",
+    "center": "centre", "centers": "centres", "centered": "centred",
+    "liter": "litre", "liters": "litres", "milliliter": "millilitre", "milliliters": "millilitres",
+    "diarrhea": "diarrhoea", "hemorrhage": "haemorrhage", "anemia": "anaemia", "edema": "oedema",
+    "pediatric": "paediatric", "esophagus": "oesophagus", "anesthetic": "anaesthetic", "fetus": "foetus",
+    "recognize": "recognise", "recognized": "recognised", "recognizes": "recognises", "recognizing": "recognising",
+    "realize": "realise", "realized": "realised", "organize": "organise", "organized": "organised",
+    "minimize": "minimise", "maximize": "maximise", "sterilize": "sterilise", "sterilized": "sterilised",
+    "immobilize": "immobilise", "immobilized": "immobilised", "stabilize": "stabilise",
+    "gray": "grey", "fiber": "fibre", "behavior": "behaviour", "favor": "favour", "odor": "odour",
+    "signaling": "signalling", "signaled": "signalled", "traveling": "travelling", "traveled": "travelled",
+    "labeled": "labelled", "canceled": "cancelled", "fueled": "fuelled", "aluminum": "aluminium",
+    "mold": "mould", "moldy": "mouldy", "jewelry": "jewellery", "pajamas": "pyjamas", "defense": "defence",
+}
+US_RE = re.compile(r"\b(" + "|".join(sorted(US_TO_UK, key=len, reverse=True)) + r")\b", re.I)
+
+# Titles name the problem ("Dehydration", "Burns and scalds"), not the activity of reading about it.
+BAD_TITLE_RE = re.compile(r"^(how to|how do|guide|a guide|understanding|recogni[sz]ing|identifying|responding|"
+                          r"dealing with|managing|introduction|an introduction|what to do|everything|tips)\b", re.I)
 
 # Things language models leave behind when copying research output, with how to fix each.
 # None of them belong in an article.
@@ -189,6 +214,9 @@ def validate(article: Article, report: Report, release: bool) -> None:
             report.error(p, "title is empty. Fix: give a short title, e.g. 'Filtering water'.")
         elif len(title) > 60 or title.rstrip().endswith("."):
             report.error(p, "title must be at most 60 characters and must not end with a full stop.")
+        elif BAD_TITLE_RE.search(title):
+            report.error(p, f"title '{title}' describes reading about the problem. Fix: name the problem itself, "
+                            "like the other articles do, e.g. 'Dehydration', 'Burns and scalds', 'Hypothermia'.")
     if has("category") and meta["category"] != p.parent.name:
         report.error(p, f"category '{meta['category']}' does not match the folder '{p.parent.name}'. "
                         f"Fix: set category: {p.parent.name}, or move the file to the right folder.")
@@ -275,6 +303,14 @@ def validate(article: Article, report: Report, release: bool) -> None:
     validate_body(article, report)
 
 
+def _check_spelling(p: Path, report: Report, where: str, text: str) -> None:
+    for m in US_RE.finditer(text):
+        word = m.group(1)
+        uk = US_TO_UK[word.lower()]
+        uk = uk.capitalize() if word[0].isupper() else uk
+        report.error(p, f"{where}: '{word}' is American spelling. Fix: write '{uk}' (articles use British spelling).")
+
+
 def validate_body(article: Article, report: Report) -> None:
     p, body = article.path, article.body
     file_lines = p.read_text(encoding="utf-8").splitlines()
@@ -306,6 +342,10 @@ def validate_body(article: Article, report: Report) -> None:
             report.error(p, f"{where}: bullet items must start with '- '. Fix: replace '{stripped[0]}' with '-'.")
         elif re.search(r"<[a-zA-Z/][^>]*>", line):
             report.error(p, f"{where}: HTML is not supported. Fix: write plain text.")
+        _check_spelling(p, report, where, ARTICLE_LINK_RE.sub(r"\1", line))
+    title_line = next((i for i, l in enumerate(file_lines) if l.startswith("title:")), None)
+    if title_line is not None:
+        _check_spelling(p, report, f"line {title_line + 1}", file_lines[title_line])
     check_file_text(p, report)
 
     if headings != REQUIRED_SECTIONS:
@@ -332,6 +372,13 @@ def validate_body(article: Article, report: Report) -> None:
                                     f"Found: '{l.strip()[:50]}'. Fix: make it a step or move it to another section.")
                     break
                 nums.append(int(m.group(1)))
+                words = len(ARTICLE_LINK_RE.sub(r"\1", l[m.end(1) + 1:]).split())
+                step = f"step {m.group(1)}"
+                if words > STEP_WORDS_MAX:
+                    report.error(p, f"{step} has {words} words; the maximum is {STEP_WORDS_MAX}. Fix: split it into two "
+                                    "steps, one action each, and renumber the steps after it.")
+                elif words > STEP_WORDS_WARN:
+                    report.warn(p, f"{step} has {words} words; aim for {STEP_WORDS_WARN} or fewer.")
             else:
                 if len(nums) < 2:
                     report.error(p, "'## Steps' needs at least 2 numbered steps.")

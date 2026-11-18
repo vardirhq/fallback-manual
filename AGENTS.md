@@ -20,7 +20,7 @@ If it prints `RESULT: FAIL`, it lists every problem with a "Fix:". Do what it sa
 2. **Never fill in `reviewer`, `date` or `review_by`.** Leave all three as `null`.
 3. **Never set `checked: true` on a source.** Always `checked: false`.
 4. **Never edit `knowledge/reviewers.yaml`.**
-5. **Never invent facts.** Every instruction, number, time, temperature, distance and amount must come from one of the sources you list. If the sources don't say it, leave it out.
+5. **Never invent facts.** Every instruction, number, time, temperature, distance and amount must come from one of the sources you list. If the sources don't say it, leave it out, even if it seems like good advice.
 6. **Never copy text word for word** from a source. Write it in your own plain words. (Sources are often copyrighted; the articles are CC-BY-4.0.)
 7. **Never change a question to make a check pass**, and never add or change questions with `set: heldout`. Only add `set: dev` questions.
 8. **Only edit these files:**
@@ -58,7 +58,7 @@ python -m tools.new_article --category <category> --id <id> --title "<Title>"
 
 - `<category>`: one id from the list in step 1, e.g. `water`.
 - `<id>`: lowercase words joined by hyphens, e.g. `water-filtration`. It becomes the file name.
-- `<Title>`: short, no full stop at the end, e.g. `"Filtering water"`.
+- `<Title>`: **the name of the problem**, short, no full stop at the end, like the existing titles: `"Dehydration"`, `"Burns and scalds"`, `"Hypothermia"`, `"Filtering water"`. Not `"Recognizing and responding to dehydration"` and not `"How to ..."`.
 - Add `--high-risk` if a mistake could seriously injure or kill someone (first aid, poisoning, electricity, fire, cold, drowning, and so on). High-risk articles need sources from **at least 2 different publishers**.
 
 Example:
@@ -81,6 +81,10 @@ Use only these kinds of sources:
 - Official military field manuals, e.g. US Army FM 21-76
 
 Never use: blogs, forums, Reddit, YouTube, news articles, product sites, Wikipedia, or other AI tools.
+
+Every source must be **mainly about this article's topic**. A page about one disease is not a source for general first aid, even if it mentions the topic.
+
+**Never add a source just to reach the two-publisher minimum** for high-risk articles. If you can't find two good sources that are mainly about the topic, stop and tell the person you work for.
 
 If two good sources disagree, follow the **more cautious** one, and mention the risk under `## Warnings`.
 
@@ -112,7 +116,8 @@ Writing rules:
 
 - Short sentences. Plain words. Write for someone who is scared and reading on a phone.
 - Steps are instructions: start with a verb ("Press...", "Call...", "Move...").
-- One action per step.
+- One action per step. **Aim for 20 words or fewer per step; more than 25 is rejected.** If a step is too long, split it into two steps.
+- **British spelling** in titles and article text: colour, centre, litre, diarrhoea, recognise, signalling, grey. The check rejects common American spellings. (In `keywords` and `situations`, American spellings are fine, because people type both.)
 - Give measurements in metric first, then imperial in brackets: `5–6 cm (about 2 inches)`.
 - You may use `**bold**` for a few critical words.
 - To refer to another article, link it: `[start CPR](article:cpr)`. Use only ids from `python -m tools.new_article --list`.
@@ -133,7 +138,11 @@ Open `evaluation/questions.yaml`. Find the comment line `# --- not in the librar
 
 Write the questions the way a real person would type them on a phone, not with the article's own title.
 
-### Step 7. Run the check
+### Step 7. Check every sentence against your sources
+
+Read the article from top to bottom. For each sentence, find the source that says it. If none of your sources says it, delete the sentence. No script can do this for you.
+
+### Step 8. Run the check
 
 ```sh
 python -m tools.check
