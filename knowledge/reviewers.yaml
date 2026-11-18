@@ -1,0 +1,11 @@
+# People allowed to approve articles (status: reviewed). Maintained by the project owner only.
+# An article's review.reviewer must match one "name" below exactly.
+# AI tools and agents must never add themselves or anyone else to this list.
+#
+# Example:
+#   reviewers:
+#     - name: Dr. Kari Nordmann
+#       qualification: Physician, emergency medicine
+#       areas: [first-aid]
+
+reviewers: []

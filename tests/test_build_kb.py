@@ -32,8 +32,8 @@ def article(status="draft", reviewer=None, body=GOOD_BODY, id_="test-article", *
     meta = {
         "id": id_, "title": "Test article", "category": "first-aid", "status": status,
         "version": 1, "high_risk": False, "license": "CC-BY-4.0",
-        "situations": ["something happened"], "keywords": ["test"],
-        "sources": [{"title": "A source", "publisher": "A publisher", "checked": True}],
+        "situations": ["something happened", "something else happened"], "keywords": ["test", "example", "sample"],
+        "sources": [{"title": "A source", "publisher": "A publisher", "url": "https://example.org/a", "checked": False}],
         "review": {"reviewer": reviewer, "date": "2026-01-01" if reviewer else None,
                    "review_by": "2099-01-01" if reviewer else None},
     }
@@ -74,7 +74,10 @@ def test_release_rejects_drafts(kb):
     assert not out.exists()
 
 
-def test_release_accepts_reviewed(kb):
+def test_release_accepts_reviewed(kb, tmp_path, monkeypatch):
+    reviewers = tmp_path / "reviewers.yaml"
+    reviewers.write_text("reviewers:\n  - name: Dr. Example, MD\n    qualification: Physician\n")
+    monkeypatch.setattr(build_kb, "REVIEWERS_FILE", reviewers)
     report, _ = kb(article(status="reviewed", reviewer="Dr. Example, MD"), release=True)
     assert report.errors == []
 
@@ -134,3 +137,70 @@ def test_valid_link_builds_and_indexes_link_text_only(kb, tmp_path):
     hits = lambda q: con.execute("SELECT count(*) FROM articles_fts WHERE articles_fts MATCH ?", (q,)).fetchone()[0]
     assert hits('body : "the other one"') == 1
     assert hits('body : article') == 0
+
+
+# --- rules that protect against typical mistakes by people and AI models ---------------------
+
+def _errors(kb, text):
+    report, _ = kb(text)
+    return " | ".join(report.errors)
+
+
+def test_misspelled_field_gets_a_suggestion(kb):
+    text = article().replace("situations:", "situation:")
+    assert "Did you mean 'situations'" in _errors(kb, text)
+
+
+def test_ai_cannot_mark_its_own_work_reviewed(kb):
+    errs = _errors(kb, article(status="reviewed", reviewer="ChatGPT"))
+    assert "not in knowledge/reviewers.yaml" in errs
+
+
+def test_checked_sources_not_allowed_in_drafts(kb):
+    errs = _errors(kb, article(sources=[{"title": "S", "publisher": "P", "url": None, "checked": True}]))
+    assert "checked: true in a draft" in errs
+
+
+def test_draft_must_not_fill_in_review(kb):
+    text = article().replace("reviewer: null", "reviewer: Someone")
+    assert "draft must have reviewer" in _errors(kb, text)
+
+
+@pytest.mark.parametrize("junk,expected", [
+    ("Boil it. citeturn0search3", "ChatGPT citation marker"),
+    ("Boil it. 【source】", "citation bracket"),
+    ("Boil it [1].", "numbered citation"),
+    ("As an AI, I suggest boiling.", "chatbot wording"),
+    ("TODO write this", "unfinished template text"),
+])
+def test_chatgpt_artifacts_are_rejected(kb, junk, expected):
+    errs = _errors(kb, article(body=GOOD_BODY.replace("When it applies.", junk)))
+    assert expected in errs and "line(s)" in errs
+
+
+def test_tracking_parameters_in_urls_are_rejected(kb):
+    src = [{"title": "S", "publisher": "P", "url": "https://example.org/x?utm_source=chatgpt.com", "checked": False}]
+    assert "utm_source" in _errors(kb, article(sources=src))
+
+
+@pytest.mark.parametrize("change,expected", [
+    (("## Warnings", "# Warnings"), "only '## ' headings"),
+    (("- Careful.", "| a | b |"), "tables are not supported"),
+    (("- Careful.", "  - Careful."), "nested or indented"),
+    (("- Careful.", "* Careful."), "must start with '- '"),
+    (("- Careful.", "![pic](x.png)"), "images are not supported"),
+    (("2. Then this.", "3. Then this."), "without gaps"),
+    (("## Get help", "## Notes"), "exactly these six headings"),
+])
+def test_body_format_problems_are_caught(kb, change, expected):
+    assert expected in _errors(kb, article(body=GOOD_BODY.replace(*change)))
+
+
+def test_high_risk_needs_two_publishers(kb):  # the fixture has one publisher
+    assert "at least 2 different publishers" in _errors(kb, article(high_risk=True))
+
+
+def test_all_problems_reported_in_one_pass(kb):
+    text = article(id_="test-article", license="MIT", version="1").replace("situations:", "situation:")
+    errs = _errors(kb, text)
+    assert "license" in errs and "version" in errs and "situation" in errs

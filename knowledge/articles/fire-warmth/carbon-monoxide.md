@@ -3,7 +3,7 @@ id: carbon-monoxide
 title: Carbon monoxide poisoning
 category: fire-warmth
 status: draft
-version: 2
+version: 3
 high_risk: true
 license: CC-BY-4.0
 situations:
@@ -16,6 +16,10 @@ diagrams_needed:
 sources:
   - title: Carbon monoxide poisoning prevention
     publisher: Centers for Disease Control and Prevention
+    url: null
+    checked: false
+  - title: Carbon monoxide poisoning
+    publisher: National Health Service (UK)
     url: null
     checked: false
 review:
