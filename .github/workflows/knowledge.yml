@@ -1,0 +1,25 @@
+name: Knowledge base
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt
+      - name: Validate and build
+        run: python -m tools.build_kb
+      - name: Tests
+        run: python -m pytest -q
+      - name: Benchmark
+        run: python -m evaluation.run_benchmark --failures
+      - uses: actions/upload-artifact@v4
+        with:
+          name: knowledge-db
+          path: build/knowledge.db

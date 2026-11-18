@@ -1,0 +1,23 @@
+# Groups of words that mean the same thing to someone in trouble.
+# A query that uses any term in a group also searches for every other term in it.
+# Terms may be several words long. Keep groups tight: a loose group causes wrong matches.
+
+groups:
+  - [hypothermia, shivering, shiver, freezing, frozen, frostbitten, too cold, very cold, hypothermic]
+  - [bleeding, bleed, blood, bloody, hemorrhage, haemorrhage, gushing, spurting]
+  - [cut, wound, gash, laceration, stab, slash]
+  - [burn, burned, burnt, scald, scalded, scorched]
+  - [carbon monoxide, co, fumes, exhaust]
+  - [generator, gas heater, paraffin heater, kerosene heater, camping stove, grill, barbecue]
+  - [power outage, power cut, blackout, outage, no power, no electricity, electricity is out, power is out, lights are out]
+  - [purify, disinfect, sterilize, sterilise, treat water, clean water, safe to drink, drinkable, potable]
+  - [river, stream, creek, lake, pond, rainwater]
+  - [fridge, refrigerator, freezer]
+  - [spoil, spoiled, spoilt, rotten, gone bad, go bad]
+  - [signal, sos, mayday, attract attention]
+  - [rescue, rescuers, search team, helicopter]
+  - [lost, stranded, stuck, missing]
+  - [no signal, no reception, no service, no bars, no coverage]
+  - [warm, warmth, heat, heating]
+  - [dizzy, dizziness, lightheaded, light-headed]
+  - [confused, confusion, disoriented, not making sense]
