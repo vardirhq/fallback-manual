@@ -23,6 +23,8 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 ARTICLES_DIR = ROOT / "knowledge" / "articles"
 SYNONYMS_FILE = ROOT / "knowledge" / "synonyms.yaml"
+STOPWORDS_FILE = ROOT / "knowledge" / "stopwords.txt"
+CATEGORIES_FILE = ROOT / "knowledge" / "categories.yaml"
 DEFAULT_OUT = ROOT / "build" / "knowledge.db"
 
 SCHEMA_VERSION = 1
@@ -163,6 +165,19 @@ def validate(article: Article, report: Report, release: bool) -> None:
         report.warn(p, "draft: not reviewed")
 
 
+def load_categories(path: Path, report: Report) -> list[dict]:
+    cats = (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("categories", [])
+    for i, c in enumerate(cats):
+        if not isinstance(c, dict) or not c.get("id") or not c.get("title"):
+            report.error(path, f"category {i + 1} needs an id and a title")
+    return cats
+
+
+def load_stopwords(path: Path) -> list[str]:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    return sorted({l.strip().lower() for l in lines if l.strip() and not l.startswith("#")})
+
+
 def load_articles(articles_dir: Path, report: Report, release: bool) -> list[Article]:
     articles: list[Article] = []
     seen: dict[str, Path] = {}
@@ -201,13 +216,18 @@ def _plain(markdown: str) -> str:
     return re.sub(r"[*_`#>\[\]()]", " ", markdown)
 
 
+def _opt_str(v) -> str | None:
+    return None if v is None else str(v)
+
+
 def _json_default(o):
     if isinstance(o, (dt.date, dt.datetime)):
         return o.isoformat()
     raise TypeError(type(o))
 
 
-def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, release: bool) -> str:
+def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, release: bool,
+             categories: list[dict] = (), stopwords: list[str] = ()) -> str:
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = out.with_suffix(".tmp")
     tmp.unlink(missing_ok=True)
@@ -226,9 +246,19 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
             body_md TEXT NOT NULL,
             situations TEXT NOT NULL,
             keywords TEXT NOT NULL,
-            sources TEXT NOT NULL,
-            review TEXT NOT NULL,
+            reviewer TEXT,
+            review_date TEXT,
+            review_by TEXT,
             diagrams_needed TEXT NOT NULL
+        );
+        CREATE TABLE sources (
+            article_id TEXT NOT NULL REFERENCES articles(id),
+            position INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            publisher TEXT NOT NULL,
+            url TEXT,
+            checked INTEGER NOT NULL,
+            PRIMARY KEY (article_id, position)
         );
         CREATE VIRTUAL TABLE articles_fts USING fts5(
             id UNINDEXED, title, situations, keywords, body,
@@ -237,21 +267,28 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
         CREATE TABLE synonyms (group_id INTEGER NOT NULL, term TEXT NOT NULL);
         CREATE INDEX synonyms_term ON synonyms(term);
         CREATE TABLE vocab (word TEXT PRIMARY KEY) WITHOUT ROWID;
+        CREATE TABLE stopwords (word TEXT PRIMARY KEY) WITHOUT ROWID;
+        CREATE TABLE categories (id TEXT PRIMARY KEY, title TEXT NOT NULL, position INTEGER NOT NULL);
         """
     )
     digest = hashlib.sha256()
     vocab: set[str] = set()
     for a in sorted(articles, key=lambda a: a.id):
         m = a.meta
+        review = m["review"] or {}
         row = (
             m["id"], m["title"], m["category"], m["status"], m["version"], int(m["high_risk"]),
             m["license"], a.body,
             json.dumps(m["situations"]), json.dumps(m["keywords"]),
-            json.dumps(m["sources"], default=_json_default),
-            json.dumps(m["review"] or {}, default=_json_default),
+            _opt_str(review.get("reviewer")), _opt_str(review.get("date")), _opt_str(review.get("review_by")),
             json.dumps(m.get("diagrams_needed") or []),
         )
-        con.execute("INSERT INTO articles VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", row)
+        con.execute("INSERT INTO articles VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", row)
+        for i, src in enumerate(m["sources"]):
+            con.execute("INSERT INTO sources VALUES (?,?,?,?,?,?)",
+                        (m["id"], i, src["title"], src["publisher"], _opt_str(src.get("url")),
+                         int(bool(src.get("checked")))))
+        digest.update(json.dumps(m["sources"], sort_keys=True, default=_json_default).encode())
         situations, keywords = " . ".join(m["situations"]), " . ".join(m["keywords"])
         body = _plain(a.body)
         con.execute(
@@ -269,6 +306,10 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
             vocab.update(WORD_RE.findall(term))
         digest.update(json.dumps(group).encode())
     con.executemany("INSERT OR IGNORE INTO vocab VALUES (?)", ((w,) for w in sorted(vocab)))
+    con.executemany("INSERT INTO stopwords VALUES (?)", ((w,) for w in stopwords))
+    con.executemany("INSERT INTO categories VALUES (?, ?, ?)",
+                    ((c["id"], c["title"], i) for i, c in enumerate(categories)))
+    digest.update(json.dumps([list(stopwords), list(categories)]).encode())
 
     content_hash = digest.hexdigest()[:16]
     meta = {
@@ -286,12 +327,19 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
 
 
 def build(out: Path = DEFAULT_OUT, release: bool = False, check_only: bool = False,
-          articles_dir: Path = ARTICLES_DIR, synonyms_file: Path = SYNONYMS_FILE) -> Report:
+          articles_dir: Path = ARTICLES_DIR, synonyms_file: Path = SYNONYMS_FILE,
+          categories_file: Path = CATEGORIES_FILE, stopwords_file: Path = STOPWORDS_FILE) -> Report:
     report = Report()
     articles = load_articles(articles_dir, report, release)
     synonyms = load_synonyms(synonyms_file, report)
+    categories = load_categories(categories_file, report)
+    known = {c.get("id") for c in categories if isinstance(c, dict)}
+    for a in articles:
+        if a.meta.get("category") and a.meta["category"] not in known:
+            report.error(a.path, f"category '{a.meta['category']}' is not listed in {_rel(categories_file)}")
+    stopwords = load_stopwords(stopwords_file)
     if not report.errors and not check_only:
-        write_db(articles, synonyms, out, release)
+        write_db(articles, synonyms, out, release, categories, stopwords)
     return report
 
 

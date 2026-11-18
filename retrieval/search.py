@@ -42,18 +42,6 @@ BM25_WEIGHTS = (0.0, 10.0, 6.0, 4.0, 1.0)  # id, title, situations, keywords, bo
 
 WORD_RE = re.compile(r"[^\W_]+", re.UNICODE)
 
-STOP_WORDS = frozenset("""
-a about after again all am an and any are as at be been being but by can cannot could
-did do does doing don't done for from get getting got had has have having he her here hers
-him his how i i'm if in into is it it's its just keep let like me might more most much
-must my myself need needs no not now of on once only or other our out over own please
-really right should so some someone somebody something still such than that the their them
-then there these they thing things this those through to too under until up us very was
-way we were what when where which while who why will with without would you your yours
-anyone everyone person people guy man woman friend tell know want try trying use using
-best good safe safely way ways quick quickly fast possible help
-bad badly heavily lot lots terribly ok okay urgent urgently emergency hey hi
-""".split())
 
 
 @dataclass
@@ -111,6 +99,7 @@ class Searcher:
     def __init__(self, db_path: Path | str = DEFAULT_DB, threshold: float = DEFAULT_THRESHOLD):
         self.con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
         self.threshold = threshold
+        self.stop_words = frozenset(w for (w,) in self.con.execute("SELECT word FROM stopwords"))
         self.vocab = {w for (w,) in self.con.execute("SELECT word FROM vocab")}
         groups: dict[int, list[str]] = {}
         for gid, term in self.con.execute("SELECT group_id, term FROM synonyms ORDER BY rowid"):
@@ -126,11 +115,11 @@ class Searcher:
     # -- query understanding -------------------------------------------------
 
     def _correct(self, word: str) -> str | None:
-        if word in self.vocab or word in STOP_WORDS or len(word) < 5 or word.isdigit():
+        if word in self.vocab or word in self.stop_words or len(word) < 5 or word.isdigit():
             return None
         limit = 1 if len(word) < 8 else 2
         best, best_d = None, limit + 1
-        for v in self.vocab | STOP_WORDS:
+        for v in self.vocab | self.stop_words:
             if v[0] != word[0]:
                 continue
             d = _edit_distance(word, v, limit)
@@ -163,7 +152,7 @@ class Searcher:
                     break
             else:
                 w = fixed[i]
-                if w not in STOP_WORDS and not w.isdigit() and len(w) > 1:
+                if w not in self.stop_words and not w.isdigit() and len(w) > 1:
                     out.append(Concept(w, [w]))
                 i += 1
         # merge concepts that came from the same synonym group ("bleeding blood")
