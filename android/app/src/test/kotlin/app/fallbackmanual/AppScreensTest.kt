@@ -50,7 +50,7 @@ class AppScreensTest {
         rule.onNodeWithText("Development build").assertExists()
         rule.onNodeWithText("Severe bleeding").assertExists()
         shot("01-home")
-        rule.onNode(hasScrollAction()).performScrollToNode(hasText("Navigation and signaling"))
+        rule.onNode(hasScrollAction()).performScrollToNode(hasText("Navigation and signalling"))
         shot("02-home-manual")
     }
 
