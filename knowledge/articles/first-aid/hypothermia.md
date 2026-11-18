@@ -3,7 +3,7 @@ id: hypothermia
 title: Hypothermia
 category: first-aid
 status: draft
-version: 2
+version: 3
 high_risk: true
 license: CC-BY-4.0
 situations:
@@ -47,7 +47,7 @@ Use this when someone has been cold for a while and shows signs such as shiverin
 2. Handle them gently. Rough movement can trigger dangerous heart rhythms in severe cases.
 3. Remove wet clothing and replace it with dry layers.
 4. Insulate them from the ground and wrap them in blankets, including the head and neck.
-5. Warm the centre of the body first: chest, neck, head and groin. Skin-to-skin contact under blankets works.
+5. Warm the center of the body first: chest, neck, head and groin. Skin-to-skin contact under blankets works.
 6. If they are fully awake and can swallow, give warm, sweet drinks and some food.
 7. Stay with them and keep them lying down and wrapped until they are warm and alert.
 8. If they stop breathing normally, [start CPR](article:cpr).

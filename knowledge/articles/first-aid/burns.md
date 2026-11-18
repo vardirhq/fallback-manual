@@ -3,7 +3,7 @@ id: burns
 title: Burns and scalds
 category: first-aid
 status: draft
-version: 1
+version: 2
 high_risk: true
 license: CC-BY-4.0
 situations:
@@ -37,7 +37,7 @@ Use this for burns from flames, hot surfaces, hot liquids or steam. For chemical
 ## What you need
 
 - Cool, clean running water, or the cleanest cool water you have
-- Cling film, a clean plastic bag, or a clean non-fluffy cloth
+- Plastic wrap, a clean plastic bag, or a clean non-fluffy cloth
 
 ## Steps
 
@@ -45,7 +45,7 @@ Use this for burns from flames, hot surfaces, hot liquids or steam. For chemical
 2. Cool the burn under cool running water for 20 minutes. Start as soon as possible.
 3. While cooling, remove rings, watches and clothing near the burn, unless they are stuck to the skin.
 4. Keep the rest of the person warm so they do not get cold while you cool the burn.
-5. After cooling, cover the burn loosely with cling film laid on in strips, or a clean plastic bag or non-fluffy cloth.
+5. After cooling, cover the burn loosely with plastic wrap laid on in strips, or a clean plastic bag or non-fluffy cloth.
 6. Give pain relief if available and the person can normally take it.
 
 ## Warnings
@@ -58,7 +58,7 @@ Use this for burns from flames, hot surfaces, hot liquids or steam. For chemical
 ## Common mistakes
 
 - Cooling for only a minute or two.
-- Wrapping cling film tightly around a limb; lay it on loosely, as the area will swell.
+- Wrapping plastic wrap tightly around a limb; lay it on loosely, as the area will swell.
 - Using fluffy cotton wool, which sticks to the burn.
 
 ## Get help

@@ -125,24 +125,30 @@ LIST_SECTIONS = {"What you need", "Warnings", "Common mistakes"}
 STEP_WORDS_WARN = 20   # aim for this or fewer
 STEP_WORDS_MAX = 25    # longer steps are rejected: one action per step
 
-# Articles use British spelling. American -> British. Only titles and article text are checked;
-# keywords and situations may use any spelling, because people type both.
-US_TO_UK = {
-    "color": "colour", "colors": "colours", "colored": "coloured", "colorless": "colourless",
-    "center": "centre", "centers": "centres", "centered": "centred",
-    "liter": "litre", "liters": "litres", "milliliter": "millilitre", "milliliters": "millilitres",
-    "diarrhea": "diarrhoea", "hemorrhage": "haemorrhage", "anemia": "anaemia", "edema": "oedema",
-    "pediatric": "paediatric", "esophagus": "oesophagus", "anesthetic": "anaesthetic", "fetus": "foetus",
-    "recognize": "recognise", "recognized": "recognised", "recognizes": "recognises", "recognizing": "recognising",
-    "realize": "realise", "realized": "realised", "organize": "organise", "organized": "organised",
-    "minimize": "minimise", "maximize": "maximise", "sterilize": "sterilise", "sterilized": "sterilised",
-    "immobilize": "immobilise", "immobilized": "immobilised", "stabilize": "stabilise",
-    "gray": "grey", "fiber": "fibre", "behavior": "behaviour", "favor": "favour", "odor": "odour",
-    "signaling": "signalling", "signaled": "signalled", "traveling": "travelling", "traveled": "travelled",
-    "labeled": "labelled", "canceled": "cancelled", "fueled": "fuelled", "aluminum": "aluminium",
-    "mold": "mould", "moldy": "mouldy", "jewelry": "jewellery", "pajamas": "pyjamas", "defense": "defence",
+# Articles use American English. British -> American, for spelling and a few everyday words.
+# Only titles and article text are checked; keywords and situations may use any spelling,
+# because people type both.
+UK_TO_US = {
+    "colour": "color", "colours": "colors", "coloured": "colored", "colourful": "colorful", "colourless": "colorless",
+    "centre": "center", "centres": "centers", "centred": "centered",
+    "litre": "liter", "litres": "liters", "millilitre": "milliliter", "millilitres": "milliliters",
+    "metre": "meter", "metres": "meters", "centimetre": "centimeter", "centimetres": "centimeters",
+    "diarrhoea": "diarrhea", "haemorrhage": "hemorrhage", "anaemia": "anemia", "oedema": "edema",
+    "paediatric": "pediatric", "oesophagus": "esophagus", "anaesthetic": "anesthetic", "foetus": "fetus",
+    "recognise": "recognize", "recognised": "recognized", "recognises": "recognizes", "recognising": "recognizing",
+    "realise": "realize", "realised": "realized", "organise": "organize", "organised": "organized",
+    "minimise": "minimize", "maximise": "maximize", "sterilise": "sterilize", "sterilised": "sterilized",
+    "immobilise": "immobilize", "immobilised": "immobilized", "stabilise": "stabilize",
+    "grey": "gray", "fibre": "fiber", "behaviour": "behavior", "favour": "favor", "odour": "odor",
+    "signalling": "signaling", "signalled": "signaled", "travelling": "traveling", "travelled": "traveled",
+    "labelled": "labeled", "cancelled": "canceled", "fuelled": "fueled", "aluminium": "aluminum",
+    "mould": "mold", "mouldy": "moldy", "jewellery": "jewelry", "pyjamas": "pajamas", "defence": "defense",
+    "tyre": "tire", "tyres": "tires", "programme": "program", "whilst": "while", "amongst": "among",
+    # everyday words
+    "nappy": "diaper", "nappies": "diapers", "cling film": "plastic wrap", "paraffin": "kerosene",
+    "cooker": "stove", "petrol": "gasoline", "fizzy drink": "soda", "fizzy drinks": "sodas",
 }
-US_RE = re.compile(r"\b(" + "|".join(sorted(US_TO_UK, key=len, reverse=True)) + r")\b", re.I)
+UK_RE = re.compile(r"\b(" + "|".join(re.escape(k) for k in sorted(UK_TO_US, key=len, reverse=True)) + r")\b", re.I)
 
 # Titles name the problem ("Dehydration", "Burns and scalds"), not the activity of reading about it.
 BAD_TITLE_RE = re.compile(r"^(how to|how do|guide|a guide|understanding|recogni[sz]ing|identifying|responding|"
@@ -304,11 +310,11 @@ def validate(article: Article, report: Report, release: bool) -> None:
 
 
 def _check_spelling(p: Path, report: Report, where: str, text: str) -> None:
-    for m in US_RE.finditer(text):
+    for m in UK_RE.finditer(text):
         word = m.group(1)
-        uk = US_TO_UK[word.lower()]
-        uk = uk.capitalize() if word[0].isupper() else uk
-        report.error(p, f"{where}: '{word}' is American spelling. Fix: write '{uk}' (articles use British spelling).")
+        us = UK_TO_US[word.lower()]
+        us = us[0].upper() + us[1:] if word[0].isupper() else us
+        report.error(p, f"{where}: '{word}' is British English. Fix: write '{us}' (articles use American English).")
 
 
 def validate_body(article: Article, report: Report) -> None:

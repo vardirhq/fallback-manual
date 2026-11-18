@@ -3,7 +3,7 @@ id: boiling-water
 title: Making water safe by boiling
 category: water
 status: draft
-version: 2
+version: 3
 high_risk: false
 license: CC-BY-4.0
 situations:
@@ -62,4 +62,4 @@ Use this when you have to drink water that may contain germs: from rivers, lakes
 
 ## Get help
 
-If people get severe diarrhoea, vomiting or fever after drinking water, keep them drinking safe fluids and get medical help, especially for children and older people.
+If people get severe diarrhea, vomiting or fever after drinking water, keep them drinking safe fluids and get medical help, especially for children and older people.

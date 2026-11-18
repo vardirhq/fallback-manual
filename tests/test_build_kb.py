@@ -211,11 +211,13 @@ def test_titles_must_name_the_problem(kb):
     assert "name the problem itself" in errs
 
 
-def test_american_spelling_is_rejected_in_text_but_allowed_in_keywords(kb):
-    errs = _errors(kb, article(body=GOOD_BODY.replace("When it applies.", "Check the color of the skin.")))
-    assert "'color' is American spelling" in errs and "'colour'" in errs
-    report, _ = kb(article(keywords=["diarrhea", "test", "example"]))
-    assert not any("American" in e for e in report.errors)
+def test_british_english_is_rejected_in_text_but_allowed_in_keywords(kb):
+    errs = _errors(kb, article(body=GOOD_BODY.replace("When it applies.", "Check the colour of the skin.")))
+    assert "'colour' is British English" in errs and "'color'" in errs
+    errs = _errors(kb, article(body=GOOD_BODY.replace("When it applies.", "Cover it with cling film.")))
+    assert "'plastic wrap'" in errs
+    report, _ = kb(article(keywords=["diarrhoea", "nappies", "example"]))
+    assert not any("British" in e for e in report.errors)
 
 
 def test_long_steps_are_rejected_and_medium_ones_warned(kb):

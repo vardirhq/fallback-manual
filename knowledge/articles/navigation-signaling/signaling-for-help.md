@@ -1,9 +1,9 @@
 ---
 id: signaling-for-help
-title: Signalling for help
+title: Signaling for help
 category: navigation-signaling
 status: draft
-version: 2
+version: 3
 high_risk: false
 license: CC-BY-4.0
 situations:
@@ -31,7 +31,7 @@ Use this when you are lost, stranded or injured and need rescuers to find you, e
 
 ## What you need
 
-- A whistle, mirror, bright cloth, or anything shiny or colourful
+- A whistle, mirror, bright cloth, or anything shiny or colorful
 - Materials for a fire, if safe
 - Your phone, even without signal
 
@@ -44,7 +44,7 @@ Use this when you are lost, stranded or injured and need rescuers to find you, e
 5. Save battery: turn on low-power mode, and turn the phone off between attempts.
 6. Use signals in threes, the international sign for distress: three whistle blasts, three fires in a triangle, three flashes of light.
 7. Make a large ground signal in an open area, such as SOS or a big X.
-8. Use rocks, branches or bright cloth that contrasts with the ground. Make each letter several metres long.
+8. Use rocks, branches or bright cloth that contrasts with the ground. Make each letter several meters long.
 9. In daylight, flash sunlight at aircraft or searchers with a mirror or any shiny object.
 10. If you light a signal fire, add green leaves in daytime for white smoke; keep it bright at night.
 

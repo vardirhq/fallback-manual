@@ -3,7 +3,7 @@ id: carbon-monoxide
 title: Carbon monoxide poisoning
 category: fire-warmth
 status: draft
-version: 3
+version: 4
 high_risk: true
 license: CC-BY-4.0
 situations:
@@ -30,7 +30,7 @@ review:
 
 ## When to use
 
-Use this when anyone is burning fuel indoors or nearby (generators, grills, camping stoves, gas or paraffin heaters, cars in garages) and especially when people develop headaches, dizziness, weakness, nausea, vomiting, chest pain or confusion. Carbon monoxide has no smell or colour.
+Use this when anyone is burning fuel indoors or nearby (generators, grills, camping stoves, gas or kerosene heaters, cars in garages) and especially when people develop headaches, dizziness, weakness, nausea, vomiting, chest pain or confusion. Carbon monoxide has no smell or color.
 
 ## What you need
 
@@ -50,7 +50,7 @@ Use this when anyone is burning fuel indoors or nearby (generators, grills, camp
 
 - Never use generators, charcoal or gas grills, or camping stoves inside a home, garage, basement, tent or covered porch, even with doors or windows open.
 - Place generators outdoors at least 6 m (20 ft) away from doors, windows and vents.
-- Never use a gas oven or cooker to heat a home.
+- Never use a gas oven or stove to heat a home.
 - Never run a car in a closed garage.
 
 ## Common mistakes

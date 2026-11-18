@@ -3,7 +3,7 @@ id: cpr
 title: CPR (adults)
 category: first-aid
 status: draft
-version: 2
+version: 3
 high_risk: true
 license: CC-BY-4.0
 situations:
@@ -48,7 +48,7 @@ This article is for adults. Children and babies need a different technique (arti
 3. Tilt their head back gently and lift the chin. Look, listen and feel for normal breathing for no more than 10 seconds.
 4. If they are not breathing normally, call emergency services. Put the phone on speaker so your hands are free.
 5. Send someone to find an AED if possible.
-6. Kneel beside them. Put the heel of one hand on the centre of the chest, on the lower half of the breastbone.
+6. Kneel beside them. Put the heel of one hand on the center of the chest, on the lower half of the breastbone.
 7. Put your other hand on top and lock your fingers together.
 8. Keep your arms straight with your shoulders directly above your hands.
 9. Push straight down 5–6 cm (about 2 inches), then let the chest come all the way back up.
