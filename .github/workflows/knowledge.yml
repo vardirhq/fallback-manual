@@ -13,10 +13,10 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements-dev.txt
-      - name: Validate and build
-        run: python -m tools.build_kb
-      - name: Tests
-        run: python -m pytest -q
+      - name: Check articles, search and tests
+        run: python -m tools.check
+      - name: Build database
+        run: python -m tools.build_kb --quiet
       - name: Benchmark
         run: python -m evaluation.run_benchmark --failures
       - uses: actions/upload-artifact@v4

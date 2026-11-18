@@ -8,6 +8,7 @@ An open-source, fully offline emergency and survival reference for Android. A cu
 
 - [Project proposal (Revision 2)](docs/PROPOSAL.md)
 - [Article format and content status](knowledge/README.md)
+- [Adding or editing articles (for people and AI agents)](AGENTS.md)
 
 <p>
   <img src="docs/screenshots/01-home.png" width="200" alt="Home screen">
@@ -38,6 +39,8 @@ Requires Python 3.11+.
 ```sh
 pip install -r requirements-dev.txt
 
+python -m tools.check                         # run every check; prints PASS or what to fix
+python -m tools.new_article --list            # categories and existing articles
 python -m tools.build_kb                      # build build/knowledge.db (drafts allowed)
 python -m tools.build_kb --release            # fails unless every article is reviewed
 

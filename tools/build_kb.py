@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import difflib
 import hashlib
 import json
 import re
@@ -25,6 +26,14 @@ ARTICLES_DIR = ROOT / "knowledge" / "articles"
 SYNONYMS_FILE = ROOT / "knowledge" / "synonyms.yaml"
 STOPWORDS_FILE = ROOT / "knowledge" / "stopwords.txt"
 CATEGORIES_FILE = ROOT / "knowledge" / "categories.yaml"
+REVIEWERS_FILE = ROOT / "knowledge" / "reviewers.yaml"
+
+
+def approved_reviewers() -> set[str]:
+    if not REVIEWERS_FILE.exists():
+        return set()
+    data = yaml.safe_load(REVIEWERS_FILE.read_text(encoding="utf-8")) or {}
+    return {str(r["name"]).strip() for r in data.get("reviewers") or [] if isinstance(r, dict) and r.get("name")}
 DEFAULT_OUT = ROOT / "build" / "knowledge.db"
 
 SCHEMA_VERSION = 1
@@ -108,65 +117,231 @@ def _is_date(value) -> bool:
         return False
 
 
+ALLOWED_FIELDS = REQUIRED_FIELDS + ["diagrams_needed"]
+SOURCE_FIELDS = {"title", "publisher", "url", "checked"}
+REVIEW_FIELDS = {"reviewer", "date", "review_by"}
+LICENSES = {"CC-BY-4.0"}
+LIST_SECTIONS = {"What you need", "Warnings", "Common mistakes"}
+
+# Things language models leave behind when copying research output, with how to fix each.
+# None of them belong in an article.
+AI_ARTIFACTS = [
+    (re.compile(r"\ue200|\ue201|\ue202|cite(turn|\u2216)|turn\d+(search|view|news|fetch)\d+"),
+     "a ChatGPT citation marker", "delete it. Sources belong only in the 'sources' list in the header"),
+    (re.compile(r"[\u3010\u3011]"), "a citation bracket like \u3010 \u3011",
+     "delete it. Sources belong only in the 'sources' list in the header"),
+    (re.compile(r"oaicite|contentReference"), "a ChatGPT citation marker",
+     "delete it. Sources belong only in the 'sources' list in the header"),
+    (re.compile(r"utm_source="), "a tracking parameter (utm_source=...)",
+     "remove '?utm_source=...' (and anything after it) from the address"),
+    (re.compile(r"\[\^?\d+\]"), "a numbered citation like [1] or [^1]",
+     "delete it. Sources belong only in the 'sources' list in the header"),
+    (re.compile(r"\bas an ai\b|\blanguage model\b|\bI cannot\b|\bI can't\b", re.I), "chatbot wording",
+     "rewrite the sentence as a plain instruction"),
+    (re.compile(r"\bTODO\b|\bTBD\b|\bFIXME\b|lorem ipsum|\bXXX\b", re.I), "unfinished template text (TODO)",
+     "replace the whole TODO text with real content"),
+]
+
+
+def check_file_text(p: Path, report: Report) -> None:
+    """Scans the whole file, so every problem can be reported with its line number."""
+    lines = p.read_text(encoding="utf-8").splitlines()
+    for rx, what, fix in AI_ARTIFACTS:
+        hits = [n for n, line in enumerate(lines, 1) if rx.search(line)]
+        if hits:
+            shown = ", ".join(map(str, hits[:15])) + (" ..." if len(hits) > 15 else "")
+            report.error(p, f"{what} on line(s) {shown}. Fix: {fix}.")
+
+
+def _is_str_list(v, min_len: int) -> bool:
+    return isinstance(v, list) and len(v) >= min_len and all(isinstance(x, str) and x.strip() for x in v)
+
+
 def validate(article: Article, report: Report, release: bool) -> None:
+    """Checks one article. Every message says what is wrong and how to fix it."""
     p, meta = article.path, article.meta
-
+    # --- header fields ------------------------------------------------------
+    # Every check runs even when others fail, so all problems are reported in one pass.
+    if p.name != p.name.lower() or not p.name.endswith(".md"):
+        report.error(p, "file name must be lowercase and end in .md. Fix: rename the file, e.g. water-filtration.md.")
+    for f in meta:
+        if f not in ALLOWED_FIELDS:
+            close = difflib.get_close_matches(str(f), ALLOWED_FIELDS, n=1)
+            hint = f"Did you mean '{close[0]}'? " if close else ""
+            report.error(p, f"unknown header field '{f}'. {hint}Fix: rename or remove it. "
+                            f"Allowed fields: {', '.join(ALLOWED_FIELDS)}.")
     for f in REQUIRED_FIELDS:
-        if f not in meta:
-            report.error(p, f"missing field '{f}'")
-    if report.errors and any(e.startswith(_rel(p)) for e in report.errors):
-        return
+        if f not in meta and not difflib.get_close_matches(f, [str(k) for k in meta if k not in ALLOWED_FIELDS], n=1):
+            report.error(p, f"missing header field '{f}'. Fix: copy it from knowledge/article-template.md.")
+    has = meta.__contains__
 
-    if not ID_RE.match(str(meta["id"])):
-        report.error(p, f"id '{meta['id']}' must be lowercase words joined by hyphens")
-    if meta["id"] != p.stem:
-        report.error(p, f"id '{meta['id']}' does not match file name '{p.stem}'")
-    if meta["category"] != p.parent.name:
-        report.error(p, f"category '{meta['category']}' does not match folder '{p.parent.name}'")
-    if meta["status"] not in STATUSES:
-        report.error(p, f"status must be one of {sorted(STATUSES)}")
-    if not isinstance(meta["version"], int) or meta["version"] < 1:
-        report.error(p, "version must be a positive integer")
-    if not isinstance(meta["high_risk"], bool):
-        report.error(p, "high_risk must be true or false")
-    if not meta["license"]:
-        report.error(p, "license is empty")
-    for f in ("situations", "keywords"):
-        if not isinstance(meta[f], list) or not meta[f]:
-            report.error(p, f"{f} must be a non-empty list")
+    if has("id"):
+        if not ID_RE.match(str(meta["id"])):
+            report.error(p, f"id '{meta['id']}' is invalid. Fix: use lowercase words joined by hyphens, e.g. water-filtration.")
+        elif meta["id"] != p.stem:
+            report.error(p, f"id '{meta['id']}' does not match the file name '{p.name}'. Fix: make them identical "
+                            f"(id: {p.stem}).")
+    if not ID_RE.match(p.stem):
+        report.error(p, f"file name '{p.name}' is invalid. Fix: use lowercase words joined by hyphens, e.g. water-filtration.md.")
+    if has("title"):
+        title = meta["title"]
+        if not isinstance(title, str) or not title.strip():
+            report.error(p, "title is empty. Fix: give a short title, e.g. 'Filtering water'.")
+        elif len(title) > 60 or title.rstrip().endswith("."):
+            report.error(p, "title must be at most 60 characters and must not end with a full stop.")
+    if has("category") and meta["category"] != p.parent.name:
+        report.error(p, f"category '{meta['category']}' does not match the folder '{p.parent.name}'. "
+                        f"Fix: set category: {p.parent.name}, or move the file to the right folder.")
+    if has("status") and meta["status"] not in STATUSES:
+        report.error(p, "status must be 'draft' or 'reviewed'. Fix: new articles always use status: draft.")
+    if has("version") and (isinstance(meta["version"], bool) or not isinstance(meta["version"], int) or meta["version"] < 1):
+        report.error(p, "version must be a whole number of 1 or more, without quotes. Fix: version: 1 for a new article.")
+    if has("high_risk") and not isinstance(meta["high_risk"], bool):
+        report.error(p, "high_risk must be true or false (without quotes).")
+    if has("license") and meta["license"] not in LICENSES:
+        report.error(p, f"license must be one of {sorted(LICENSES)}. Fix: license: CC-BY-4.0")
+    if has("situations") and not _is_str_list(meta["situations"], 2):
+        report.error(p, "situations must list at least 2 sentences describing the problem in everyday words.")
+    if has("keywords"):
+        if not _is_str_list(meta["keywords"], 3):
+            report.error(p, "keywords must list at least 3 words or short phrases, e.g. [water, filter, cloth].")
+        elif any(k != k.lower() for k in meta["keywords"]) and not any("TODO" in k for k in meta["keywords"]):
+            report.error(p, "keywords must be lowercase. Fix: write e.g. 'cpr', not 'CPR'.")
+    if "diagrams_needed" in meta and meta["diagrams_needed"] not in (None, []) and not _is_str_list(meta["diagrams_needed"], 1):
+        report.error(p, "diagrams_needed must be a list of short descriptions, or be left out.")
 
-    sources = meta["sources"]
-    if not isinstance(sources, list) or not sources:
-        report.error(p, "at least one source is required")
-    else:
-        for i, s in enumerate(sources):
-            if not isinstance(s, dict) or not s.get("title") or not s.get("publisher"):
-                report.error(p, f"source {i + 1} needs a title and a publisher")
-            elif not s.get("checked"):
-                report.warn(p, f"source '{s['title']}' has not been checked against the original")
+    # --- sources ------------------------------------------------------------
+    sources = meta.get("sources")
+    if has("sources") and (not isinstance(sources, list) or not sources):
+        report.error(p, "at least one source is required. Fix: add the official page(s) you used under 'sources'.")
+    if not isinstance(sources, list):
+        sources = []
+    for i, s in enumerate(sources, 1):
+        if not isinstance(s, dict):
+            report.error(p, f"source {i} must have title, publisher, url and checked on separate lines.")
+            continue
+        for k in s:
+            if k not in SOURCE_FIELDS:
+                report.error(p, f"source {i} has unknown field '{k}'. Allowed: title, publisher, url, checked.")
+        if not isinstance(s.get("title"), str) or not s["title"].strip():
+            report.error(p, f"source {i} needs a title (the page or document title).")
+        if not isinstance(s.get("publisher"), str) or not s["publisher"].strip():
+            report.error(p, f"source {i} needs a publisher (the organisation, e.g. World Health Organization).")
+        url = s.get("url")
+        if url is None:
+            report.warn(p, f"source {i} has no url; reviewers need one to check it.")
+        elif not isinstance(url, str) or not url.startswith("https://") or " " in url:
+            if isinstance(url, str) and "TODO" in url:
+                continue
+            report.error(p, f"source {i} url must be a full https:// address, or null.")
+        if not isinstance(s.get("checked"), bool):
+            report.error(p, f"source {i} needs checked: false (only a human reviewer sets it to true).")
+        elif s["checked"] and meta.get("status") != "reviewed":
+            report.error(p, f"source {i} has checked: true in a draft. Fix: set checked: false. Only a human "
+                            "reviewer marks sources as checked, when they review the article.")
+        elif not s["checked"]:
+            report.warn(p, f"source '{s.get('title')}' has not been checked against the original")
+    if meta.get("high_risk") is True and len({s.get("publisher") for s in sources if isinstance(s, dict)}) < 2:
+        report.error(p, "high_risk articles need sources from at least 2 different publishers. "
+                        "Fix: add a second official source that says the same thing.")
 
-    for name in REQUIRED_SECTIONS:
-        if name not in article.sections:
-            report.error(p, f"missing section '## {name}'")
-        elif not article.sections[name]:
-            report.error(p, f"section '## {name}' is empty")
-    steps = article.sections.get("Steps", "")
-    if steps and not re.search(r"^\s*1\.\s", steps, re.MULTILINE):
-        report.error(p, "'## Steps' must be a numbered list")
-
-    review = meta["review"] or {}
-    if meta["status"] == "reviewed":
+    # --- review ---------------------------------------------------------------
+    review = meta.get("review") if isinstance(meta.get("review"), dict) else None
+    if has("review") and (review is None or any(k not in REVIEW_FIELDS for k in review)):
+        report.error(p, "review must contain exactly reviewer, date and review_by. Fix: copy the block from the template.")
+        review = {}
+    if meta.get("status") == "reviewed":
         if not review.get("reviewer"):
-            report.error(p, "reviewed article must name a reviewer")
+            report.error(p, "a reviewed article must name its reviewer.")
+        elif str(review["reviewer"]).strip() not in approved_reviewers():
+            report.error(p, f"reviewer '{review['reviewer']}' is not in knowledge/reviewers.yaml. Fix: if you are an AI "
+                            "or did not get a human expert's approval, set status: draft and set reviewer, date and "
+                            "review_by to null. Only the project owner adds reviewers.")
         for f in ("date", "review_by"):
             if not _is_date(review.get(f)):
-                report.error(p, f"reviewed article needs review.{f} as YYYY-MM-DD")
+                report.error(p, f"a reviewed article needs review.{f} as YYYY-MM-DD.")
         if _is_date(review.get("review_by")) and str(review["review_by"]) < dt.date.today().isoformat():
             report.warn(p, f"review is overdue (review_by {review['review_by']})")
-    elif release:
-        report.error(p, "draft article cannot be included in a release build")
     else:
-        report.warn(p, "draft: not reviewed")
+        if any(review.get(f) is not None for f in REVIEW_FIELDS):
+            report.error(p, "a draft must have reviewer, date and review_by set to null. "
+                            "Only a human reviewer fills these in, together with status: reviewed.")
+        if release:
+            report.error(p, "draft article cannot be included in a release build")
+        else:
+            report.warn(p, "draft: not reviewed")
+
+    # --- body -----------------------------------------------------------------
+    validate_body(article, report)
+
+
+def validate_body(article: Article, report: Report) -> None:
+    p, body = article.path, article.body
+    file_lines = p.read_text(encoding="utf-8").splitlines()
+    # The body starts after the second '---' line; report positions as real file line numbers.
+    dashes = [i for i, l in enumerate(file_lines) if l.strip() == "---"]
+    first_body = dashes[1] + 1 if len(dashes) > 1 else 0
+    headings = []
+    for n in range(first_body, len(file_lines)):
+        line = file_lines[n]
+        where = f"line {n + 1}"
+        stripped = line.strip()
+        if line.startswith("#"):
+            if line.startswith("## ") and not line.startswith("### "):
+                headings.append(line[3:].strip())
+            else:
+                report.error(p, f"{where}: only '## ' headings are allowed ('{stripped[:40]}'). "
+                                "Fix: the title goes in the header; use only the six ## section headings.")
+        elif stripped.startswith("```"):
+            report.error(p, f"{where}: code blocks are not supported. Fix: write plain text.")
+        elif stripped.startswith("|"):
+            report.error(p, f"{where}: tables are not supported. Fix: use a bullet list instead.")
+        elif "![" in line:
+            report.error(p, f"{where}: images are not supported yet. Fix: remove it and describe the picture "
+                            "under diagrams_needed in the header.")
+        elif re.match(r"^\s+([-*+]|\d+\.)\s", line):
+            report.error(p, f"{where}: nested or indented list items are not supported. "
+                            "Fix: start every list item at the beginning of the line.")
+        elif re.match(r"^([*+\u2022])\s", stripped):
+            report.error(p, f"{where}: bullet items must start with '- '. Fix: replace '{stripped[0]}' with '-'.")
+        elif re.search(r"<[a-zA-Z/][^>]*>", line):
+            report.error(p, f"{where}: HTML is not supported. Fix: write plain text.")
+    check_file_text(p, report)
+
+    if headings != REQUIRED_SECTIONS:
+        report.error(p, "the body must have exactly these six headings, in this order: "
+                        + ", ".join(f"'## {h}'" for h in REQUIRED_SECTIONS)
+                        + f". Found: {', '.join(repr(h) for h in headings) or 'none'}.")
+        return
+    first = body.splitlines()[0].strip() if body else ""
+    if first != "## When to use":
+        report.error(p, "the body must start with '## When to use' right after the header.")
+
+    for name in REQUIRED_SECTIONS:
+        text = article.sections.get(name, "")
+        if not text:
+            report.error(p, f"section '## {name}' is empty.")
+            continue
+        lines = [l for l in text.splitlines() if l.strip()]
+        if name == "Steps":
+            nums = []
+            for l in lines:
+                m = re.match(r"^(\d+)\.\s+\S", l)
+                if not m:
+                    report.error(p, f"'## Steps' may only contain numbered steps ('1. Do this.'). "
+                                    f"Found: '{l.strip()[:50]}'. Fix: make it a step or move it to another section.")
+                    break
+                nums.append(int(m.group(1)))
+            else:
+                if len(nums) < 2:
+                    report.error(p, "'## Steps' needs at least 2 numbered steps.")
+                elif nums != list(range(1, len(nums) + 1)):
+                    report.error(p, f"steps must be numbered 1, 2, 3, ... without gaps. Found: {nums}.")
+        elif name in LIST_SECTIONS:
+            bad = [l for l in lines if not l.startswith("- ")]
+            if bad:
+                report.error(p, f"'## {name}' may only contain bullet items starting with '- '. "
+                                f"Found: '{bad[0].strip()[:50]}'.")
 
 
 def load_categories(path: Path, report: Report) -> list[dict]:
@@ -189,12 +364,13 @@ def load_articles(articles_dir: Path, report: Report, release: bool) -> list[Art
         try:
             meta, body = parse_article(path)
         except (ValueError, yaml.YAMLError) as e:
-            report.error(path, str(e))
+            report.error(path, f"the header could not be read: {e}. Fix: the file must start with a line '---', "
+                               "then the header, then '---'. Put any value containing ':' in double quotes.")
             continue
         art = Article(path, meta, body, split_sections(body))
         validate(art, report, release)
         aid = meta.get("id")
-        if aid in seen:
+        if isinstance(aid, str) and aid in seen:
             report.error(path, f"duplicate id '{aid}' (also in {_rel(seen[aid])})")
         elif aid:
             seen[aid] = path
@@ -202,6 +378,12 @@ def load_articles(articles_dir: Path, report: Report, release: bool) -> list[Art
     if not articles:
         report.error(articles_dir, "no articles found")
     check_links(articles, report)
+    titles: dict[str, Path] = {}
+    for a in articles:
+        t = str(a.meta.get("title", "")).strip().lower()
+        if t and t in titles:
+            report.error(a.path, f"title '{a.meta['title']}' is already used by {_rel(titles[t])}. Fix: choose a different title.")
+        titles.setdefault(t, a.path)
     return articles
 
 

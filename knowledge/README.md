@@ -1,5 +1,7 @@
 # Knowledge base
 
+**Adding or editing articles? Follow [AGENTS.md](../AGENTS.md) step by step** (it is written for AI agents, but it's the clearest guide for people too). Run `python -m tools.check` when you're done.
+
 Articles live in `articles/<category>/<id>.md`. Each file is Markdown with a YAML front matter block. `tools/build_kb.py` checks every article and compiles them into `build/knowledge.db`, the SQLite file the app ships.
 
 ## Status of the current content
