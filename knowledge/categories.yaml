@@ -1,0 +1,12 @@
+# Categories in the order the app shows them. Article folders must use one of these ids.
+categories:
+  - {id: first-aid, title: First aid}
+  - {id: water, title: Water}
+  - {id: fire-warmth, title: Fire and warmth}
+  - {id: shelter, title: Shelter}
+  - {id: food, title: Food}
+  - {id: navigation-signaling, title: Navigation and signaling}
+  - {id: electricity, title: Electricity}
+  - {id: sanitation, title: Sanitation}
+  - {id: repairs, title: Repairs}
+  - {id: preparedness, title: Preparedness}

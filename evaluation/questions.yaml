@@ -1,0 +1,88 @@
+# Retrieval benchmark.
+#
+# expect: the article ids that count as a correct answer. Empty list = the library has no
+#         article for this, and the correct behaviour is to say "no match".
+# set:    dev      = may be used to tune search, synonyms and thresholds
+#         heldout  = never tune against these; they measure how well tuning generalises
+#
+# Caveat: these were written by the same author as the articles. The proposal calls for
+# questions written by people who have not seen the articles; replace or extend these
+# with such questions as soon as possible.
+
+questions:
+  # --- severe-bleeding ---
+  - {set: dev, q: "my friend cut his leg and it won't stop bleeding", expect: [severe-bleeding]}
+  - {set: dev, q: "blood is spurting out of his arm", expect: [severe-bleeding]}
+  - {set: dev, q: "how to make a tourniquet", expect: [severe-bleeding]}
+  - {set: heldout, q: "deep gash on her hand, lots of blood", expect: [severe-bleeding]}
+  - {set: heldout, q: "bleding wont stop", expect: [severe-bleeding]}
+  - {set: heldout, q: "what to do for a bad wound", expect: [severe-bleeding]}
+
+  # --- hypothermia ---
+  - {set: dev, q: "someone is shivering and confused", expect: [hypothermia]}
+  - {set: dev, q: "he fell in an icy lake and is freezing", expect: [hypothermia]}
+  - {set: dev, q: "signs of hypothermia", expect: [hypothermia]}
+  - {set: heldout, q: "my dad is very cold and keeps falling asleep", expect: [hypothermia]}
+  - {set: heldout, q: "how do I warm up someone who is too cold", expect: [hypothermia]}
+  - {set: heldout, q: "hypotermia treatment", expect: [hypothermia]}
+
+  # --- burns ---
+  - {set: dev, q: "I burned my hand on the stove", expect: [burns]}
+  - {set: dev, q: "kid spilled boiling water on his arm", expect: [burns]}
+  - {set: dev, q: "should I put ice on a burn", expect: [burns]}
+  - {set: heldout, q: "scalded by steam", expect: [burns]}
+  - {set: heldout, q: "blister after touching hot pan", expect: [burns]}
+  - {set: heldout, q: "my skin got burnt in a fire", expect: [burns]}
+
+  # --- carbon-monoxide ---
+  - {set: dev, q: "can I run a generator in the garage", expect: [carbon-monoxide]}
+  - {set: dev, q: "everyone at home has a headache and feels dizzy", expect: [carbon-monoxide]}
+  - {set: dev, q: "carbon monoxide symptoms", expect: [carbon-monoxide]}
+  - {set: heldout, q: "is it safe to use a camping stove indoors", expect: [carbon-monoxide]}
+  - {set: heldout, q: "can i heat the house with the gas oven", expect: [carbon-monoxide, staying-warm-power-outage]}
+  - {set: heldout, q: "fumes from the heater making me sick", expect: [carbon-monoxide]}
+
+  # --- staying-warm-power-outage ---
+  - {set: dev, q: "the power is out and the house is freezing", expect: [staying-warm-power-outage]}
+  - {set: dev, q: "how to stay warm without electricity", expect: [staying-warm-power-outage]}
+  - {set: heldout, q: "blackout in winter, no heating", expect: [staying-warm-power-outage]}
+  - {set: heldout, q: "keep the house warm during a power cut", expect: [staying-warm-power-outage]}
+
+  # --- boiling-water ---
+  - {set: dev, q: "how can I make river water safe to drink", expect: [boiling-water]}
+  - {set: dev, q: "boil water notice what do I do", expect: [boiling-water]}
+  - {set: heldout, q: "how long do I boil water to purify it", expect: [boiling-water]}
+  - {set: heldout, q: "is stream water drinkable", expect: [boiling-water]}
+
+  # --- food-safety-power-outage ---
+  - {set: dev, q: "is the meat in the freezer still ok after the power went out", expect: [food-safety-power-outage]}
+  - {set: dev, q: "how long does food last in the fridge without power", expect: [food-safety-power-outage]}
+  - {set: heldout, q: "milk was out of the fridge all night", expect: [food-safety-power-outage]}
+  - {set: heldout, q: "keep food from spoiling during blackout", expect: [food-safety-power-outage]}
+
+  # --- signaling-for-help ---
+  - {set: dev, q: "how do I signal for help with no phone reception", expect: [signaling-for-help]}
+  - {set: dev, q: "we are lost in the woods", expect: [signaling-for-help]}
+  - {set: heldout, q: "how to get a helicopter to see me", expect: [signaling-for-help]}
+  - {set: heldout, q: "stranded and phone has no signal", expect: [signaling-for-help]}
+  - {set: heldout, q: "SOS signal", expect: [signaling-for-help]}
+
+  # --- cpr ---
+  - {set: dev, q: "how do I do CPR", expect: [cpr]}
+  - {set: dev, q: "chest compressions how fast", expect: [cpr]}
+  - {set: heldout, q: "he collapsed and isn't breathing", expect: [cpr]}
+  - {set: heldout, q: "my mother is unresponsive and only gasping", expect: [cpr]}
+  - {set: heldout, q: "how to use a defibrillator", expect: [cpr]}
+
+  # --- not in the library: the correct answer is "no match" ---
+  - {set: dev, q: "how do I fix a flat bike tire", expect: []}
+  - {set: dev, q: "snake bite", expect: []}
+  - {set: dev, q: "is this mushroom safe to eat", expect: []}
+  - {set: dev, q: "how do I deliver a baby", expect: []}
+  - {set: heldout, q: "someone is having a seizure", expect: []}
+  - {set: heldout, q: "bee sting allergic reaction", expect: []}
+  - {set: heldout, q: "how to build a shelter in the forest", expect: []}
+  - {set: heldout, q: "my car battery is dead", expect: []}
+  - {set: heldout, q: "child swallowed bleach", expect: []}
+  - {set: heldout, q: "broken leg splint", expect: []}
+  - {set: heldout, q: "chest pain and arm numb", expect: []}
