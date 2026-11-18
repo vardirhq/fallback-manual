@@ -4,7 +4,7 @@ title: Emergency water storage
 category: water
 status: draft
 version: 1
-high_risk: true
+high_risk: false
 license: CC-BY-4.0
 situations:
   - The water might stop working and I need to store drinking water at home
