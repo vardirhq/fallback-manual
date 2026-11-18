@@ -9,7 +9,7 @@ import java.io.File
 import java.util.concurrent.Executors
 
 open class FallbackApp : Application() {
-    val knowledge by lazy { KnowledgeStore(this) }
+    open val knowledge by lazy { KnowledgeStore(this) }
     val bookmarks by lazy { Bookmarks(this) }
     open val sharing by lazy { AppSharing(this) }
 }
@@ -19,7 +19,11 @@ open class FallbackApp : Application() {
  * can't open it there, so it is copied to private storage once per app install or update.
  * All access runs on one background thread, because a connection is not thread-safe.
  */
-class KnowledgeStore(private val context: Context) {
+class KnowledgeStore(
+    private val context: Context,
+    /** Where the database comes from. Tests replace this with a fixture database. */
+    private val source: () -> java.io.InputStream = { context.assets.open(ASSET) },
+) {
     private val dispatcher = Executors.newSingleThreadExecutor { r -> Thread(r, "knowledge-db") }
         .asCoroutineDispatcher()
     private var kb: KnowledgeBase? = null
@@ -33,7 +37,7 @@ class KnowledgeStore(private val context: Context) {
         val installed = context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime
         if (!file.exists() || prefs.getLong("copied_for", -1) != installed) {
             val tmp = File(file.path + ".tmp")
-            context.assets.open(ASSET).use { input -> tmp.outputStream().use { input.copyTo(it) } }
+            source().use { input -> tmp.outputStream().use { input.copyTo(it) } }
             check(tmp.renameTo(file)) { "could not install knowledge database" }
             prefs.edit().putLong("copied_for", installed).apply()
         }

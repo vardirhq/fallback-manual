@@ -27,6 +27,8 @@ SYNONYMS_FILE = ROOT / "knowledge" / "synonyms.yaml"
 STOPWORDS_FILE = ROOT / "knowledge" / "stopwords.txt"
 CATEGORIES_FILE = ROOT / "knowledge" / "categories.yaml"
 REVIEWERS_FILE = ROOT / "knowledge" / "reviewers.yaml"
+IMAGES_FILE = ROOT / "knowledge" / "images.yaml"
+IMAGES_DIR = ROOT / "knowledge" / "images"
 
 
 def approved_reviewers() -> set[str]:
@@ -36,7 +38,7 @@ def approved_reviewers() -> set[str]:
     return {str(r["name"]).strip() for r in data.get("reviewers") or [] if isinstance(r, dict) and r.get("name")}
 DEFAULT_OUT = ROOT / "build" / "knowledge.db"
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2  # 2: images table
 REQUIRED_FIELDS = ["id", "title", "category", "status", "version", "high_risk", "license",
                    "situations", "keywords", "sources", "review"]
 REQUIRED_SECTIONS = ["When to use", "What you need", "Steps", "Warnings", "Common mistakes", "Get help"]
@@ -46,7 +48,16 @@ WORD_RE = re.compile(r"[^\W_]+(?:['-][^\W_]+)*", re.UNICODE)
 # Links between articles: [link text](article:target-id). No other link targets are allowed:
 # the app is offline, and every link must lead to reviewed content inside it.
 ARTICLE_LINK_RE = re.compile(r"\[([^\]]+)\]\(article:([^)\s]*)\)")
-ANY_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]*)\)")
+ANY_LINK_RE = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)]*)\)")
+# A picture, on a line of its own directly under the step it belongs to: ![alt text](image:<id>)
+IMAGE_LINE_RE = re.compile(r"^!\[([^\]]+)\]\(image:([a-z0-9]+(?:-[a-z0-9]+)*)\)$")
+IMAGE_ANY_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
+
+IMAGE_FIELDS = {"id", "file", "license", "creator", "source", "ai_generated"}
+IMAGE_LICENSES = {"public-domain", "CC0-1.0", "CC-BY-4.0", "CC-BY-SA-4.0"}
+IMAGE_TYPES = {".webp": "image/webp", ".png": "image/png"}
+IMAGE_MAX_BYTES = 150 * 1024
+ALT_MIN, ALT_MAX = 10, 200
 
 
 @dataclass
@@ -55,6 +66,7 @@ class Article:
     meta: dict
     body: str
     sections: dict[str, str] = field(default_factory=dict)
+    images: list[tuple[str, int]] = field(default_factory=list)  # (image id, file line)
 
     @property
     def id(self) -> str:
@@ -339,8 +351,17 @@ def validate_body(article: Article, report: Report) -> None:
         elif stripped.startswith("|"):
             report.error(p, f"{where}: tables are not supported. Fix: use a bullet list instead.")
         elif "![" in line:
-            report.error(p, f"{where}: images are not supported yet. Fix: remove it and describe the picture "
-                            "under diagrams_needed in the header.")
+            m = IMAGE_LINE_RE.match(stripped)
+            if not m or stripped != line:
+                report.error(p, f"{where}: a picture must be on a line of its own, written exactly like "
+                                "![what the picture shows](image:<image-id>). Fix: see 'Adding a picture' in AGENTS.md.")
+            else:
+                alt = m.group(1).strip()
+                if not ALT_MIN <= len(alt) <= ALT_MAX or alt.lower() in {"image", "picture", "diagram", "photo"}:
+                    report.error(p, f"{where}: the picture's description ('{alt}') must say what it shows, in "
+                                    f"{ALT_MIN}-{ALT_MAX} characters, e.g. ![Hands stacked on the center of the chest]"
+                                    "(image:cpr-hand-position). People using a screen reader hear only this.")
+                article.images.append((m.group(2), n + 1))
         elif re.match(r"^\s+([-*+]|\d+\.)\s", line):
             report.error(p, f"{where}: nested or indented list items are not supported. "
                             "Fix: start every list item at the beginning of the line.")
@@ -372,6 +393,12 @@ def validate_body(article: Article, report: Report) -> None:
         if name == "Steps":
             nums = []
             for l in lines:
+                if IMAGE_LINE_RE.match(l.strip()):
+                    if not nums:
+                        report.error(p, "a picture in '## Steps' must come directly under the step it belongs to, "
+                                        "not before the first step.")
+                        break
+                    continue
                 m = re.match(r"^(\d+)\.\s+\S", l)
                 if not m:
                     report.error(p, f"'## Steps' may only contain numbered steps ('1. Do this.'). "
@@ -390,11 +417,86 @@ def validate_body(article: Article, report: Report) -> None:
                     report.error(p, "'## Steps' needs at least 2 numbered steps.")
                 elif nums != list(range(1, len(nums) + 1)):
                     report.error(p, f"steps must be numbered 1, 2, 3, ... without gaps. Found: {nums}.")
-        elif name in LIST_SECTIONS:
-            bad = [l for l in lines if not l.startswith("- ")]
+        else:
+            if any(IMAGE_LINE_RE.match(l.strip()) for l in lines):
+                report.error(p, f"pictures are only allowed in '## Steps', directly under the step they show. "
+                                f"Found one in '## {name}'.")
+        if name in LIST_SECTIONS:
+            bad = [l for l in lines if not l.startswith("- ") and not IMAGE_LINE_RE.match(l.strip())]
             if bad:
                 report.error(p, f"'## {name}' may only contain bullet items starting with '- '. "
                                 f"Found: '{bad[0].strip()[:50]}'.")
+
+
+def load_images(path: Path, images_dir: Path, report: Report) -> list[dict]:
+    """Reads the image registry. Every picture needs a license, a creator and a source."""
+    if not path.exists():
+        return []
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as e:
+        report.error(path, f"could not be read: {e}")
+        return []
+    entries = data.get("images") or []
+    out, seen = [], set()
+    for i, e in enumerate(entries, 1):
+        where = f"image {i}" + (f" ('{e.get('id')}')" if isinstance(e, dict) and e.get("id") else "")
+        if not isinstance(e, dict):
+            report.error(path, f"{where} must have id, file, license, creator, source and ai_generated.")
+            continue
+        for k in e:
+            if k not in IMAGE_FIELDS:
+                report.error(path, f"{where} has unknown field '{k}'. Allowed: {', '.join(sorted(IMAGE_FIELDS))}.")
+        for k in sorted(IMAGE_FIELDS - set(e)):
+            report.error(path, f"{where} is missing '{k}'.")
+        iid = e.get("id")
+        if not isinstance(iid, str) or not ID_RE.match(iid):
+            report.error(path, f"{where}: id must be lowercase words joined by hyphens, e.g. cpr-hand-position.")
+            continue
+        if iid in seen:
+            report.error(path, f"{where}: duplicate id.")
+        seen.add(iid)
+        if e.get("ai_generated") is not False:
+            report.error(path, f"{where}: ai_generated must be false. AI-generated pictures are not allowed: they "
+                               "often get hands, anatomy and positions wrong. Fix: use a real diagram or photo.")
+        if e.get("license") not in IMAGE_LICENSES:
+            report.error(path, f"{where}: license must be one of {sorted(IMAGE_LICENSES)}. If you can't confirm the "
+                               "license, don't use the picture.")
+        for k in ("creator", "source"):
+            if k in e and (not isinstance(e[k], str) or not e[k].strip()):
+                report.error(path, f"{where}: {k} is empty.")
+        src = e.get("source")
+        if isinstance(src, str) and src.strip() and src.startswith("http") and not src.startswith("https://"):
+            report.error(path, f"{where}: source must be a full https:// address or a description of the origin.")
+        f = images_dir / str(e.get("file", ""))
+        if f.suffix not in IMAGE_TYPES:
+            report.error(path, f"{where}: file must be .webp (preferred) or .png. Fix: use python -m tools.add_image.")
+        elif not f.is_file():
+            report.error(path, f"{where}: file {_rel(f)} does not exist.")
+        elif f.stat().st_size > IMAGE_MAX_BYTES:
+            report.error(path, f"{where}: {f.name} is {f.stat().st_size // 1024} KB; the maximum is "
+                               f"{IMAGE_MAX_BYTES // 1024} KB. Fix: add it with python -m tools.add_image, which shrinks it.")
+        else:
+            out.append({**e, "path": f})
+    listed = {str(e.get("file")) for e in entries if isinstance(e, dict)}
+    if images_dir.is_dir():
+        for f in sorted(images_dir.iterdir()):
+            if f.is_file() and not f.name.startswith(".") and f.name not in listed:
+                report.error(f, f"this file is not listed in {_rel(path)}. Fix: add it with python -m tools.add_image, or delete it.")
+    return out
+
+
+def check_image_use(articles: list[Article], images: list[dict], images_file: Path, report: Report) -> None:
+    known = {i["id"] for i in images}
+    used = set()
+    for a in articles:
+        for iid, line in a.images:
+            used.add(iid)
+            if iid not in known:
+                report.error(a.path, f"line {line}: picture '{iid}' is not in {_rel(images_file)}. "
+                                     "Fix: add it with python -m tools.add_image, or check the spelling of the id.")
+    for iid in sorted(known - used):
+        report.error(images_file, f"picture '{iid}' is not used by any article. Fix: use it in an article, or remove it.")
 
 
 def load_categories(path: Path, report: Report) -> list[dict]:
@@ -466,7 +568,8 @@ def load_synonyms(path: Path, report: Report) -> list[list[str]]:
 
 
 def _plain(markdown: str) -> str:
-    text = ARTICLE_LINK_RE.sub(r"\1", markdown)  # index the link text, not the target id
+    text = IMAGE_ANY_RE.sub(" ", markdown)  # pictures are not searchable text
+    text = ARTICLE_LINK_RE.sub(r"\1", text)  # index the link text, not the target id
     return re.sub(r"[*_`#>\[\]()]", " ", text)
 
 
@@ -481,7 +584,7 @@ def _json_default(o):
 
 
 def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, release: bool,
-             categories: list[dict] = (), stopwords: list[str] = ()) -> str:
+             categories: list[dict] = (), stopwords: list[str] = (), images: list[dict] = ()) -> str:
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = out.with_suffix(".tmp")
     tmp.unlink(missing_ok=True)
@@ -523,6 +626,14 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
         CREATE TABLE vocab (word TEXT PRIMARY KEY) WITHOUT ROWID;
         CREATE TABLE stopwords (word TEXT PRIMARY KEY) WITHOUT ROWID;
         CREATE TABLE categories (id TEXT PRIMARY KEY, title TEXT NOT NULL, position INTEGER NOT NULL);
+        CREATE TABLE images (
+            id TEXT PRIMARY KEY,
+            mime TEXT NOT NULL,
+            data BLOB NOT NULL,
+            license TEXT NOT NULL,
+            creator TEXT NOT NULL,
+            source TEXT NOT NULL
+        );
         """
     )
     digest = hashlib.sha256()
@@ -564,6 +675,11 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
     con.executemany("INSERT INTO categories VALUES (?, ?, ?)",
                     ((c["id"], c["title"], i) for i, c in enumerate(categories)))
     digest.update(json.dumps([list(stopwords), list(categories)]).encode())
+    for img in sorted(images, key=lambda i: i["id"]):
+        data = img["path"].read_bytes()
+        con.execute("INSERT INTO images VALUES (?, ?, ?, ?, ?, ?)",
+                    (img["id"], IMAGE_TYPES[img["path"].suffix], data, img["license"], img["creator"], img["source"]))
+        digest.update(img["id"].encode() + hashlib.sha256(data).digest())
 
     content_hash = digest.hexdigest()[:16]
     meta = {
@@ -582,9 +698,12 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
 
 def build(out: Path = DEFAULT_OUT, release: bool = False, check_only: bool = False,
           articles_dir: Path = ARTICLES_DIR, synonyms_file: Path = SYNONYMS_FILE,
-          categories_file: Path = CATEGORIES_FILE, stopwords_file: Path = STOPWORDS_FILE) -> Report:
+          categories_file: Path = CATEGORIES_FILE, stopwords_file: Path = STOPWORDS_FILE,
+          images_file: Path = IMAGES_FILE, images_dir: Path = IMAGES_DIR) -> Report:
     report = Report()
     articles = load_articles(articles_dir, report, release)
+    images = load_images(images_file, images_dir, report)
+    check_image_use(articles, images, images_file, report)
     synonyms = load_synonyms(synonyms_file, report)
     categories = load_categories(categories_file, report)
     known = {c.get("id") for c in categories if isinstance(c, dict)}
@@ -593,7 +712,7 @@ def build(out: Path = DEFAULT_OUT, release: bool = False, check_only: bool = Fal
             report.error(a.path, f"category '{a.meta['category']}' is not listed in {_rel(categories_file)}")
     stopwords = load_stopwords(stopwords_file)
     if not report.errors and not check_only:
-        write_db(articles, synonyms, out, release, categories, stopwords)
+        write_db(articles, synonyms, out, release, categories, stopwords, images)
     return report
 
 
@@ -603,9 +722,19 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--check", action="store_true", help="validate only")
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
     ap.add_argument("--quiet", action="store_true", help="hide warnings")
+    ap.add_argument("--knowledge", type=Path, help="build from another knowledge folder (used by tests); "
+                                                   "files it lacks fall back to the real ones")
     args = ap.parse_args(argv)
 
-    report = build(args.out, args.release, args.check)
+    paths = {}
+    if args.knowledge:
+        k = args.knowledge.resolve()
+        pick = lambda name, default: (k / name) if (k / name).exists() else default
+        paths = dict(articles_dir=k / "articles", synonyms_file=pick("synonyms.yaml", SYNONYMS_FILE),
+                     categories_file=pick("categories.yaml", CATEGORIES_FILE),
+                     stopwords_file=pick("stopwords.txt", STOPWORDS_FILE),
+                     images_file=k / "images.yaml", images_dir=k / "images")
+    report = build(args.out, args.release, args.check, **paths)
     if not args.quiet:
         for w in report.warnings:
             print(f"warning: {w}", file=sys.stderr)

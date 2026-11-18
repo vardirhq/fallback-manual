@@ -33,3 +33,12 @@ data class KnowledgeInfo(
     val releaseBuild: Boolean,
     val articleCount: Int,
 )
+
+class ArticleImage(
+    val id: String,
+    val mime: String,
+    val data: ByteArray,
+    val license: String,
+    val creator: String,
+    val source: String,
+)

@@ -28,13 +28,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 
-/** The small Markdown subset articles use: ## headings, numbered steps, bullets, paragraphs, **bold**. */
+/**
+ * The small Markdown subset articles use: ## headings, numbered steps, bullets, paragraphs,
+ * **bold**, [links](article:id), and pictures on their own line: ![description](image:id).
+ */
 sealed interface Block {
     data class Heading(val text: String) : Block
     data class Step(val number: String, val text: String) : Block
     data class Bullet(val text: String) : Block
     data class Paragraph(val text: String) : Block
+    data class Image(val id: String, val alt: String) : Block
 }
+
+private val IMAGE = Regex("""^!\[([^\]]+)\]\(image:([a-z0-9-]+)\)$""")
 
 private val STEP = Regex("""^(\d+)\.\s+(.*)$""")
 private val BULLET = Regex("""^[-*]\s+(.*)$""")
@@ -51,8 +57,10 @@ fun parseMarkdown(md: String): List<Block> {
         val line = raw.trim()
         val step = STEP.find(line)
         val bullet = BULLET.find(line)
+        val image = IMAGE.find(line)
         when {
             line.isEmpty() -> { flush(); inList = false }
+            image != null -> { flush(); inList = false; out += Block.Image(image.groupValues[2], image.groupValues[1]) }
             line.startsWith("#") -> { flush(); inList = false; out += Block.Heading(line.trimStart('#').trim()) }
             step != null -> { flush(); inList = true; out += Block.Step(step.groupValues[1], step.groupValues[2]) }
             bullet != null -> { flush(); inList = true; out += Block.Bullet(bullet.groupValues[1]) }
@@ -132,6 +140,8 @@ fun MarkdownBody(markdown: String, modifier: Modifier = Modifier, onLink: ((Stri
                     Text(rich(b.text), style = MaterialTheme.typography.bodyLarge)
                 }
                 is Block.Paragraph -> Text(rich(b.text), style = MaterialTheme.typography.bodyLarge)
+                // Pictures sit under their step, lined up with the step's text.
+                is Block.Image -> ArticlePicture(b.id, b.alt, Modifier.padding(start = 46.dp, bottom = 6.dp))
             }
         }
     }

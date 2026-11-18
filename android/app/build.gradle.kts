@@ -68,8 +68,21 @@ val extractSqliteNative by tasks.registering(Sync::class) {
     includeEmptyDirs = false
     into(layout.buildDirectory.dir("sqlite-native"))
 }
+// A small fixture knowledge base (tests/fixtures/knowledge) with a placeholder picture, so screen
+// tests can show pictures without adding any to the real manual.
+val buildFixtureDb by tasks.registering(Exec::class) {
+    val out = layout.buildDirectory.file("fixture/knowledge.db")
+    inputs.dir(repoRoot.dir("tests/fixtures/knowledge"))
+    inputs.dir(repoRoot.dir("tools"))
+    outputs.file(out)
+    workingDir = repoRoot.asFile
+    commandLine("python3", "-m", "tools.build_kb", "--quiet", "--knowledge", "tests/fixtures/knowledge",
+        "--out", out.get().asFile.absolutePath)
+}
+
 tasks.withType<Test>().configureEach {
-    dependsOn(extractSqliteNative)
+    dependsOn(extractSqliteNative, buildFixtureDb)
+    systemProperty("fixture.db", layout.buildDirectory.file("fixture/knowledge.db").get().asFile.absolutePath)
     systemProperty("java.library.path", layout.buildDirectory.dir("sqlite-native").get().asFile.absolutePath)
     systemProperty("roborazzi.test.record", "true")
     systemProperty("screenshots.dir", rootProject.layout.projectDirectory.dir("../docs/screenshots").asFile.absolutePath)

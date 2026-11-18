@@ -65,6 +65,11 @@ class KnowledgeBase private constructor(private val connection: SQLiteConnection
         ) { Source(it.getText(0), it.getText(1), it.textOrNull(2), it.getLong(3) != 0L) })
     }
 
+    /** A picture used in an article, or null if there is none with that id. */
+    fun image(id: String): ArticleImage? = query(
+        "SELECT mime, data, license, creator, source FROM images WHERE id = ?", id,
+    ) { ArticleImage(id, it.getText(0), it.getBlob(1), it.getText(2), it.getText(3), it.getText(4)) }.firstOrNull()
+
     fun categoryTitle(id: String): String =
         query("SELECT title FROM categories WHERE id = ?", id) { it.getText(0) }.firstOrNull() ?: id
 
@@ -79,7 +84,7 @@ class KnowledgeBase private constructor(private val connection: SQLiteConnection
     override fun close() = connection.close()
 
     companion object {
-        const val SUPPORTED_SCHEMA = 1
+        const val SUPPORTED_SCHEMA = 2
 
         fun open(path: String): KnowledgeBase =
             KnowledgeBase(BundledSQLiteDriver().open(path, SQLITE_OPEN_READONLY))
