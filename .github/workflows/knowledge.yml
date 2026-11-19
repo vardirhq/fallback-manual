@@ -23,6 +23,12 @@ jobs:
         with:
           name: knowledge-db
           path: build/knowledge.db
+      - name: Review pack (offline pages for expert reviewers)
+        run: python -m tools.review_pack --out build/review
+      - uses: actions/upload-artifact@v4
+        with:
+          name: review-pack
+          path: build/review/
 
   android:
     runs-on: ubuntu-latest

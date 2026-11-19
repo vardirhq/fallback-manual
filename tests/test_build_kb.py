@@ -70,10 +70,27 @@ def test_valid_draft_builds_with_warning(kb):
     assert con.execute("SELECT count(*) FROM synonyms").fetchone() == (2,)
 
 
-def test_release_rejects_drafts(kb):
+def test_release_with_nothing_reviewed_fails(kb):
     report, out = kb(article(), release=True)
-    assert any("release" in e for e in report.errors)
-    assert not out.exists()
+    assert any("no article is reviewed yet" in e for e in report.errors)
+
+
+def test_release_leaves_out_drafts_and_unlinks_them(kb, tmp_path, monkeypatch):
+    reviewers = tmp_path / "reviewers.yaml"
+    reviewers.write_text("reviewers:\n  - name: Dr. Example, MD\n")
+    monkeypatch.setattr(build_kb, "REVIEWERS_FILE", reviewers)
+    articles = tmp_path / "articles" / "first-aid"
+    articles.mkdir(parents=True, exist_ok=True)
+    (articles / "other.md").write_text(article(id_="other", code="FA-02").replace("Test article", "Other article"))
+    linked = GOOD_BODY.replace("When it applies.", "When it applies. See [the other one](article:other).")
+    report, out = kb(article(status="reviewed", reviewer="Dr. Example, MD", body=linked), release=True)
+    assert report.errors == []
+    assert any("left out of this release build" in w for w in report.warnings)
+    con = sqlite3.connect(out)
+    assert con.execute("SELECT id FROM articles").fetchall() == [("test-article",)]
+    body = con.execute("SELECT body_md FROM articles").fetchone()[0]
+    assert "See the other one." in body and "article:other" not in body
+    assert con.execute("SELECT value FROM meta WHERE key = 'article_count'").fetchone() == ("1",)
 
 
 def test_release_accepts_reviewed(kb, tmp_path, monkeypatch):

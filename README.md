@@ -25,7 +25,8 @@ android/      Android app (Kotlin, Jetpack Compose)
   core/       database access and the Kotlin port of the search (plain JVM, unit-testable)
   app/        the app itself
 knowledge/    articles (Markdown + YAML), synonyms, stop words, categories
-tools/        build_kb.py: validates articles and compiles build/knowledge.db (+ knowledge-nb.db, ...)
+tools/        build_kb.py: validates articles and compiles build/knowledge.db (+ knowledge-nb.db, ...);
+              review_pack.py and apply_review.py: expert review
 retrieval/    search.py: Layer 0 search (FTS5 + synonyms + typo fixes + confidence)
 evaluation/   benchmark questions and runner
 tests/        pytest suite
@@ -41,12 +42,32 @@ pip install -r requirements-dev.txt
 python -m tools.check                         # run every check; prints PASS or what to fix
 python -m tools.new_article --list            # categories and existing articles
 python -m tools.build_kb                      # build build/knowledge.db (drafts allowed)
-python -m tools.build_kb --release            # fails unless every article is reviewed
+python -m tools.build_kb --release            # only reviewed articles; fails if none is reviewed yet
 
 python -m retrieval.search "someone is shivering and confused"
 python -m evaluation.run_benchmark --failures
 python -m pytest -q
 ```
+
+## Expert review
+
+Nothing reaches a release until a qualified person has reviewed it: release builds include only
+reviewed articles. Reviewers don't need git or any tools:
+
+1. Add the reviewer to `knowledge/reviewers.yaml` (name, qualification, areas). Only the project
+   owner does this.
+2. Build a review pack: `python -m tools.review_pack` writes `build/review/`, with an index and one
+   page per article and language (`--only cpr,choking` for just some). CI also builds it as the
+   `review-pack` artifact. The pages work offline: zip the folder and send it.
+3. The reviewer reads each article, opens its sources, ticks the checklist, and saves or copies a
+   sign-off from the bottom of the page: approve, or changes needed with comments.
+4. Apply returned sign-offs: `python -m tools.apply_review review-cpr.yaml ...`. It refuses a
+   sign-off from someone not in `reviewers.yaml`, one for an article that has changed since the
+   pack was made (each sign-off carries the article's version and a fingerprint of its text), or
+   one that doesn't confirm every source. A "changes needed" sign-off prints the comments instead.
+5. Run `python -m tools.check` and commit.
+
+Editing a reviewed article sets it back to draft (see AGENTS.md), so it needs a new review.
 
 ## Android app
 
@@ -57,8 +78,8 @@ cd android
 ./gradlew :app:assembleDebug          # app/build/outputs/apk/debug/app-debug.apk
 ./gradlew :core:test                  # checks the Kotlin search returns exactly what the Python one does
 ./gradlew :app:testDebugUnitTest      # drives the app on the desktop (Robolectric) and saves docs/screenshots
-./gradlew :app:assembleRelease        # fails while any article is unreviewed (by design)
-./gradlew :app:assembleRelease -PallowDrafts=true   # release-type build with drafts, for testing only
+./gradlew :app:assembleRelease        # ships only reviewed articles (fails while none is reviewed)
+./gradlew :app:assembleRelease -PallowDrafts=true   # release-type build with all drafts, for testing only
 ```
 
 What the app does today: step-by-step mode (one step at a time in very large text, screen kept on, read-aloud with the phone's offline voice, a beat guide for CPR compressions), emergency tiles and a "call emergency services first" block for a short, hand-picked list of act-now articles (`emergency: true`), browsing by category, articles with numbered steps, warnings, sources and review status, links between articles that open in a sheet over the current one (e.g. "start CPR" in the carbon monoxide article), natural-language search that says "no match" instead of guessing, saved articles, light and dark themes, offline sharing (below), and English and Norwegian Bokmål: the app's text and the articles follow the phone's language, or the one chosen under Settings, with the English article shown wherever a translation is missing or out of date. Settings also overrides light or dark theme. It has no internet permission.
