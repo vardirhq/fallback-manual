@@ -245,7 +245,8 @@ fun ArticleContent(a: Article, onLink: (String) -> Unit, modifier: Modifier = Mo
             if (!a.reviewed) Chip(stringResource(R.string.chip_draft), fm.draftBg, fm.draftInk)
             Chip(pluralStringResource(R.plurals.chip_steps, steps, steps, a.version), fm.chipBg, fm.chipInk)
         }
-        if (a.highRisk) CallBlock(Modifier.padding(top = 4.dp))
+        // Only for act-now topics: a high-risk article about preparing (generators, water) has no one to call yet.
+        if (a.emergency) CallBlock(Modifier.padding(top = 4.dp))
         if (onStepByStep != null && steps >= 2) BigButton(stringResource(R.string.step_by_step), icon = FmIcons.PLAY, onClick = onStepByStep)
         MarkdownBody(a.bodyMarkdown, onLink = onLink)
 

@@ -20,7 +20,7 @@ If it prints `RESULT: FAIL`, it lists every problem with a "Fix:". Do what it sa
 2. **Never fill in `reviewer`, `date` or `review_by`.** Leave all three as `null`.
 3. **Never set `checked: true` on a source.** Always `checked: false`.
 4. **Never edit `knowledge/reviewers.yaml`, and never change an article's `code`** (e.g. `FA-02`). `python -m tools.new_article` assigns codes; they never change.
-5. **Never add, remove or change `emergency: true`** unless the person you work for asks. It puts an article on the home screen's short list of act-now topics, which a person curates.
+5. **Never add, remove or change `emergency: true`** unless the person you work for asks. It puts an article on the home screen's short list of act-now topics and opens it with "Call emergency services first". A person curates that list.
 6. **Never invent facts.** Every instruction, number, time, temperature, distance and amount must come from one of the sources you list. If the sources don't say it, leave it out, even if it seems like good advice.
 7. **Never copy text word for word** from a source. Write it in your own plain words. (Sources are often copyrighted; the articles are CC-BY-4.0.)
 8. **Never change a question to make a check pass**, and never add or change questions with `set: heldout`. Only add `set: dev` questions.

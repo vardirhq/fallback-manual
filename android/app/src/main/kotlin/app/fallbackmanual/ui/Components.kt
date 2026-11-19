@@ -306,7 +306,7 @@ private fun WholeWordsTitle(text: String, style: TextStyle, color: Color, modifi
     }
 }
 
-/** The red "call for help" block at the top of high-risk articles. */
+/** The red "call for help" block at the top of emergency articles. */
 @Composable
 fun CallBlock(modifier: Modifier = Modifier) {
     Row(
