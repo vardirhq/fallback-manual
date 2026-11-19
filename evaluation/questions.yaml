@@ -62,7 +62,7 @@ questions:
 
   # --- signaling-for-help ---
   - {set: dev, q: "how do I signal for help with no phone reception", expect: [signaling-for-help]}
-  - {set: dev, q: "we are lost in the woods", expect: [signaling-for-help]}
+  - {set: dev, q: "we are lost in the woods", expect: [signaling-for-help, lost-outdoors]}
   - {set: heldout, q: "how to get a helicopter to see me", expect: [signaling-for-help]}
   - {set: heldout, q: "stranded and phone has no signal", expect: [signaling-for-help]}
   - {set: heldout, q: "SOS signal", expect: [signaling-for-help]}
@@ -180,15 +180,77 @@ questions:
   # --- generator-safety ---
   - {set: dev, q: "where to put a generator during a blackout", expect: [generator-safety]}
   - {set: dev, q: "is it safe to run a generator in the garage", expect: [generator-safety, carbon-monoxide]}
+  # --- unconscious-breathing ---
+  - {set: dev, q: "he is unconscious but still breathing", expect: [unconscious-breathing]}
+  - {set: dev, q: "how to put someone on their side so they don't choke", expect: [unconscious-breathing]}
+  # --- heart-attack ---
+  - {set: dev, q: "dad has crushing chest pain and is sweating", expect: [heart-attack]}
+  - {set: dev, q: "signs of a heart attack", expect: [heart-attack]}
+  # --- head-injury ---
+  - {set: dev, q: "my kid hit his head and is throwing up", expect: [head-injury]}
+  - {set: dev, q: "concussion symptoms after a fall", expect: [head-injury]}
+  # --- broken-bones ---
+  - {set: dev, q: "I think my wrist is broken", expect: [broken-bones]}
+  - {set: dev, q: "her ankle is bent at a weird angle after she fell", expect: [broken-bones]}
+  # --- cuts-and-scrapes ---
+  - {set: dev, q: "how to clean a small cut", expect: [cuts-and-scrapes]}
+  - {set: dev, q: "scraped knee with gravel in it", expect: [cuts-and-scrapes]}
+  # --- anaphylaxis ---
+  - {set: dev, q: "his face is swelling up after eating peanuts", expect: [anaphylaxis]}
+  - {set: dev, q: "when do I use the epipen", expect: [anaphylaxis]}
+  # --- poisoning ---
+  - {set: dev, q: "my toddler drank dishwasher detergent", expect: [poisoning]}
+  - {set: dev, q: "she swallowed a lot of pills", expect: [poisoning]}
+  # --- seizures ---
+  - {set: dev, q: "my friend is shaking on the floor and won't respond", expect: [seizures]}
+  - {set: dev, q: "what to do during an epileptic fit", expect: [seizures]}
+  # --- cpr-children ---
+  - {set: dev, q: "my baby stopped breathing", expect: [cpr-children]}
+  - {set: dev, q: "how to do cpr on a child", expect: [cpr-children]}
+  # --- electric-shock ---
+  - {set: dev, q: "someone is stuck to a live wire", expect: [electric-shock]}
+  - {set: dev, q: "got a shock from the washing machine", expect: [electric-shock]}
+  # --- house-fire ---
+  - {set: dev, q: "our house is on fire", expect: [house-fire]}
+  - {set: dev, q: "smoke coming under the bedroom door", expect: [house-fire]}
+  # --- flooding ---
+  - {set: dev, q: "water is coming into the house from the river", expect: [flooding]}
+  - {set: dev, q: "is it safe to drive through a flooded road", expect: [flooding]}
+  # --- thunderstorms ---
+  - {set: dev, q: "lightning storm while hiking", expect: [thunderstorms]}
+  - {set: dev, q: "is it safe to shower during a thunderstorm", expect: [thunderstorms]}
+  # --- power-outage ---
+  - {set: dev, q: "the electricity just went out", expect: [power-outage]}
+  - {set: dev, q: "what to do in a blackout", expect: [power-outage, staying-warm-power-outage, food-safety-power-outage]}
+  # --- water-outage ---
+  - {set: dev, q: "nothing comes out of the tap", expect: [water-outage]}
+  - {set: dev, q: "the water supply has been cut off", expect: [water-outage]}
+  # --- handwashing ---
+  - {set: dev, q: "how to wash hands with no running water", expect: [handwashing]}
+  - {set: dev, q: "does hand sanitizer work", expect: [handwashing]}
+  # --- household-plan ---
+  - {set: dev, q: "family meeting place in an emergency", expect: [household-plan]}
+  - {set: dev, q: "how do we contact each other in a disaster", expect: [household-plan]}
+  # --- pets ---
+  - {set: dev, q: "what do I do with my dog if we evacuate", expect: [pets]}
+  - {set: dev, q: "emergency kit for my cat", expect: [pets]}
+  # --- lost-outdoors ---
+  - {set: dev, q: "lost in the forest", expect: [lost-outdoors]}
+  - {set: dev, q: "can't find the trail back to the car", expect: [lost-outdoors]}
   # --- not in the library: the correct answer is "no match" ---
   - {set: dev, q: "how do I fix a flat bike tire", expect: []}
   - {set: dev, q: "snake bite", expect: []}
   - {set: dev, q: "is this mushroom safe to eat", expect: []}
   - {set: dev, q: "how do I deliver a baby", expect: []}
-  - {set: heldout, q: "someone is having a seizure", expect: []}
-  - {set: heldout, q: "bee sting allergic reaction", expect: []}
+  - {set: heldout, q: "someone is having a seizure", expect: [seizures]}
+  - {set: heldout, q: "bee sting allergic reaction", expect: [anaphylaxis]}
   - {set: heldout, q: "how to build a shelter in the forest", expect: []}
   - {set: heldout, q: "my car battery is dead", expect: []}
-  - {set: heldout, q: "child swallowed bleach", expect: []}
-  - {set: heldout, q: "broken leg splint", expect: []}
-  - {set: heldout, q: "chest pain and arm numb", expect: []}
+  - {set: heldout, q: "jellyfish sting at the beach", expect: []}
+  - {set: heldout, q: "how to fix a leaking pipe under the sink", expect: []}
+  - {set: heldout, q: "how do I tie a bowline knot", expect: []}
+  - {set: heldout, q: "chipped my front tooth", expect: []}
+  - {set: heldout, q: "my eye is red and itchy", expect: []}
+  - {set: heldout, q: "child swallowed bleach", expect: [poisoning]}
+  - {set: heldout, q: "broken leg splint", expect: [broken-bones]}
+  - {set: heldout, q: "chest pain and arm numb", expect: [heart-attack]}

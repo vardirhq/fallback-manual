@@ -379,7 +379,9 @@ def test_new_article_assigns_next_code():
             if (m := re.search(r"^code:\s*FA-(\d+)\s*$", f.read_text(encoding="utf-8"), re.M))]
     assert used, "the real articles include first-aid ones"
     assert next_code("first-aid") == f"FA-{max(used) + 1:02d}"   # one past the highest, never reused
-    assert next_code("shelter") == "SH-01"     # no shelter articles yet
+    from tools.new_article import categories
+    empty = next(c for c in categories() if not any((ARTICLES / c["id"]).glob("*.md")))
+    assert next_code(empty["id"]) == f"{empty['code']}-01"   # a category with no articles starts at 01
 
 
 
