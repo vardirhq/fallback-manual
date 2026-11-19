@@ -84,6 +84,13 @@ questions:
   - {set: dev, q: "can I fill containers with tap water for emergencies", expect: [emergency-water-storage]}
   - {set: dev, q: "how often should I replace my stored drinking water", expect: [emergency-water-storage]}
 
+  # --- emergency-supplies ---
+  - {set: dev, q: "what supplies should my family have for an emergency", expect: [emergency-supplies]}
+  - {set: dev, q: "what should I put in a home emergency kit", expect: [emergency-supplies]}
+  # --- evacuation ---
+  - {set: dev, q: "officials say we have to leave our home where do we go", expect: [evacuation]}
+  - {set: dev, q: "what should I take when I evacuate", expect: [evacuation]}
+
   # --- not in the library: the correct answer is "no match" ---
   - {set: dev, q: "how do I fix a flat bike tire", expect: []}
   - {set: dev, q: "snake bite", expect: []}
