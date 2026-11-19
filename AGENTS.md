@@ -16,7 +16,7 @@ If it prints `RESULT: FAIL`, it lists every problem with a "Fix:". Do what it sa
 
 ## Rules you must never break
 
-1. **Never set `status: reviewed`.** New and edited articles are always `status: draft`. Only a human expert reviews articles.
+1. **Never set `status: reviewed`, and never run `python -m tools.apply_review`.** New and edited articles are always `status: draft`. Only a human expert reviews articles, and only the project owner applies their sign-off.
 2. **Never fill in `reviewer`, `date` or `review_by`.** Leave all three as `null`.
 3. **Never set `checked: true` on a source.** Always `checked: false`.
 4. **Never edit `knowledge/reviewers.yaml`, and never change an article's `code`** (e.g. `FA-02`). `python -m tools.new_article` assigns codes; they never change.

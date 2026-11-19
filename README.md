@@ -25,7 +25,8 @@ android/      Android app (Kotlin, Jetpack Compose)
   core/       database access and the Kotlin port of the search (plain JVM, unit-testable)
   app/        the app itself
 knowledge/    articles (Markdown + YAML), synonyms, stop words, categories
-tools/        build_kb.py: validates articles and compiles build/knowledge.db (+ knowledge-nb.db, ...)
+tools/        build_kb.py: validates articles and compiles build/knowledge.db (+ knowledge-nb.db, ...);
+              review_pack.py and apply_review.py: expert review
 retrieval/    search.py: Layer 0 search (FTS5 + synonyms + typo fixes + confidence)
 evaluation/   benchmark questions and runner
 tests/        pytest suite
@@ -47,6 +48,26 @@ python -m retrieval.search "someone is shivering and confused"
 python -m evaluation.run_benchmark --failures
 python -m pytest -q
 ```
+
+## Expert review
+
+Nothing reaches a release until a qualified person has reviewed it: release builds include only
+reviewed articles. Reviewers don't need git or any tools:
+
+1. Add the reviewer to `knowledge/reviewers.yaml` (name, qualification, areas). Only the project
+   owner does this.
+2. Build a review pack: `python -m tools.review_pack` writes `build/review/`, with an index and one
+   page per article and language (`--only cpr,choking` for just some). CI also builds it as the
+   `review-pack` artifact. The pages work offline: zip the folder and send it.
+3. The reviewer reads each article, opens its sources, ticks the checklist, and saves or copies a
+   sign-off from the bottom of the page: approve, or changes needed with comments.
+4. Apply returned sign-offs: `python -m tools.apply_review review-cpr.yaml ...`. It refuses a
+   sign-off from someone not in `reviewers.yaml`, one for an article that has changed since the
+   pack was made (each sign-off carries the article's version and a fingerprint of its text), or
+   one that doesn't confirm every source. A "changes needed" sign-off prints the comments instead.
+5. Run `python -m tools.check` and commit.
+
+Editing a reviewed article sets it back to draft (see AGENTS.md), so it needs a new review.
 
 ## Android app
 
