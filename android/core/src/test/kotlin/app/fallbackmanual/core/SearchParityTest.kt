@@ -55,7 +55,7 @@ class SearchParityTest {
     fun readsArticles() {
         val cats = kb.categories()
         assertTrue(cats.any { it.id == "first-aid" && it.title == "First aid" && it.articleCount >= 3 })
-        assertTrue(kb.highRiskArticles().any { it.id == "severe-bleeding" })
+        assertTrue(kb.emergencyArticles().any { it.id == "severe-bleeding" })
         val a = assertNotNull(kb.article("hypothermia")).let { kb.article("hypothermia")!! }
         assertEquals("Hypothermia", a.title)
         assertFalse(a.reviewed)

@@ -36,7 +36,8 @@ class KnowledgeBase private constructor(private val connection: SQLiteConnection
     fun articles(category: String): List<ArticleSummary> =
         summaries("WHERE a.category = ? ORDER BY a.code", category)
 
-    fun highRiskArticles(): List<ArticleSummary> = summaries("WHERE a.high_risk = 1 ORDER BY a.title")
+    /** The home screen's short list of act-now topics (articles with emergency: true). */
+    fun emergencyArticles(): List<ArticleSummary> = summaries("WHERE a.emergency = 1 ORDER BY a.title")
 
     fun summaries(ids: Collection<String>): List<ArticleSummary> {
         val wanted = ids.toSet()
@@ -99,7 +100,7 @@ class KnowledgeBase private constructor(private val connection: SQLiteConnection
     override fun close() = connection.close()
 
     companion object {
-        const val SUPPORTED_SCHEMA = 3
+        const val SUPPORTED_SCHEMA = 4
 
         fun open(path: String): KnowledgeBase =
             KnowledgeBase(BundledSQLiteDriver().open(path, SQLITE_OPEN_READONLY))

@@ -130,11 +130,56 @@ questions:
   # --- evacuation (nb) ---
   - {set: dev, lang: nb, q: "politiet sier vi må forlate huset nå", expect: [evacuation]}
   - {set: dev, lang: nb, q: "hva skal jeg ta med når vi må evakuere", expect: [evacuation]}
+  # --- choking (nb) ---
+  - {set: dev, lang: nb, q: "mannen min har fått kjøtt i halsen", expect: [choking]}
+  - {set: dev, lang: nb, q: "hun kveles og klarer ikke å hoste", expect: [choking]}
+  # --- stroke (nb) ---
+  - {set: dev, lang: nb, q: "munnen henger på den ene siden", expect: [stroke]}
+  - {set: dev, lang: nb, q: "bestefar snøvler plutselig og armen er svak", expect: [stroke]}
+  # --- heatstroke (nb) ---
+  - {set: dev, lang: nb, q: "svimmel og kvalm etter mange timer i sola", expect: [heatstroke]}
+  - {set: dev, lang: nb, q: "førstehjelp ved heteslag", expect: [heatstroke]}
+  # --- frostbite (nb) ---
+  - {set: dev, lang: nb, q: "fingrene er hvite og nummen etter skituren", expect: [frostbite]}
+  - {set: dev, lang: nb, q: "hvordan varme opp frosne tær", expect: [frostbite]}
+  # --- bleach-water (nb) ---
+  - {set: dev, lang: nb, q: "hvor mye klorin i drikkevannet", expect: [bleach-water]}
+  - {set: dev, lang: nb, q: "rense vann med klordråper", expect: [bleach-water]}
+  # --- emergency-toilet (nb) ---
+  - {set: dev, lang: nb, q: "do-en kan ikke skylles fordi vannet er borte", expect: [emergency-toilet]}
+  - {set: dev, lang: nb, q: "lage toalett av en bøtte", expect: [emergency-toilet]}
+  # --- generator-safety (nb) ---
+  - {set: dev, lang: nb, q: "hvor skal strømaggregatet stå under strømbruddet", expect: [generator-safety]}
+  - {set: dev, lang: nb, q: "hvor langt unna huset skal aggregatet være", expect: [generator-safety]}
   # --- not in the library (nb) ---
   - {set: dev, lang: nb, q: "hvordan fikser jeg en punktert sykkel", expect: []}
   - {set: dev, lang: nb, q: "hvordan baker jeg brød", expect: []}
   - {set: dev, lang: nb, q: "beste måte å lære gitar", expect: []}
 
+  # --- choking ---
+  - {set: dev, q: "my husband is choking on meat", expect: [choking]}
+  - {set: dev, q: "food stuck in throat and she can't cough", expect: [choking]}
+  - {set: dev, q: "how to do the heimlich", expect: [choking]}
+  # --- stroke ---
+  - {set: dev, q: "her face is drooping on one side", expect: [stroke]}
+  - {set: dev, q: "grandpa suddenly slurring words and arm is weak", expect: [stroke]}
+  - {set: dev, q: "signs of a stroke", expect: [stroke]}
+  # --- heatstroke ---
+  - {set: dev, q: "dizzy and sick after hours in the sun", expect: [heatstroke]}
+  - {set: dev, q: "overheated and confused during a heatwave", expect: [heatstroke]}
+  - {set: dev, q: "heat stroke first aid", expect: [heatstroke]}
+  # --- frostbite ---
+  - {set: dev, q: "fingers numb and white after skiing", expect: [frostbite]}
+  - {set: dev, q: "how to warm frozen toes", expect: [frostbite]}
+  # --- bleach-water ---
+  - {set: dev, q: "how much bleach to purify drinking water", expect: [bleach-water]}
+  - {set: dev, q: "use chlorine drops to treat water", expect: [bleach-water]}
+  # --- emergency-toilet ---
+  - {set: dev, q: "toilet won't flush because there is no water", expect: [emergency-toilet]}
+  - {set: dev, q: "make a bucket toilet", expect: [emergency-toilet]}
+  # --- generator-safety ---
+  - {set: dev, q: "where to put a generator during a blackout", expect: [generator-safety]}
+  - {set: dev, q: "is it safe to run a generator in the garage", expect: [generator-safety, carbon-monoxide]}
   # --- not in the library: the correct answer is "no match" ---
   - {set: dev, q: "how do I fix a flat bike tire", expect: []}
   - {set: dev, q: "snake bite", expect: []}

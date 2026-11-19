@@ -7,6 +7,7 @@ icon: snowflake
 status: draft
 version: 3
 high_risk: true
+emergency: true
 license: CC-BY-4.0
 situations:
   - someone is shivering and confused

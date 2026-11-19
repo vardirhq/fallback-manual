@@ -32,7 +32,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,16 +42,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -270,7 +278,31 @@ fun EmergencyTile(a: ArticleSummary, modifier: Modifier = Modifier, onClick: () 
             Spacer(Modifier.weight(1f))
             Text(a.code, style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), color = fm.onOrange)
         }
-        Text(a.title, style = MaterialTheme.typography.titleLarge, color = fm.onOrange, modifier = Modifier.padding(top = 10.dp))
+        WholeWordsTitle(a.title, MaterialTheme.typography.titleLarge, fm.onOrange, Modifier.padding(top = 10.dp))
+    }
+}
+
+/**
+ * A title that never breaks inside a word: long words (Norwegian compounds such as
+ * "Kullosforgiftning") shrink the text just enough to fit on one line. Lines may still break
+ * at spaces and after hyphens ("Hjerte-lunge-redning").
+ */
+@Composable
+private fun WholeWordsTitle(text: String, style: TextStyle, color: Color, modifier: Modifier = Modifier) {
+    val measurer = rememberTextMeasurer()
+    var available by remember { mutableIntStateOf(0) } // width in pixels, known after the first layout
+    val fitted = remember(text, style, available) {
+        val widest = text.split(" ").flatMap { it.split(Regex("(?<=-)")) }.filter { it.isNotEmpty() }
+            .maxOfOrNull { measurer.measure(it, style, softWrap = false).size.width } ?: 0
+        if (available == 0 || widest <= available) style
+        else (available.toFloat() / widest * 0.98f).let { s ->
+            style.copy(fontSize = style.fontSize * s, lineHeight = style.lineHeight * s)
+        }
+    }
+    Box(modifier.fillMaxWidth().onSizeChanged { available = it.width }) {
+        // A zero-width space after each hyphen lets the line break there. Screen readers get the plain title.
+        Text(text.replace("-", "-\u200B"), style = fitted, color = color,
+            modifier = Modifier.clearAndSetSemantics { this.text = AnnotatedString(text) })
     }
 }
 

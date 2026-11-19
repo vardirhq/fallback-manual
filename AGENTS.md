@@ -20,10 +20,11 @@ If it prints `RESULT: FAIL`, it lists every problem with a "Fix:". Do what it sa
 2. **Never fill in `reviewer`, `date` or `review_by`.** Leave all three as `null`.
 3. **Never set `checked: true` on a source.** Always `checked: false`.
 4. **Never edit `knowledge/reviewers.yaml`, and never change an article's `code`** (e.g. `FA-02`). `python -m tools.new_article` assigns codes; they never change.
-5. **Never invent facts.** Every instruction, number, time, temperature, distance and amount must come from one of the sources you list. If the sources don't say it, leave it out, even if it seems like good advice.
-6. **Never copy text word for word** from a source. Write it in your own plain words. (Sources are often copyrighted; the articles are CC-BY-4.0.)
-7. **Never change a question to make a check pass**, and never add or change questions with `set: heldout`. Only add `set: dev` questions.
-8. **Only edit these files:**
+5. **Never add, remove or change `emergency: true`** unless the person you work for asks. It puts an article on the home screen's short list of act-now topics, which a person curates.
+6. **Never invent facts.** Every instruction, number, time, temperature, distance and amount must come from one of the sources you list. If the sources don't say it, leave it out, even if it seems like good advice.
+7. **Never copy text word for word** from a source. Write it in your own plain words. (Sources are often copyrighted; the articles are CC-BY-4.0.)
+8. **Never change a question to make a check pass**, and never add or change questions with `set: heldout`. Only add `set: dev` questions.
+9. **Only edit these files:**
    - `knowledge/articles/**/*.md` (articles)
    - `evaluation/questions.yaml` (only add `set: dev` lines)
    - `knowledge/synonyms.yaml` and `knowledge/synonyms.nb.yaml` (only if a check tells you to)
@@ -222,7 +223,7 @@ Translations of the article (`<id>.nb.md` and so on) now show a warning that the
 Translations are separate files next to the English article. Today the only other language is Norwegian Bokmål (`nb`). The English article is always the original; a translation says the same thing in another language, nothing more and nothing less.
 
 1. Copy `knowledge/articles/<category>/<id>.md` to `knowledge/articles/<category>/<id>.nb.md` (or open the existing translation).
-2. Make the header exactly these fields, in this order. Remove every other field (`category`, `code`, `high_risk`, `icon`, `rhythm`, `diagrams_needed`): the translation takes them from the English article.
+2. Make the header exactly these fields, in this order. Remove every other field (`category`, `code`, `high_risk`, `emergency`, `icon`, `rhythm`, `diagrams_needed`): the translation takes them from the English article.
 
    ```yaml
    id: <same id as the English article>

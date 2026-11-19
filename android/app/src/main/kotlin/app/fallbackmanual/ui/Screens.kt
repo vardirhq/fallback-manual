@@ -111,7 +111,7 @@ private data class HomeData(
 @Composable
 fun HomeScreen(go: (String) -> Unit, bottomBar: @Composable () -> Unit) {
     val ids = LocalBookmarks.current.ids
-    val data = load(ids) { kb -> HomeData(kb.info.releaseBuild, kb.highRiskArticles(), kb.categories(), kb.summaries(ids)) }
+    val data = load(ids) { kb -> HomeData(kb.info.releaseBuild, kb.emergencyArticles(), kb.categories(), kb.summaries(ids)) }
     val list = rememberLazyListState()
     Scaffold(containerColor = fm.bg, bottomBar = bottomBar) { pad ->
         Loaded(data) { d ->

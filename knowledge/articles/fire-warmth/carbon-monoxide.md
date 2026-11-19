@@ -7,6 +7,7 @@ icon: cloud
 status: draft
 version: 5
 high_risk: true
+emergency: true
 license: CC-BY-4.0
 situations:
   - headache and dizziness while using a heater, stove or generator indoors

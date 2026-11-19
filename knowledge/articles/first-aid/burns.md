@@ -7,6 +7,7 @@ icon: flame
 status: draft
 version: 2
 high_risk: true
+emergency: true
 license: CC-BY-4.0
 situations:
   - someone burned their skin on fire or a hot surface
