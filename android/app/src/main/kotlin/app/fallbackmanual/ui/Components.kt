@@ -1,5 +1,8 @@
 package app.fallbackmanual.ui
 
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import app.fallbackmanual.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,7 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -78,19 +80,13 @@ fun Bar(title: String, onBack: (() -> Unit)?, actions: @Composable RowScope.() -
     }
 }
 
-/** The brand mark: a black tile with an orange bookmark ribbon ("the page you keep for emergencies"). */
+/** The brand mark (res/drawable/logo_mark.xml): an F whose stem and middle bar form a white plus. */
 @Composable
 fun LogoMark(size: Int = 30) {
-    val ribbon = GenericShape { s, _ ->
-        moveTo(0f, 0f); lineTo(s.width, 0f); lineTo(s.width, s.height); lineTo(s.width / 2, s.height * 0.76f)
-        lineTo(0f, s.height); close()
-    }
-    Box(Modifier.size(size.dp).clip(RoundedCornerShape((size / 4.3f).dp)).background(fm.ink)) {
-        Box(
-            Modifier.align(Alignment.TopEnd).padding(end = (size * 0.23f).dp)
-                .size(width = (size * 0.27f).dp, height = (size * 0.57f).dp).background(fm.orange, ribbon),
-        )
-    }
+    Image(
+        painterResource(R.drawable.logo_mark), contentDescription = null,
+        modifier = Modifier.size(size.dp).clip(RoundedCornerShape((size * 0.23f).dp)),
+    )
 }
 
 enum class Tab(val route: String, val label: String, val icon: String) {

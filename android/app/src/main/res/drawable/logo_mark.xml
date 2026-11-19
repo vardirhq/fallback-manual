@@ -1,0 +1,10 @@
+<!-- The Fallback Manual mark: an F whose stem and middle bar form a white first-aid plus.
+     Drawn on a 100 x 100 grid. ic_launcher_foreground.xml and ic_launcher_monochrome.xml use the
+     same shapes; change all three together. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp" android:height="100dp"
+    android:viewportWidth="100" android:viewportHeight="100">
+    <path android:fillColor="@color/logo_ink" android:pathData="M0,0 H100 V100 H0 Z" />
+    <path android:fillColor="@color/logo_orange" android:pathData="M39,20 H75 V37 H39 Z" />
+    <path android:fillColor="@color/logo_paper" android:pathData="M39,37 H53 V51 H67 V65 H53 V79 H39 V65 H25 V51 H39 Z" />
+</vector>
