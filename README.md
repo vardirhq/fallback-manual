@@ -70,9 +70,13 @@ reviewed articles. Reviewers don't need git or any tools:
      username in `reviewers.yaml` (`github: <username>`), because anyone can open an issue, and
      "Allow GitHub Actions to create and approve pull requests" switched on under Settings >
      Actions > General.
-   - **Without one:** they save or copy the sign-off and send it to you. Run
-     `python -m tools.apply_review <file>` on it (a pasted email works too), then
-     `python -m tools.check`, and commit.
+   - **Without one:** they press "Send review by email", which opens their mail program with the
+     sign-off filled in, addressed to the repository variable `REVIEW_EMAIL` (Settings > Secrets
+     and variables > Actions > Variables; without it the button is hidden, and they can save or
+     copy the sign-off instead). Paste the email into a new issue: an issue from the repository's
+     owner or an organization member counts as a relay, so the same workflow opens the pull
+     request, skipping only the GitHub account check. Or apply it by hand:
+     `python -m tools.apply_review <file>`, then `python -m tools.check`, and commit.
 4. Either way, a sign-off is refused if the reviewer isn't in `reviewers.yaml`, if the article has
    changed since they read it (each sign-off carries the article's version and a fingerprint of
    its text), or if it doesn't confirm every source.

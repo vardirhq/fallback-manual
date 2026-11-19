@@ -174,3 +174,35 @@ def test_page_script_has_no_line_breaks_inside_strings():
     for n, line in enumerate(review_pack.SCRIPT.splitlines(), 1):
         code = re.sub(r"\\.", "", line)
         assert code.count("'") % 2 == 0, f"line {n} of the page script has an unclosed string: {line}"
+
+
+def test_signoff_relayed_by_a_maintainer_from_an_email(manual, tmp_path):
+    # The reviewer has no GitHub account: they emailed the sign-off, and the owner pasted the email
+    # (quoted, with a signature) into an issue.
+    s = yaml.safe_dump(signoff(comments="Looks good.\nOne thing: step 3."), sort_keys=False, allow_unicode=True)
+    email = ("Hi,\n\nHere is my review.\n\n" + "".join("> " + l + "\n" for l in s.splitlines())
+             + "\nBest regards,\nDr. Example\nSent from my phone\n")
+    body = tmp_path / "issue.txt"
+    body.write_text(email)
+    result = tmp_path / "result.json"
+    assert apply_review.main(["--relayed-by", "owner", "--result", str(result), str(body)]) == 0
+    out = json.loads(result.read_text())
+    assert out["outcome"] == "applied" and out["relayed_by"] == "owner"
+    assert "status: reviewed" in (manual / "cpr.md").read_text()
+
+
+def test_relaying_still_needs_a_registered_reviewer(manual, tmp_path):
+    body = tmp_path / "issue.txt"
+    body.write_text(issue_body(signoff(reviewer="Someone Unknown")))
+    result = tmp_path / "result.json"
+    assert apply_review.main(["--relayed-by", "owner", "--result", str(result), str(body)]) == 1
+    assert "not in knowledge/reviewers.yaml" in json.loads(result.read_text())["message"]
+
+
+def test_email_button_only_with_a_review_address(tmp_path, monkeypatch):
+    review_pack.build_pack(tmp_path / "without", only={"cpr"})
+    assert "sendEmail()\">" not in (tmp_path / "without" / "cpr.html").read_text()
+    monkeypatch.setattr(review_pack, "REVIEW_EMAIL", "reviews@example.org")
+    review_pack.build_pack(tmp_path / "with", only={"cpr"})
+    page = (tmp_path / "with" / "cpr.html").read_text()
+    assert "Send review by email" in page and "reviews@example.org" in page

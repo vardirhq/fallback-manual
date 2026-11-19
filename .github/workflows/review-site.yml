@@ -28,6 +28,9 @@ jobs:
           python-version: "3.12"
       - run: pip install -r requirements-dev.txt
       - name: Build the review pack
+        env:
+          # Optional repository variable: where "Send review by email" sends sign-offs.
+          REVIEW_EMAIL: ${{ vars.REVIEW_EMAIL }}
         run: python -m tools.review_pack --out _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
