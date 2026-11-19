@@ -5,7 +5,7 @@ Usage:
         --license public-domain --creator "US Department of the Army" \\
         --source "https://.../FM-21-76.pdf, figure 4-12" --not-ai-generated
 
-Then put it in an article, on its own line directly under the step it belongs to:
+Then put it in an article, on its own line directly under the step, bullet or paragraph it shows:
     ![Hands stacked on the center of the chest, arms straight](image:cpr-hand-position)
 """
 
@@ -85,7 +85,7 @@ def main(argv: list[str] | None = None) -> int:
     IMAGES_FILE.write_text(header + "\n" + yaml.safe_dump({"images": entries}, sort_keys=False, allow_unicode=True),
                            encoding="utf-8")
     print(f"Added {out.relative_to(ROOT)} ({len(webp) // 1024} KB).")
-    print("Next: put it in an article, on its own line directly under its step:")
+    print("Next: put it in an article, on its own line directly under the step, bullet or paragraph it shows:")
     print(f"  ![<what the picture shows>](image:{args.id})")
     return 0
 

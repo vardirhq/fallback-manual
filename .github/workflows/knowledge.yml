@@ -36,6 +36,12 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+          # Reuse downloaded Gradle dependencies between runs. Without this every run fetches
+          # everything from Maven Central again, which rate-limits busy CI (HTTP 429).
+          cache: gradle
+          cache-dependency-path: |
+            android/**/*.gradle.kts
+            android/gradle/wrapper/gradle-wrapper.properties
       - name: Unit, parity and screen tests
         working-directory: android
         run: ./gradlew --no-daemon :core:test :app:testDebugUnitTest

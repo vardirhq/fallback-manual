@@ -5,7 +5,7 @@ category: fire-warmth
 code: FW-01
 icon: cloud
 status: draft
-version: 4
+version: 5
 high_risk: true
 license: CC-BY-4.0
 situations:
@@ -51,6 +51,7 @@ Use this when anyone is burning fuel indoors or nearby (generators, grills, camp
 ## Warnings
 
 - Never use generators, charcoal or gas grills, or camping stoves inside a home, garage, basement, tent or covered porch, even with doors or windows open.
+![US safety label: never run a generator inside a home or garage, even with doors and windows open; only outside, far from windows, doors and vents](image:generator-co-warning)
 - Place generators outdoors at least 6 m (20 ft) away from doors, windows and vents.
 - Never use a gas oven or stove to heat a home.
 - Never run a car in a closed garage.
