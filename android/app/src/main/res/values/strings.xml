@@ -82,7 +82,7 @@
     <string name="step_spoken">Step %1$s. %2$s</string>
     <string name="state_on">On</string>
     <string name="state_off">Off</string>
-    <string name="voice_missing">No voice installed on this phone</string>
+    <string name="voice_missing">No voice for this language on this phone</string>
     <string name="voice_reading">Reading aloud · tap to stop</string>
     <string name="voice_read">Read steps aloud</string>
     <string name="step_back">BACK</string>
@@ -110,6 +110,14 @@
     <!-- Saved -->
     <string name="bar_on_this_phone">On this phone</string>
     <string name="nothing_saved">Nothing saved yet. Tap the bookmark on an article to keep it here for quick access.</string>
+
+    <!-- Settings. The language names themselves are not translated: each is written in its own language. -->
+    <string name="settings">Settings</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_theme">Appearance</string>
+    <string name="settings_system_default">Same as the phone</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
 
     <!-- About -->
     <string name="about_tagline">Knowledge when everything else fails.</string>

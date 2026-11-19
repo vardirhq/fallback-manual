@@ -1,5 +1,9 @@
 package app.fallbackmanual
 
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.onAllNodesWithText
+import org.junit.Assert.assertEquals
+import androidx.test.core.app.ApplicationProvider
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
@@ -204,5 +208,23 @@ class AppScreensTest {
     fun darkMode() {
         waitFor("EMERGENCY")
         shot("06-home-dark")
+    }
+
+    @Test
+    fun settingsSwitchTheTheme() {
+        val settings = (ApplicationProvider.getApplicationContext<FallbackApp>()).settings
+        waitFor("EMERGENCY")
+        rule.onNodeWithContentDescription("Settings").performClick()
+        waitFor("APPEARANCE")
+        rule.onAllNodesWithText("Same as the phone").assertCountEquals(2) // language and appearance
+        rule.onNodeWithText("Norsk bokmål").assertExists()
+        rule.onNodeWithText("Dark").performClick()
+        rule.waitForIdle()
+        assertEquals(ThemeMode.Dark, settings.theme)
+        shot("18-settings-dark")
+        rule.onNodeWithText("Light").performClick()
+        rule.waitForIdle()
+        assertEquals(ThemeMode.Light, settings.theme)
+        settings.theme = ThemeMode.System
     }
 }

@@ -1,5 +1,14 @@
 package app.fallbackmanual.ui
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import app.fallbackmanual.Settings
+import app.fallbackmanual.ThemeMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -67,6 +76,7 @@ import kotlinx.coroutines.withContext
 
 val LocalStore = staticCompositionLocalOf<KnowledgeStore> { error("no KnowledgeStore") }
 val LocalBookmarks = staticCompositionLocalOf<Bookmarks> { error("no Bookmarks") }
+val LocalSettings = staticCompositionLocalOf<Settings> { error("no Settings") }
 
 /** Loads data from the knowledge base off the main thread. Null while loading. */
 @Composable
@@ -124,6 +134,9 @@ fun HomeScreen(go: (String) -> Unit, bottomBar: @Composable () -> Unit) {
                         LogoMark()
                         Text(stringResource(R.string.app_name).uppercase(), style = MaterialTheme.typography.titleLarge, color = fm.ink,
                             modifier = Modifier.weight(1f).padding(start = 10.dp))
+                        IconButton(onClick = { go("settings") }) {
+                            Icon(FmIcons.stroke(FmIcons.SETTINGS), contentDescription = stringResource(R.string.settings), tint = fm.muted)
+                        }
                         IconButton(onClick = { go("about") }) {
                             Icon(FmIcons.stroke(FmIcons.INFO), contentDescription = stringResource(R.string.about), tint = fm.muted)
                         }
@@ -437,6 +450,60 @@ fun AboutScreen(back: () -> Unit) {
             }
         }
     }
+}
+
+// -- Settings -----------------------------------------------------------------
+
+@Composable
+fun SettingsScreen(back: () -> Unit) {
+    val settings = LocalSettings.current
+    val activity = LocalContext.current.findActivity()
+    val language = remember { settings.language() }
+    Scaffold(containerColor = fm.bg, topBar = { Bar(stringResource(R.string.settings), back) }) { pad ->
+        Column(Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+            ScreenTitle(stringResource(R.string.settings))
+            SectionLabel(stringResource(R.string.settings_language), Modifier.padding(Gutter))
+            Column(Modifier.selectableGroup()) {
+                ChoiceRow(stringResource(R.string.settings_system_default), language == null) {
+                    activity?.let { settings.setLanguage(it, null) }
+                }
+                // Each language is named in its own language, so a reader can always find theirs.
+                Settings.LANGUAGES.forEach { (tag, name) ->
+                    ChoiceRow(name, language == tag) { activity?.let { settings.setLanguage(it, tag) } }
+                }
+            }
+            SectionLabel(stringResource(R.string.settings_theme), Modifier.padding(Gutter))
+            Column(Modifier.selectableGroup()) {
+                listOf(
+                    ThemeMode.System to R.string.settings_system_default,
+                    ThemeMode.Light to R.string.theme_light,
+                    ThemeMode.Dark to R.string.theme_dark,
+                ).forEach { (mode, label) ->
+                    ChoiceRow(stringResource(label), settings.theme == mode) { settings.theme = mode }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChoiceRow(label: String, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 56.dp)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = null,
+            colors = RadioButtonDefaults.colors(selectedColor = fm.accentText, unselectedColor = fm.muted))
+        Text(label, style = MaterialTheme.typography.titleMedium, color = fm.ink, modifier = Modifier.padding(start = 14.dp))
+    }
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 // -- Installation (part of About) ---------------------------------------------

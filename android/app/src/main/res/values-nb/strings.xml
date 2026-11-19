@@ -73,7 +73,7 @@
     <string name="step_spoken">Trinn %1$s. %2$s</string>
     <string name="state_on">På</string>
     <string name="state_off">Av</string>
-    <string name="voice_missing">Ingen stemme er installert på denne telefonen</string>
+    <string name="voice_missing">Ingen stemme for dette språket på telefonen</string>
     <string name="voice_reading">Leser opp · trykk for å stoppe</string>
     <string name="voice_read">Les opp trinnene</string>
     <string name="step_back">TILBAKE</string>
@@ -100,6 +100,14 @@
     <!-- Saved -->
     <string name="bar_on_this_phone">På denne telefonen</string>
     <string name="nothing_saved">Ingenting er lagret ennå. Trykk på bokmerket i en artikkel for å ha den her når du trenger den.</string>
+
+    <!-- Settings -->
+    <string name="settings">Innstillinger</string>
+    <string name="settings_language">Språk</string>
+    <string name="settings_theme">Utseende</string>
+    <string name="settings_system_default">Som telefonen</string>
+    <string name="theme_light">Lyst</string>
+    <string name="theme_dark">Mørkt</string>
 
     <!-- About -->
     <string name="about_tagline">Kunnskap når alt annet svikter.</string>
