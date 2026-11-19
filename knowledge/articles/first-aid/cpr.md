@@ -7,6 +7,7 @@ icon: heart-pulse
 status: draft
 version: 5
 high_risk: true
+emergency: true
 # Beat guide in step-by-step mode for the compression steps (sources: 100-120 a minute).
 rhythm: {bpm: 110, from_step: 9, to_step: 13}
 license: CC-BY-4.0

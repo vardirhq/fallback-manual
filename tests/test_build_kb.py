@@ -202,6 +202,20 @@ def test_high_risk_needs_two_publishers(kb):  # the fixture has one publisher
     assert "at least 2 different publishers" in _errors(kb, article(high_risk=True))
 
 
+TWO_SOURCES = [{"title": "A source", "publisher": "A publisher", "url": "https://example.org/a", "checked": False},
+               {"title": "B source", "publisher": "B publisher", "url": "https://example.org/b", "checked": False}]
+
+
+def test_emergency_is_stored_and_only_for_high_risk(kb):
+    report, out = kb(article(high_risk=True, emergency=True, sources=TWO_SOURCES))
+    assert report.errors == []
+    assert sqlite3.connect(out).execute("SELECT emergency FROM articles").fetchall() == [(1,)]
+    report, out = kb(article())  # left out means not on the home screen's list
+    assert sqlite3.connect(out).execute("SELECT emergency FROM articles").fetchall() == [(0,)]
+    assert "only for high_risk articles" in _errors(kb, article(emergency=True))
+    assert "emergency must be true or false" in _errors(kb, article(high_risk=True, emergency="yes", sources=TWO_SOURCES))
+
+
 def test_all_problems_reported_in_one_pass(kb):
     text = article(id_="test-article", license="MIT", version="1").replace("situations:", "situation:")
     errs = _errors(kb, text)
@@ -359,8 +373,12 @@ def test_rhythm_and_icon_stored(kb):
 
 
 def test_new_article_assigns_next_code():
-    from tools.new_article import next_code
-    assert next_code("first-aid") == "FA-06"   # FA-01..FA-05 exist
+    import re
+    from tools.new_article import ARTICLES, next_code
+    used = [int(m.group(1)) for f in ARTICLES.glob("*/*.md")
+            if (m := re.search(r"^code:\s*FA-(\d+)\s*$", f.read_text(encoding="utf-8"), re.M))]
+    assert used, "the real articles include first-aid ones"
+    assert next_code("first-aid") == f"FA-{max(used) + 1:02d}"   # one past the highest, never reused
     assert next_code("shelter") == "SH-01"     # no shelter articles yet
 
 
@@ -460,6 +478,7 @@ def test_release_leaves_out_draft_translations_without_failing(kb, tmp_path, mon
 @pytest.mark.parametrize("text, expected", [
     (translation(code="FA-09"), "remove 'code'"),
     (translation(high_risk=True), "remove 'high_risk'"),
+    (translation(emergency=True), "remove 'emergency'"),
     (translation(lang="en"), "lang must be nb"),
     (translation(translation_of="one"), "translation_of must be the version number"),
     (translation(translation_of=5), "only at version 1"),
