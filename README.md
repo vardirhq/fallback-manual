@@ -25,7 +25,7 @@ android/      Android app (Kotlin, Jetpack Compose)
   core/       database access and the Kotlin port of the search (plain JVM, unit-testable)
   app/        the app itself
 knowledge/    articles (Markdown + YAML), synonyms, stop words, categories
-tools/        build_kb.py: validates articles and compiles build/knowledge.db
+tools/        build_kb.py: validates articles and compiles build/knowledge.db (+ knowledge-nb.db, ...)
 retrieval/    search.py: Layer 0 search (FTS5 + synonyms + typo fixes + confidence)
 evaluation/   benchmark questions and runner
 tests/        pytest suite
@@ -61,7 +61,7 @@ cd android
 ./gradlew :app:assembleRelease -PallowDrafts=true   # release-type build with drafts, for testing only
 ```
 
-What the app does today: step-by-step mode (one step at a time in very large text, screen kept on, read-aloud with the phone's offline voice, a beat guide for CPR compressions), emergency tiles for high-risk articles, browsing by category, articles with numbered steps, warnings, sources and review status, links between articles that open in a sheet over the current one (e.g. "start CPR" in the carbon monoxide article), natural-language search that says "no match" instead of guessing, saved articles, light and dark themes, and offline sharing (below). It has no internet permission.
+What the app does today: step-by-step mode (one step at a time in very large text, screen kept on, read-aloud with the phone's offline voice, a beat guide for CPR compressions), emergency tiles for high-risk articles, browsing by category, articles with numbered steps, warnings, sources and review status, links between articles that open in a sheet over the current one (e.g. "start CPR" in the carbon monoxide article), natural-language search that says "no match" instead of guessing, saved articles, light and dark themes, offline sharing (below), and English and Norwegian Bokmål: the app's text and the articles follow the phone's language, with the English article shown wherever a translation is missing or out of date. It has no internet permission.
 
 ### Offline sharing
 

@@ -376,3 +376,116 @@ def test_new_article_assigns_next_code():
 def test_pictures_allowed_under_bullets_and_paragraphs(kb_img, body):
     report, _ = kb_img(article(body=body), [IMG], {"test-pic.png": 0})
     assert report.errors == []
+
+
+# --- translations --------------------------------------------------------------
+
+NB_BODY = textwrap.dedent("""
+    ## Når brukes dette
+    Når det gjelder.
+
+    ## Dette trenger du
+    - Ting
+
+    ## Trinn
+    1. Gjør dette.
+    2. Så dette.
+
+    ## Advarsler
+    - Forsiktig.
+
+    ## Vanlige feil
+    - Uff.
+
+    ## Få hjelp
+    Ring noen.
+""")
+
+
+def translation(translation_of=1, body=NB_BODY, **overrides):
+    import yaml
+    meta = {
+        "id": "test-article", "lang": "nb", "translation_of": translation_of, "title": "Testartikkel",
+        "status": "draft", "version": 1, "license": "CC-BY-4.0",
+        "situations": ["noe skjedde nettopp", "noe annet skjedde"], "keywords": ["prøve", "eksempel", "test"],
+        "sources": [{"title": "A source", "publisher": "A publisher", "url": "https://example.org/a", "checked": False}],
+        "review": {"reviewer": None, "date": None, "review_by": None},
+    }
+    meta.update(overrides)
+    return "---\n" + yaml.safe_dump(meta, sort_keys=False, allow_unicode=True) + "---\n" + body
+
+
+@pytest.fixture
+def kb_nb(kb, tmp_path):
+    """Builds with the English test article plus a translation; returns (report, en db, nb db)."""
+    def make(text: str, english_version: int = 1, release=False):
+        (tmp_path / "articles" / "first-aid" / "test-article.nb.md").write_text(text)
+        report, out = kb(article(version=english_version), release=release)
+        return report, out, build_kb.db_path(out, "nb")
+    return make
+
+
+def test_translation_builds_into_its_own_database(kb_nb):
+    report, en, nb = kb_nb(translation())
+    assert report.errors == []
+    assert sqlite3.connect(en).execute("SELECT title FROM articles").fetchall() == [("Test article",)]
+    con = sqlite3.connect(nb)
+    # Code and category come from the English article; text and headings are Norwegian.
+    assert con.execute("SELECT title, code, category FROM articles").fetchall() == [("Testartikkel", "FA-01", "first-aid")]
+    assert "## Trinn" in con.execute("SELECT body_md FROM articles").fetchone()[0]
+    assert con.execute("SELECT value FROM meta WHERE key = 'lang'").fetchone() == ("nb",)
+    assert con.execute("SELECT title FROM categories WHERE id = 'first-aid'").fetchone() == ("Førstehjelp",)
+    assert con.execute("SELECT count(*) FROM articles_fts WHERE articles_fts MATCH 'skjedde'").fetchone() == (1,)
+
+
+def test_outdated_translation_warns_and_falls_back_to_english(kb_nb):
+    report, _, nb = kb_nb(translation(translation_of=1), english_version=2)
+    assert report.errors == []
+    assert any("outdated" in w and "translation_of: 2" in w for w in report.warnings)
+    assert sqlite3.connect(nb).execute("SELECT title FROM articles").fetchall() == [("Test article",)]
+
+
+def test_release_leaves_out_draft_translations_without_failing(kb, tmp_path, monkeypatch):
+    reviewers = tmp_path / "reviewers.yaml"
+    reviewers.write_text("reviewers:\n  - name: Dr. Example, MD\n    qualification: Physician\n")
+    monkeypatch.setattr(build_kb, "REVIEWERS_FILE", reviewers)
+    (tmp_path / "articles" / "first-aid" / "test-article.nb.md").write_text(translation())
+    report, out = kb(article(status="reviewed", reviewer="Dr. Example, MD"), release=True)
+    assert report.errors == []
+    # The draft translation is not shipped: Norwegian readers get the reviewed English article.
+    nb = sqlite3.connect(build_kb.db_path(out, "nb"))
+    assert nb.execute("SELECT title, status FROM articles").fetchall() == [("Test article", "reviewed")]
+
+
+@pytest.mark.parametrize("text, expected", [
+    (translation(code="FA-09"), "remove 'code'"),
+    (translation(high_risk=True), "remove 'high_risk'"),
+    (translation(lang="en"), "lang must be nb"),
+    (translation(translation_of="one"), "translation_of must be the version number"),
+    (translation(translation_of=5), "only at version 1"),
+    (translation(body=GOOD_BODY), "'## Når brukes dette'"),
+    (translation(body=NB_BODY.replace("2. Så dette.\n", "")), "needs at least 2 numbered steps"),
+    (translation(body=NB_BODY.replace("2. Så dette.", "2. Så dette.\n3. Og dette.")), "has 3 steps, but test-article.md has 2"),
+    (translation(body=NB_BODY.replace("- Forsiktig.", "- Forsiktig.\n- Mer.")), "has 2 warnings"),
+    (translation(body=NB_BODY + "\nSe [noe](article:missing)."), "must point to an existing article"),
+])
+def test_translation_rules(kb_nb, text, expected):
+    report, _, _ = kb_nb(text)
+    assert any(expected in e for e in report.errors), report.errors
+
+
+def test_translation_without_english_article_is_rejected(kb, tmp_path):
+    (tmp_path / "articles" / "first-aid" / "other.nb.md").write_text(translation(id="other"))
+    report, _ = kb(article())
+    assert any("no English article" in e for e in report.errors)
+
+
+def test_unknown_language_is_rejected(kb, tmp_path):
+    (tmp_path / "articles" / "first-aid" / "test-article.xx.md").write_text(translation())
+    report, _ = kb(article())
+    assert any("'xx' is not a language" in e for e in report.errors)
+
+
+def test_translations_skip_the_american_english_rule(kb_nb):
+    report, _, _ = kb_nb(translation(body=NB_BODY.replace("Ring noen.", "Ring noen. Colour centre.")))
+    assert report.errors == []

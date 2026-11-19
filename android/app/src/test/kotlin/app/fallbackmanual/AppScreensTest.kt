@@ -178,15 +178,22 @@ class AppScreensTest {
 
     @Config(qualifiers = "+nb")
     @Test
-    fun norwegianInterface() {
-        // Articles are still English; the app's own text follows the phone's language.
+    fun norwegian() {
+        // The app's text and the articles both follow the phone's language (knowledge-nb.db).
         waitFor("NØDSITUASJON")
         rule.onNodeWithText("Hva skjer?").assertExists()
+        rule.onNodeWithText("Hjerte-lunge-redning (voksne)").assertExists()
         shot("15-home-norwegian")
-        rule.onNodeWithText("Hypothermia").performClick()
+        rule.onNodeWithText("Nedkjøling (hypotermi)").performClick()
         waitFor("TRINN FOR TRINN")
         rule.onNodeWithText("Ring nødnummeret først").assertExists()
+        rule.onNodeWithText("NÅR BRUKES DETTE").assertExists()
         shot("16-article-norwegian")
+        rule.onNodeWithText("TRINN FOR TRINN").performClick()
+        // Step-by-step mode finds the steps by position, whatever the heading is called.
+        waitFor("TRINN 1 AV 8")
+        rule.onNodeWithText("Få personen bort fra kulde, vind og væte, helst inn i ly.").assertExists()
+        shot("17-step-mode-norwegian")
     }
 
     @Config(qualifiers = "+night")

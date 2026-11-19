@@ -69,7 +69,7 @@
     <!-- Step-by-step mode -->
     <string name="step_close">Lukk trinn for trinn</string>
     <string name="step_of">%1$s · TRINN %2$s AV %3$d</string>
-    <string name="screen_on">SKJERMEN ER PÅ</string>
+    <string name="screen_on">SKJERM PÅ</string>
     <string name="step_spoken">Trinn %1$s. %2$s</string>
     <string name="state_on">På</string>
     <string name="state_off">Av</string>

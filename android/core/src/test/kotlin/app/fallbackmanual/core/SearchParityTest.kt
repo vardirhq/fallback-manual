@@ -13,9 +13,16 @@ import java.io.File
 class SearchParityTest {
 
     @Test
-    fun matchesPythonReferenceForEveryQuery() {
-        val lines = File(System.getProperty("expected.path")).readLines().filter { it.isNotEmpty() || false }
-        assertTrue("expected results file is empty", lines.size > 50)
+    fun matchesPythonReferenceForEveryQuery() = checkParity(kb, "expected.path", minQueries = 50)
+
+    /** The Norwegian database: unstemmed search, its own stopwords and synonyms. */
+    @Test
+    fun matchesPythonReferenceForEveryNorwegianQuery() =
+        KnowledgeBase.open(System.getProperty("kb.nb.path")).use { checkParity(it, "expected.nb.path", minQueries = 10) }
+
+    private fun checkParity(kb: KnowledgeBase, expectedProperty: String, minQueries: Int) {
+        val lines = File(System.getProperty(expectedProperty)).readLines().filter { it.isNotEmpty() }
+        assertTrue("expected results file is too short", lines.size > minQueries)
         val failures = mutableListOf<String>()
         for (line in lines) {
             val cols = line.split('\t')

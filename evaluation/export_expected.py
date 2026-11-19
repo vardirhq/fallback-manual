@@ -24,15 +24,25 @@ EXTRA = [
     "power cut", "the lights are out", "no bars on my phone", "123", "généralement froid",
     "carbon monoxide", "co alarm beeping", "hypotermia", "rescued",
 ]
+# Norwegian: odd input, typos, English words (untranslated articles stay findable), and æøå.
+EXTRA_NB = [
+    "", "hva gjør jeg", "BLØR!!!", "han skjelver", "blødningen stopper ikke", "brannsår", "brannsar",
+    "strømmen er borte", "kullos", "hjertestans", "hypotermi", "hypothermia", "123", "ÆØÅ",
+]
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--db", type=Path, default=DEFAULT_DB)
-    ap.add_argument("--out", type=Path, default=ROOT / "build" / "expected_search.tsv")
+    ap.add_argument("--lang", default="en")
+    ap.add_argument("--db", type=Path, help="default: build/knowledge.db, or build/knowledge-<lang>.db")
+    ap.add_argument("--out", type=Path, help="default: build/expected_search.tsv, or build/expected_search-<lang>.tsv")
     args = ap.parse_args(argv)
+    from tools.build_kb import db_path
+    args.db = args.db or db_path(DEFAULT_DB, args.lang)
+    args.out = args.out or db_path(ROOT / "build" / "expected_search.tsv", args.lang)
 
-    qs = [q["q"] for q in yaml.safe_load(QUESTIONS.read_text(encoding="utf-8"))["questions"]] + EXTRA
+    all_qs = yaml.safe_load(QUESTIONS.read_text(encoding="utf-8"))["questions"]
+    qs = [q["q"] for q in all_qs if q.get("lang", "en") == args.lang] + (EXTRA if args.lang == "en" else EXTRA_NB)
     s = Searcher(args.db)
     lines = []
     for q in qs:

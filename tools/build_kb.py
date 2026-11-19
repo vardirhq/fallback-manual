@@ -43,6 +43,24 @@ SCHEMA_VERSION = 3  # 2: images table; 3: codes, icons, rhythm, lead
 REQUIRED_FIELDS = ["id", "title", "category", "code", "status", "version", "high_risk", "license",
                    "situations", "keywords", "sources", "review"]
 REQUIRED_SECTIONS = ["When to use", "What you need", "Steps", "Warnings", "Common mistakes", "Get help"]
+
+# Languages articles can be translated into. English is the original; a translation of
+# <category>/<id>.md is <category>/<id>.<lang>.md and must use these six headings, in this order.
+# Each language gets its own database: knowledge.db (English), knowledge-<lang>.db.
+LANGUAGES = {
+    "en": {"name": "English", "sections": REQUIRED_SECTIONS},
+    "nb": {"name": "Norwegian Bokmål",
+           "sections": ["Når brukes dette", "Dette trenger du", "Trinn", "Advarsler", "Vanlige feil", "Få hjelp"]},
+}
+# A translation's header has only these fields; the rest (category, code, high_risk, icon,
+# rhythm, diagrams_needed) always come from the English article, so they can't drift apart.
+TRANSLATION_REQUIRED = ["id", "lang", "translation_of", "title", "status", "version", "license",
+                        "situations", "keywords", "sources", "review"]
+INHERITED_FIELDS = ["category", "code", "high_risk", "icon", "rhythm", "diagrams_needed"]
+# Search: English words are stemmed ("burns" finds "burn"). SQLite has no stemmer for other
+# languages, so they are matched as whole words (with typo correction and synonyms).
+FTS_TOKENIZE = {"en": "porter unicode61 remove_diacritics 2"}
+FTS_TOKENIZE_OTHER = "unicode61 remove_diacritics 2"
 STATUSES = {"draft", "reviewed"}
 ID_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 WORD_RE = re.compile(r"[^\W_]+(?:['-][^\W_]+)*", re.UNICODE)
@@ -70,6 +88,8 @@ class Article:
     sections: dict[str, str] = field(default_factory=dict)
     images: list[tuple[str, int]] = field(default_factory=list)  # (image id, file line)
     step_count: int = 0
+    lang: str = "en"
+    translation_of: int | None = None  # for a translation: the English version it was made from
 
     @property
     def id(self) -> str:
@@ -208,6 +228,7 @@ def _is_str_list(v, min_len: int) -> bool:
 def validate(article: Article, report: Report, release: bool) -> None:
     """Checks one article. Every message says what is wrong and how to fix it."""
     p, meta = article.path, article.meta
+    stem = p.name[: -len(f".{article.lang}.md")] if article.lang != "en" else p.stem
     # --- header fields ------------------------------------------------------
     # Every check runs even when others fail, so all problems are reported in one pass.
     if p.name != p.name.lower() or not p.name.endswith(".md"):
@@ -218,7 +239,7 @@ def validate(article: Article, report: Report, release: bool) -> None:
             hint = f"Did you mean '{close[0]}'? " if close else ""
             report.error(p, f"unknown header field '{f}'. {hint}Fix: rename or remove it. "
                             f"Allowed fields: {', '.join(ALLOWED_FIELDS)}.")
-    for f in REQUIRED_FIELDS:
+    for f in REQUIRED_FIELDS if article.lang == "en" else []:  # translations: see load_translations
         if f not in meta and not difflib.get_close_matches(f, [str(k) for k in meta if k not in ALLOWED_FIELDS], n=1):
             report.error(p, f"missing header field '{f}'. Fix: copy it from knowledge/article-template.md.")
     has = meta.__contains__
@@ -226,10 +247,10 @@ def validate(article: Article, report: Report, release: bool) -> None:
     if has("id"):
         if not ID_RE.match(str(meta["id"])):
             report.error(p, f"id '{meta['id']}' is invalid. Fix: use lowercase words joined by hyphens, e.g. water-filtration.")
-        elif meta["id"] != p.stem:
+        elif meta["id"] != stem:
             report.error(p, f"id '{meta['id']}' does not match the file name '{p.name}'. Fix: make them identical "
-                            f"(id: {p.stem}).")
-    if not ID_RE.match(p.stem):
+                            f"(id: {stem}).")
+    if not ID_RE.match(stem):
         report.error(p, f"file name '{p.name}' is invalid. Fix: use lowercase words joined by hyphens, e.g. water-filtration.md.")
     if has("title"):
         title = meta["title"]
@@ -237,7 +258,7 @@ def validate(article: Article, report: Report, release: bool) -> None:
             report.error(p, "title is empty. Fix: give a short title, e.g. 'Filtering water'.")
         elif len(title) > 60 or title.rstrip().endswith("."):
             report.error(p, "title must be at most 60 characters and must not end with a full stop.")
-        elif BAD_TITLE_RE.search(title):
+        elif article.lang == "en" and BAD_TITLE_RE.search(title):
             report.error(p, f"title '{title}' describes reading about the problem. Fix: name the problem itself, "
                             "like the other articles do, e.g. 'Dehydration', 'Burns and scalds', 'Hypothermia'.")
     if has("category") and meta["category"] != p.parent.name:
@@ -347,6 +368,8 @@ def _check_spelling(p: Path, report: Report, where: str, text: str) -> None:
 
 def validate_body(article: Article, report: Report) -> None:
     p, body = article.path, article.body
+    english = article.lang == "en"
+    section_names = LANGUAGES[article.lang]["sections"]
     file_lines = p.read_text(encoding="utf-8").splitlines()
     # The body starts after the second '---' line; report positions as real file line numbers.
     dashes = [i for i, l in enumerate(file_lines) if l.strip() == "---"]
@@ -385,25 +408,30 @@ def validate_body(article: Article, report: Report) -> None:
             report.error(p, f"{where}: bullet items must start with '- '. Fix: replace '{stripped[0]}' with '-'.")
         elif re.search(r"<[a-zA-Z/][^>]*>", line):
             report.error(p, f"{where}: HTML is not supported. Fix: write plain text.")
-        _check_spelling(p, report, where, ARTICLE_LINK_RE.sub(r"\1", line))
+        if english:
+            _check_spelling(p, report, where, ARTICLE_LINK_RE.sub(r"\1", line))
     title_line = next((i for i, l in enumerate(file_lines) if l.startswith("title:")), None)
-    if title_line is not None:
+    if title_line is not None and english:
         _check_spelling(p, report, f"line {title_line + 1}", file_lines[title_line])
     check_file_text(p, report)
 
-    if headings != REQUIRED_SECTIONS:
+    if headings != section_names:
         report.error(p, "the body must have exactly these six headings, in this order: "
-                        + ", ".join(f"'## {h}'" for h in REQUIRED_SECTIONS)
+                        + ", ".join(f"'## {h}'" for h in section_names)
                         + f". Found: {', '.join(repr(h) for h in headings) or 'none'}.")
         return
     first = body.splitlines()[0].strip() if body else ""
-    if first != "## When to use":
-        report.error(p, "the body must start with '## When to use' right after the header.")
+    if first != f"## {section_names[0]}":
+        report.error(p, f"the body must start with '## {section_names[0]}' right after the header.")
+    # From here on, sections are known by their English names whatever the article's language;
+    # 'shown' gives the heading as written, for messages.
+    article.sections = {name: article.sections.get(local, "") for name, local in zip(REQUIRED_SECTIONS, section_names)}
+    shown = dict(zip(REQUIRED_SECTIONS, section_names))
 
     for name in REQUIRED_SECTIONS:
         text = article.sections.get(name, "")
         if not text:
-            report.error(p, f"section '## {name}' is empty.")
+            report.error(p, f"section '## {shown[name]}' is empty.")
             continue
         lines = [l for l in text.splitlines() if l.strip()]
         if name == "Steps":
@@ -411,13 +439,13 @@ def validate_body(article: Article, report: Report) -> None:
             for l in lines:
                 if IMAGE_LINE_RE.match(l.strip()):
                     if not nums:
-                        report.error(p, "a picture in '## Steps' must come directly under the step it belongs to, "
+                        report.error(p, f"a picture in '## {shown['Steps']}' must come directly under the step it belongs to, "
                                         "not before the first step.")
                         break
                     continue
                 m = re.match(r"^(\d+)\.\s+\S", l)
                 if not m:
-                    report.error(p, f"'## Steps' may only contain numbered steps ('1. Do this.'). "
+                    report.error(p, f"'## {shown['Steps']}' may only contain numbered steps ('1. Do this.'). "
                                     f"Found: '{l.strip()[:50]}'. Fix: make it a step or move it to another section.")
                     break
                 nums.append(int(m.group(1)))
@@ -431,22 +459,22 @@ def validate_body(article: Article, report: Report) -> None:
             else:
                 article.step_count = len(nums)
                 if len(nums) < 2:
-                    report.error(p, "'## Steps' needs at least 2 numbered steps.")
+                    report.error(p, f"'## {shown['Steps']}' needs at least 2 numbered steps.")
                 elif nums != list(range(1, len(nums) + 1)):
                     report.error(p, f"steps must be numbered 1, 2, 3, ... without gaps. Found: {nums}.")
         elif any(IMAGE_LINE_RE.match(l.strip()) for l in lines):
             # Elsewhere, a picture goes directly under the paragraph or bullet it shows. It can't open
             # a section (it would belong to nothing), and '## Get help' has no use for one.
             if name == "Get help":
-                report.error(p, f"pictures are not allowed in '## Get help'. Fix: put it directly under the "
+                report.error(p, f"pictures are not allowed in '## {shown['Get help']}'. Fix: put it directly under the "
                                 "step, bullet or paragraph it shows, in another section.")
             elif IMAGE_LINE_RE.match(lines[0].strip()):
-                report.error(p, f"a picture can't be the first thing in '## {name}'. Fix: put it directly under "
+                report.error(p, f"a picture can't be the first thing in '## {shown[name]}'. Fix: put it directly under "
                                 "the bullet or paragraph it shows.")
         if name in LIST_SECTIONS:
             bad = [l for l in lines if not l.startswith("- ") and not IMAGE_LINE_RE.match(l.strip())]
             if bad:
-                report.error(p, f"'## {name}' may only contain bullet items starting with '- '. "
+                report.error(p, f"'## {shown[name]}' may only contain bullet items starting with '- '. "
                                 f"Found: '{bad[0].strip()[:50]}'.")
 
 
@@ -536,6 +564,11 @@ def load_categories(path: Path, report: Report, icons: dict[str, str] | None = N
         codes.add(code)
         if icons is not None and c.get("icon") not in icons:
             report.error(path, f"category '{c['id']}': icon '{c.get('icon')}' is not in knowledge/icons.yaml.")
+        titles = c.get("titles", {})
+        if not isinstance(titles, dict) or any(l not in LANGUAGES or l == "en" or not isinstance(t, str) or not t.strip()
+                                               for l, t in titles.items()):
+            report.error(path, f"category '{c['id']}': titles must map a language to the title in it, "
+                               "e.g. titles: {nb: Førstehjelp}.")
     return cats
 
 
@@ -581,6 +614,8 @@ def load_articles(articles_dir: Path, report: Report, release: bool) -> list[Art
     articles: list[Article] = []
     seen: dict[str, Path] = {}
     for path in sorted(articles_dir.glob("*/*.md")):
+        if "." in path.stem:  # <id>.<lang>.md: a translation, loaded by load_translations
+            continue
         try:
             meta, body = parse_article(path)
         except (ValueError, yaml.YAMLError) as e:
@@ -605,6 +640,107 @@ def load_articles(articles_dir: Path, report: Report, release: bool) -> list[Art
             report.error(a.path, f"title '{a.meta['title']}' is already used by {_rel(titles[t])}. Fix: choose a different title.")
         titles.setdefault(t, a.path)
     return articles
+
+
+def load_translations(articles_dir: Path, originals: list[Article], report: Report, release: bool) -> list[Article]:
+    """Reads every <category>/<id>.<lang>.md and checks it against its English article."""
+    by_id = {a.meta["id"]: a for a in originals if isinstance(a.meta.get("id"), str)}
+    others = [l for l in LANGUAGES if l != "en"]
+    out: list[Article] = []
+    titles: dict[tuple[str, str], Path] = {}
+    for path in sorted(articles_dir.glob("*/*.md")):
+        if "." not in path.stem:
+            continue
+        base, _, lang = path.stem.rpartition(".")
+        if lang not in others:
+            report.error(path, f"'{lang}' is not a language articles can be translated into. Fix: name a translation "
+                               f"<id>.<lang>.md, with <lang> one of: {', '.join(others)}.")
+            continue
+        english = by_id.get(base)
+        if english is None or english.path.parent != path.parent:
+            report.error(path, f"there is no English article {path.parent.name}/{base}.md. Fix: a translation sits "
+                               "in the same folder as its English article, with the same id.")
+            continue
+        try:
+            meta, body = parse_article(path)
+        except (ValueError, yaml.YAMLError) as e:
+            report.error(path, f"the header could not be read: {e}. Fix: the file must start with a line '---', "
+                               "then the header, then '---'. Put any value containing ':' in double quotes.")
+            continue
+        errors_before = len(report.errors)
+        for f in meta:
+            if f in INHERITED_FIELDS:
+                report.error(path, f"remove '{f}' from the header: a translation always takes it from the English "
+                                   f"article ({base}.md).")
+            elif f not in TRANSLATION_REQUIRED:
+                report.error(path, f"unknown header field '{f}'. Allowed in a translation: "
+                                   f"{', '.join(TRANSLATION_REQUIRED)}.")
+        for f in TRANSLATION_REQUIRED:
+            if f not in meta:
+                report.error(path, f"missing header field '{f}'. Fix: a translation's header has exactly: "
+                                   f"{', '.join(TRANSLATION_REQUIRED)}.")
+        if "lang" in meta and meta["lang"] != lang:
+            report.error(path, f"lang must be {lang}, as in the file name.")
+        tof, ev = meta.get("translation_of"), english.meta.get("version")
+        if "translation_of" in meta and (isinstance(tof, bool) or not isinstance(tof, int) or tof < 1):
+            report.error(path, f"translation_of must be the version number of the English article you translated "
+                               f"(it is now version {ev}), e.g. translation_of: {ev}.")
+            tof = None
+        elif isinstance(tof, int) and isinstance(ev, int) and tof > ev:
+            report.error(path, f"translation_of is {tof}, but the English article is only at version {ev}.")
+        merged = {k: english.meta[k] for k in INHERITED_FIELDS if k in english.meta}
+        merged.update({k: v for k, v in meta.items() if k not in ("lang", "translation_of") and k not in INHERITED_FIELDS})
+        art = Article(path, merged, body, split_sections(body), lang=lang, translation_of=tof)
+        # Drafts are fine: in a release build a translation that isn't reviewed is left out and the
+        # English article is shown instead, so it never blocks a release.
+        validate(art, report, release=False)
+        for m in ANY_LINK_RE.finditer(body):
+            target = m.group(2)
+            if not target.startswith("article:") or target[len("article:"):] not in by_id:
+                report.error(path, f"link '{m.group(0)}' must point to an existing article as (article:<id>), "
+                                   "using the same id as in the English article.")
+        t = (lang, str(merged.get("title", "")).strip().lower())
+        if t[1] and t in titles:
+            report.error(path, f"title '{merged['title']}' is already used by {_rel(titles[t])}.")
+        titles.setdefault(t, path)
+        if len(report.errors) == errors_before:
+            # Translate everything, one for one: a missing step or warning could hurt someone.
+            if english.step_count and art.step_count != english.step_count:
+                report.error(path, f"has {art.step_count} steps, but {base}.md has {english.step_count}. Fix: translate "
+                                   "every step, one for one; don't merge, split, add or drop steps.")
+            count = lambda a: sum(1 for l in a.sections.get("Warnings", "").splitlines() if l.startswith("- "))
+            if count(art) != count(english):
+                report.error(path, f"has {count(art)} warnings, but {base}.md has {count(english)}. Fix: translate "
+                                   "every warning, one for one.")
+            if sorted(i for i, _ in art.images) != sorted(i for i, _ in english.images):
+                report.error(path, f"must use the same pictures as {base}.md, in the same places, with the "
+                                   "description translated.")
+            if isinstance(tof, int) and isinstance(ev, int) and tof < ev:
+                report.warn(path, f"outdated: translated from version {tof}, but {base}.md is now version {ev}. "
+                                  f"Until it is updated, the app shows the English article. Fix: translate the "
+                                  f"changes and set translation_of: {ev}.")
+        out.append(art)
+    return out
+
+
+def current_translations(originals: list[Article], translations: list[Article], lang: str,
+                         release: bool) -> list[Article]:
+    """The articles for one language: the translation where it is up to date (and reviewed, in a
+    release build), the English article otherwise."""
+    version = {a.id: a.meta.get("version") for a in originals}
+    use = {t.id: t for t in translations if t.lang == lang and t.translation_of == version.get(t.id)
+           and (not release or t.meta.get("status") == "reviewed")}
+    return [use.get(a.id, a) for a in originals]
+
+
+def db_path(out: Path, lang: str) -> Path:
+    """knowledge.db for English, knowledge-<lang>.db for every other language."""
+    return out if lang == "en" else out.with_name(f"{out.stem}-{lang}{out.suffix}")
+
+
+def lang_file(path: Path, lang: str) -> Path:
+    """stopwords.txt -> stopwords.nb.txt, synonyms.yaml -> synonyms.nb.yaml."""
+    return path.with_name(f"{path.stem}.{lang}{path.suffix}")
 
 
 def check_links(articles: list[Article], report: Report) -> None:
@@ -650,15 +786,16 @@ def _json_default(o):
 
 def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, release: bool,
              categories: list[dict] = (), stopwords: list[str] = (), images: list[dict] = (),
-             icons: dict[str, str] | None = None) -> str:
+             icons: dict[str, str] | None = None, lang: str = "en") -> str:
     icons = icons or {}
+    tokenize = FTS_TOKENIZE.get(lang, FTS_TOKENIZE_OTHER)
     cat_icon = {c["id"]: c.get("icon") for c in categories}
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = out.with_suffix(".tmp")
     tmp.unlink(missing_ok=True)
     con = sqlite3.connect(tmp)
     con.executescript(
-        """
+        f"""
         CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
         CREATE TABLE articles (
             id TEXT PRIMARY KEY,
@@ -694,7 +831,7 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
         );
         CREATE VIRTUAL TABLE articles_fts USING fts5(
             id UNINDEXED, title, situations, keywords, body,
-            tokenize = 'porter unicode61 remove_diacritics 2'
+            tokenize = '{tokenize}'
         );
         CREATE TABLE synonyms (group_id INTEGER NOT NULL, term TEXT NOT NULL);
         CREATE INDEX synonyms_term ON synonyms(term);
@@ -751,7 +888,8 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
     con.executemany("INSERT OR IGNORE INTO vocab VALUES (?)", ((w,) for w in sorted(vocab)))
     con.executemany("INSERT INTO stopwords VALUES (?)", ((w,) for w in stopwords))
     con.executemany("INSERT INTO categories VALUES (?, ?, ?, ?, ?)",
-                    ((c["id"], c["title"], i, c.get("code", ""), c.get("icon")) for i, c in enumerate(categories)))
+                    ((c["id"], (c.get("titles") or {}).get(lang, c["title"]), i, c.get("code", ""), c.get("icon"))
+                     for i, c in enumerate(categories)))
     con.executemany("INSERT INTO icons VALUES (?, ?)", sorted(icons.items()))
     digest.update(json.dumps(sorted(icons.items())).encode())
     digest.update(json.dumps([list(stopwords), list(categories)]).encode())
@@ -767,6 +905,8 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
         "content_hash": content_hash,
         "release": "1" if release else "0",
         "article_count": str(len(articles)),
+        "lang": lang,
+        "translated_count": str(sum(a.lang == lang for a in articles)),
     }
     con.executemany("INSERT INTO meta VALUES (?, ?)", meta.items())
     con.commit()
@@ -782,8 +922,9 @@ def build(out: Path = DEFAULT_OUT, release: bool = False, check_only: bool = Fal
           images_file: Path = IMAGES_FILE, images_dir: Path = IMAGES_DIR, icons_file: Path = ICONS_FILE) -> Report:
     report = Report()
     articles = load_articles(articles_dir, report, release)
+    translations = load_translations(articles_dir, articles, report, release)
     images = load_images(images_file, images_dir, report)
-    check_image_use(articles, images, images_file, report)
+    check_image_use(articles + translations, images, images_file, report)
     synonyms = load_synonyms(synonyms_file, report)
     icons = load_icons(icons_file, report)
     categories = load_categories(categories_file, report, icons)
@@ -793,8 +934,18 @@ def build(out: Path = DEFAULT_OUT, release: bool = False, check_only: bool = Fal
         if a.meta.get("category") and a.meta["category"] not in known:
             report.error(a.path, f"category '{a.meta['category']}' is not listed in {_rel(categories_file)}")
     stopwords = load_stopwords(stopwords_file)
+    extra = {}
+    for lang in LANGUAGES:
+        if lang != "en":
+            sw, syn = lang_file(stopwords_file, lang), lang_file(synonyms_file, lang)
+            extra[lang] = (load_stopwords(sw) if sw.exists() else [], load_synonyms(syn, report) if syn.exists() else [])
     if not report.errors and not check_only:
         write_db(articles, synonyms, out, release, categories, stopwords, images, icons)
+        # Every other language: its translations, English where there is none, and its own search
+        # words on top of the English ones (people may type either).
+        for lang, (sw, syn) in extra.items():
+            write_db(current_translations(articles, translations, lang, release), synonyms + syn,
+                     db_path(out, lang), release, categories, sorted(set(stopwords) | set(sw)), images, icons, lang)
     return report
 
 
