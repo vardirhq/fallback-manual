@@ -11,4 +11,16 @@
 #       source: https://...
 #       ai_generated: false
 
-images: []
+images:
+- id: cpr-hand-position
+  file: cpr-hand-position.webp
+  license: CC0-1.0
+  creator: Another-anon-artist-234
+  source: https://commons.wikimedia.org/wiki/File:Chest-compression-hand-placement.jpg
+  ai_generated: false
+- id: cpr-body-position
+  file: cpr-body-position.webp
+  license: public-domain
+  creator: Illinois Waterway Visitor Center, US Army Corps of Engineers
+  source: https://commons.wikimedia.org/wiki/File:Cardiopulmonary_Resuscitation_Adult.jpg
+  ai_generated: false
