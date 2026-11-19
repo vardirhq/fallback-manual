@@ -90,9 +90,10 @@ tasks.withType<Test>().configureEach {
 
 /**
  * Compiles knowledge/ into knowledge.db with tools/build_kb.py and adds it to the APK's assets.
- * Release builds pass --release, which fails while any article is unreviewed. To build a
- * release-type APK with draft content anyway (for testing only), pass -PallowDrafts=true;
- * the app then shows its development-build warning.
+ * Release builds pass --release: only articles a human expert has reviewed are included, links
+ * to the rest become plain text, and the build fails while no article is reviewed. To build a
+ * release-type APK with all draft content (for testing only), pass -PallowDrafts=true; the app
+ * then shows its development-build warning.
  */
 abstract class BuildKnowledgeDb : DefaultTask() {
     @get:InputDirectory @get:PathSensitive(PathSensitivity.RELATIVE)

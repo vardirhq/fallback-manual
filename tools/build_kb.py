@@ -2,7 +2,7 @@
 
 Usage:
     python -m tools.build_kb                 # development build: drafts allowed, with warnings
-    python -m tools.build_kb --release       # release build: every article must be reviewed
+    python -m tools.build_kb --release       # release build: only reviewed articles are included
     python -m tools.build_kb --check         # validate only, write nothing
 """
 
@@ -16,7 +16,7 @@ import json
 import re
 import sqlite3
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 import yaml
@@ -357,7 +357,7 @@ def validate(article: Article, report: Report, release: bool) -> None:
             report.error(p, "a draft must have reviewer, date and review_by set to null. "
                             "Only a human reviewer fills these in, together with status: reviewed.")
         if release:
-            report.error(p, "draft article cannot be included in a release build")
+            report.warn(p, "draft: left out of this release build until a human expert reviews it")
         else:
             report.warn(p, "draft: not reviewed")
 
@@ -740,6 +740,19 @@ def current_translations(originals: list[Article], translations: list[Article], 
     return [use.get(a.id, a) for a in originals]
 
 
+def releasable(articles: list[Article]) -> list[Article]:
+    """The articles a release build ships: reviewed ones only. Links to articles that are left out
+    become plain text, so a reader never follows a link to an article that isn't there."""
+    kept = [a for a in articles if a.meta.get("status") == "reviewed"]
+    ids = {a.id for a in kept}
+    return [unlink_missing(a, ids) for a in kept]
+
+
+def unlink_missing(article: Article, ids: set[str]) -> Article:
+    body = ARTICLE_LINK_RE.sub(lambda m: m.group(0) if m.group(2) in ids else m.group(1), article.body)
+    return article if body == article.body else replace(article, body=body)
+
+
 def db_path(out: Path, lang: str) -> Path:
     """knowledge.db for English, knowledge-<lang>.db for every other language."""
     return out if lang == "en" else out.with_name(f"{out.stem}-{lang}{out.suffix}")
@@ -950,19 +963,30 @@ def build(out: Path = DEFAULT_OUT, release: bool = False, check_only: bool = Fal
         if lang != "en":
             sw, syn = lang_file(stopwords_file, lang), lang_file(synonyms_file, lang)
             extra[lang] = (load_stopwords(sw) if sw.exists() else [], load_synonyms(syn, report) if syn.exists() else [])
+    if release:
+        shipped = releasable(articles)
+        if not shipped and articles:
+            report.error(articles_dir, "no article is reviewed yet, so a release build would be empty. "
+                                       "Fix: have a human expert review at least one article first.")
+        else:
+            report.warn(articles_dir, f"release build: {len(shipped)} of {len(articles)} articles are reviewed "
+                                      "and included; the rest are left out until they are reviewed")
+        articles = shipped
     if not report.errors and not check_only:
         write_db(articles, synonyms, out, release, categories, stopwords, images, icons)
         # Every other language: its translations, English where there is none, and its own search
         # words on top of the English ones (people may type either).
         for lang, (sw, syn) in extra.items():
-            write_db(current_translations(articles, translations, lang, release), synonyms + syn,
+            ids = {a.id for a in articles}
+            localized = [unlink_missing(a, ids) for a in current_translations(articles, translations, lang, release)]
+            write_db(localized, synonyms + syn,
                      db_path(out, lang), release, categories, sorted(set(stopwords) | set(sw)), images, icons, lang)
     return report
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--release", action="store_true", help="require every article to be reviewed")
+    ap.add_argument("--release", action="store_true", help="ship only reviewed articles")
     ap.add_argument("--check", action="store_true", help="validate only")
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
     ap.add_argument("--quiet", action="store_true", help="hide warnings")

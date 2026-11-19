@@ -41,7 +41,7 @@ pip install -r requirements-dev.txt
 python -m tools.check                         # run every check; prints PASS or what to fix
 python -m tools.new_article --list            # categories and existing articles
 python -m tools.build_kb                      # build build/knowledge.db (drafts allowed)
-python -m tools.build_kb --release            # fails unless every article is reviewed
+python -m tools.build_kb --release            # only reviewed articles; fails if none is reviewed yet
 
 python -m retrieval.search "someone is shivering and confused"
 python -m evaluation.run_benchmark --failures
@@ -57,8 +57,8 @@ cd android
 ./gradlew :app:assembleDebug          # app/build/outputs/apk/debug/app-debug.apk
 ./gradlew :core:test                  # checks the Kotlin search returns exactly what the Python one does
 ./gradlew :app:testDebugUnitTest      # drives the app on the desktop (Robolectric) and saves docs/screenshots
-./gradlew :app:assembleRelease        # fails while any article is unreviewed (by design)
-./gradlew :app:assembleRelease -PallowDrafts=true   # release-type build with drafts, for testing only
+./gradlew :app:assembleRelease        # ships only reviewed articles (fails while none is reviewed)
+./gradlew :app:assembleRelease -PallowDrafts=true   # release-type build with all drafts, for testing only
 ```
 
 What the app does today: step-by-step mode (one step at a time in very large text, screen kept on, read-aloud with the phone's offline voice, a beat guide for CPR compressions), emergency tiles and a "call emergency services first" block for a short, hand-picked list of act-now articles (`emergency: true`), browsing by category, articles with numbered steps, warnings, sources and review status, links between articles that open in a sheet over the current one (e.g. "start CPR" in the carbon monoxide article), natural-language search that says "no match" instead of guessing, saved articles, light and dark themes, offline sharing (below), and English and Norwegian Bokmål: the app's text and the articles follow the phone's language, or the one chosen under Settings, with the English article shown wherever a translation is missing or out of date. Settings also overrides light or dark theme. It has no internet permission.
