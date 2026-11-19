@@ -5,7 +5,7 @@ category: navigation-signaling
 code: NS-01
 icon: signal
 status: draft
-version: 5
+version: 6
 high_risk: false
 license: CC-BY-4.0
 situations:
@@ -14,9 +14,9 @@ situations:
   - how to signal a helicopter or search team
 keywords: [signal, rescue, help, sos, lost, stranded, whistle, mirror, fire, smoke, phone, no signal, reception, search]
 sources:
-  - title: Survival, Field Manual 21-76
+  - title: ATP 3-50.21 Survival (replaces FM 21-76)
     publisher: US Department of the Army
-    url: null
+    url: https://armypubs.army.mil/ProductMaps/PubForm/Details.aspx?PUB_ID=1005316
     checked: false
   - title: Aeronautical Information Manual, Search and Rescue
     publisher: Federal Aviation Administration

@@ -1,10 +1,10 @@
 ---
 id: carbon-monoxide
 lang: nb
-translation_of: 5
+translation_of: 6
 title: Kullosforgiftning
 status: draft
-version: 2
+version: 3
 license: CC-BY-4.0
 situations:
   - hodepine og svimmelhet mens vi bruker ovn, komfyr eller aggregat innendørs
@@ -13,13 +13,13 @@ situations:
   - bruke aggregat i garasjen eller kjelleren
 keywords: [kullos, kullosforgiftning, karbonmonoksid, co, co-forgiftning, gass, eksos, aggregat, ovn, gassovn, grill, primus, forgiftning, hodepine, lufting, kullosvarsler]
 sources:
-  - title: Carbon monoxide poisoning prevention
+  - title: Carbon Monoxide (CO) Poisoning Basics
     publisher: Centers for Disease Control and Prevention
-    url: null
+    url: https://www.cdc.gov/carbon-monoxide/about/index.html
     checked: false
   - title: Carbon monoxide poisoning
     publisher: National Health Service (UK)
-    url: null
+    url: https://www.nhs.uk/conditions/carbon-monoxide-poisoning/
     checked: false
 review:
   reviewer: null

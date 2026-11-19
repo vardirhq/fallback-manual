@@ -1,10 +1,10 @@
 ---
 id: boiling-water
 lang: nb
-translation_of: 4
+translation_of: 5
 title: Gjøre vann trygt ved koking
 status: draft
-version: 2
+version: 3
 license: CC-BY-4.0
 situations:
   - vann fra elv, innsjø eller bekk må gjøres trygt å drikke
@@ -12,13 +12,13 @@ situations:
   - har ikke rent drikkevann
 keywords: [vann, drikkevann, koke, koking, kokevarsel, rense, rensing, desinfisere, elv, bekk, innsjø, forurenset, trygt]
 sources:
-  - title: Making water safe in an emergency
+  - title: How to Make Water Safe in an Emergency
     publisher: Centers for Disease Control and Prevention
-    url: null
+    url: https://www.cdc.gov/water-emergency/about/index.html
     checked: false
-  - title: Guidelines for drinking-water quality
+  - title: Guidelines for drinking-water quality, fourth edition
     publisher: World Health Organization
-    url: null
+    url: https://www.who.int/publications/i/item/9789240045064
     checked: false
 review:
   reviewer: null

@@ -5,7 +5,7 @@ category: first-aid
 code: FA-01
 icon: flame
 status: draft
-version: 2
+version: 3
 high_risk: true
 emergency: true
 license: CC-BY-4.0
@@ -19,13 +19,13 @@ diagrams_needed:
   - cooling a burn under running water
   - covering a burn loosely with plastic wrap
 sources:
-  - title: Burns and scalds, treatment
+  - title: Burns and scalds
     publisher: National Health Service (UK)
-    url: null
+    url: https://www.nhs.uk/conditions/burns-and-scalds/
     checked: false
-  - title: First aid for burns
+  - title: International First Aid, Resuscitation, and Education Guidelines 2020 (burns)
     publisher: International Federation of Red Cross and Red Crescent Societies
-    url: null
+    url: https://www.ifrc.org/document/international-first-aid-resuscitation-and-education-guidelines
     checked: false
 review:
   reviewer: null

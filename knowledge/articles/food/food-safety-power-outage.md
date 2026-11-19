@@ -5,7 +5,7 @@ category: food
 code: FO-01
 icon: fridge
 status: draft
-version: 2
+version: 3
 high_risk: false
 license: CC-BY-4.0
 situations:
@@ -16,9 +16,9 @@ keywords: [food, fridge, refrigerator, freezer, spoil, spoiled, perishable, powe
 diagrams_needed:
   - which foods to keep and which to throw out
 sources:
-  - title: Food safety during power outages
+  - title: Food Safety During Power Outage
     publisher: FoodSafety.gov (US Department of Health and Human Services)
-    url: null
+    url: https://www.foodsafety.gov/food-safety-charts/food-safety-during-power-outage
     checked: false
 review:
   reviewer: null

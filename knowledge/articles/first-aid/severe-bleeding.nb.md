@@ -1,10 +1,10 @@
 ---
 id: severe-bleeding
 lang: nb
-translation_of: 3
+translation_of: 4
 title: Kraftig blødning
 status: draft
-version: 1
+version: 2
 license: CC-BY-4.0
 situations:
   - noen blør kraftig
@@ -13,13 +13,13 @@ situations:
   - blødning fra en arm eller et bein etter en ulykke
 keywords: [blod, blødning, blør, sår, kutt, dypt kutt, kraftig blødning, tourniquet, trykk, skade, ulykke]
 sources:
-  - title: Stop the Bleed guidance
+  - title: Stop the Bleed
     publisher: American College of Surgeons
-    url: null
+    url: https://www.stopthebleed.org/
     checked: false
-  - title: First aid manual, severe bleeding
+  - title: International First Aid, Resuscitation, and Education Guidelines 2020 (severe bleeding)
     publisher: International Federation of Red Cross and Red Crescent Societies
-    url: null
+    url: https://www.ifrc.org/document/international-first-aid-resuscitation-and-education-guidelines
     checked: false
 review:
   reviewer: null

@@ -5,7 +5,7 @@ category: fire-warmth
 code: FW-01
 icon: cloud
 status: draft
-version: 5
+version: 6
 high_risk: true
 emergency: true
 license: CC-BY-4.0
@@ -17,13 +17,13 @@ keywords: [carbon monoxide, co, gas, fumes, generator, heater, stove, grill, poi
 diagrams_needed:
   - safe distance for a generator from a house
 sources:
-  - title: Carbon monoxide poisoning prevention
+  - title: Carbon Monoxide (CO) Poisoning Basics
     publisher: Centers for Disease Control and Prevention
-    url: null
+    url: https://www.cdc.gov/carbon-monoxide/about/index.html
     checked: false
   - title: Carbon monoxide poisoning
     publisher: National Health Service (UK)
-    url: null
+    url: https://www.nhs.uk/conditions/carbon-monoxide-poisoning/
     checked: false
 review:
   reviewer: null

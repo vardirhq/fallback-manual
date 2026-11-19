@@ -5,7 +5,7 @@ category: first-aid
 code: FA-04
 icon: snowflake
 status: draft
-version: 3
+version: 4
 high_risk: true
 emergency: true
 license: CC-BY-4.0
@@ -19,13 +19,13 @@ diagrams_needed:
   - where to apply warmth on the body
   - insulating a person from the ground
 sources:
-  - title: Hypothermia, signs and first aid
+  - title: Preventing Hypothermia
     publisher: Centers for Disease Control and Prevention
-    url: null
+    url: https://www.cdc.gov/winter-weather/prevention/index.html
     checked: false
-  - title: Hypothermia first aid
+  - title: Hypothermia
     publisher: National Health Service (UK)
-    url: null
+    url: https://www.nhs.uk/conditions/hypothermia/
     checked: false
 review:
   reviewer: null

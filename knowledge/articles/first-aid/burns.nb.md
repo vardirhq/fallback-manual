@@ -1,10 +1,10 @@
 ---
 id: burns
 lang: nb
-translation_of: 2
+translation_of: 3
 title: Brannskader og skålding
 status: draft
-version: 2
+version: 3
 license: CC-BY-4.0
 situations:
   - noen har brent seg på ild eller noe varmt
@@ -14,13 +14,13 @@ situations:
   - sølte kokende vann på armen
 keywords: [brannskade, brannsår, brent, brente seg, skålding, skåldet, blemme, brannblemme, ild, varmt vann, kokende vann, damp, sølt]
 sources:
-  - title: Burns and scalds, treatment
+  - title: Burns and scalds
     publisher: National Health Service (UK)
-    url: null
+    url: https://www.nhs.uk/conditions/burns-and-scalds/
     checked: false
-  - title: First aid for burns
+  - title: International First Aid, Resuscitation, and Education Guidelines 2020 (burns)
     publisher: International Federation of Red Cross and Red Crescent Societies
-    url: null
+    url: https://www.ifrc.org/document/international-first-aid-resuscitation-and-education-guidelines
     checked: false
 review:
   reviewer: null

@@ -1,10 +1,10 @@
 ---
 id: cpr
 lang: nb
-translation_of: 6
+translation_of: 7
 title: Hjerte-lunge-redning (voksne)
 status: draft
-version: 2
+version: 3
 license: CC-BY-4.0
 situations:
   - noen har falt om og puster ikke
@@ -13,13 +13,13 @@ situations:
   - hjertet har stoppet
 keywords: [hlr, hjerte-lunge-redning, hjertekompresjoner, brystkompresjoner, hjertestans, puster ikke, bevisstløs, reagerer ikke, falt om, hjertestarter, hjerte]
 sources:
-  - title: Guidelines for CPR and Emergency Cardiovascular Care
+  - title: "Guidelines for CPR and ECC, Part 7: Adult Basic Life Support"
     publisher: American Heart Association
-    url: null
+    url: https://cpr.heart.org/en/resuscitation-science/cpr-and-ecc-guidelines/adult-basic-life-support
     checked: false
-  - title: Guidelines for Resuscitation, Basic Life Support
+  - title: ERC Guidelines (basic life support)
     publisher: European Resuscitation Council
-    url: null
+    url: https://www.erc.edu/science-research/guidelines
     checked: false
 review:
   reviewer: null
