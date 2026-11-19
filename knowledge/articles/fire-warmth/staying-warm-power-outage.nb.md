@@ -1,10 +1,10 @@
 ---
 id: staying-warm-power-outage
 lang: nb
-translation_of: 3
+translation_of: 4
 title: Holde varmen når strømmen er borte
 status: draft
-version: 1
+version: 2
 license: CC-BY-4.0
 situations:
   - strømmen er borte og huset blir kaldt
@@ -12,9 +12,9 @@ situations:
   - hvordan holde huset varmt uten strøm
 keywords: [kaldt, kaldt i huset, varme, holde varmen, oppvarming, strømbrudd, strømmen er borte, strøm, vinter, isolasjon, tepper]
 sources:
-  - title: Winter weather and power outages
+  - title: Winter Weather
     publisher: Ready.gov (US Federal Emergency Management Agency)
-    url: null
+    url: https://www.ready.gov/winter-weather
     checked: false
 review:
   reviewer: null

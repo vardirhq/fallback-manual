@@ -5,7 +5,7 @@ category: water
 code: WA-01
 icon: pot
 status: draft
-version: 4
+version: 5
 high_risk: false
 license: CC-BY-4.0
 situations:
@@ -17,13 +17,13 @@ diagrams_needed:
   - filtering cloudy water through a cloth
   - rolling boil compared with simmering
 sources:
-  - title: Making water safe in an emergency
+  - title: How to Make Water Safe in an Emergency
     publisher: Centers for Disease Control and Prevention
-    url: null
+    url: https://www.cdc.gov/water-emergency/about/index.html
     checked: false
-  - title: Guidelines for drinking-water quality
+  - title: Guidelines for drinking-water quality, fourth edition
     publisher: World Health Organization
-    url: null
+    url: https://www.who.int/publications/i/item/9789240045064
     checked: false
 review:
   reviewer: null

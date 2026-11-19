@@ -5,7 +5,7 @@ category: first-aid
 code: FA-02
 icon: heart-pulse
 status: draft
-version: 6
+version: 7
 high_risk: true
 emergency: true
 # Beat guide in step-by-step mode for the compression steps (sources: 100-120 a minute).
@@ -18,13 +18,13 @@ situations:
   - the heart has stopped
 keywords: [cpr, resuscitation, chest compressions, cardiac arrest, not breathing, unresponsive, collapsed, aed, defibrillator, heart]
 sources:
-  - title: Guidelines for CPR and Emergency Cardiovascular Care
+  - title: "Guidelines for CPR and ECC, Part 7: Adult Basic Life Support"
     publisher: American Heart Association
-    url: null
+    url: https://cpr.heart.org/en/resuscitation-science/cpr-and-ecc-guidelines/adult-basic-life-support
     checked: false
-  - title: Guidelines for Resuscitation, Basic Life Support
+  - title: ERC Guidelines (basic life support)
     publisher: European Resuscitation Council
-    url: null
+    url: https://www.erc.edu/science-research/guidelines
     checked: false
 review:
   reviewer: null

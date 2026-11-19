@@ -69,9 +69,9 @@ class AppScreensTest {
         rule.onNodeWithText("Call emergency services first").assertExists()
         rule.onNodeWithText("FA-04 · FIRST AID").assertExists()
         // Sources are folded away until asked for.
-        rule.onNodeWithText("Hypothermia, signs and first aid", substring = true).assertDoesNotExist()
+        rule.onNodeWithText("Preventing Hypothermia", substring = true).assertDoesNotExist()
         rule.onNodeWithText("SOURCES & REVIEW").performScrollTo().performClick()
-        rule.onNodeWithText("Hypothermia, signs and first aid", substring = true).assertExists()
+        rule.onNodeWithText("Preventing Hypothermia", substring = true).assertExists()
         rule.onNode(hasScrollAction()).performScrollToNode(hasText("Hypothermia", substring = false))
         shot("03-article")
     }

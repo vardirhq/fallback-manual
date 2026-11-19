@@ -5,7 +5,7 @@ category: first-aid
 code: FA-05
 icon: droplet
 status: draft
-version: 3
+version: 4
 high_risk: true
 emergency: true
 license: CC-BY-4.0
@@ -18,13 +18,13 @@ keywords: [blood, wound, cut, laceration, hemorrhage, tourniquet, pressure, inju
 diagrams_needed:
   - tourniquet position on an arm and a leg
 sources:
-  - title: Stop the Bleed guidance
+  - title: Stop the Bleed
     publisher: American College of Surgeons
-    url: null
+    url: https://www.stopthebleed.org/
     checked: false
-  - title: First aid manual, severe bleeding
+  - title: International First Aid, Resuscitation, and Education Guidelines 2020 (severe bleeding)
     publisher: International Federation of Red Cross and Red Crescent Societies
-    url: null
+    url: https://www.ifrc.org/document/international-first-aid-resuscitation-and-education-guidelines
     checked: false
 review:
   reviewer: null

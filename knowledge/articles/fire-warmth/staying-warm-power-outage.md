@@ -5,7 +5,7 @@ category: fire-warmth
 code: FW-02
 icon: thermometer
 status: draft
-version: 3
+version: 4
 high_risk: false
 license: CC-BY-4.0
 situations:
@@ -16,9 +16,9 @@ keywords: [cold, warm, heating, power outage, blackout, electricity, winter, ins
 diagrams_needed:
   - setting up a single warm room
 sources:
-  - title: Winter weather and power outages
+  - title: Winter Weather
     publisher: Ready.gov (US Federal Emergency Management Agency)
-    url: null
+    url: https://www.ready.gov/winter-weather
     checked: false
 review:
   reviewer: null

@@ -1,10 +1,10 @@
 ---
 id: food-safety-power-outage
 lang: nb
-translation_of: 2
+translation_of: 3
 title: Trygg mat uten kjøleskap
 status: draft
-version: 1
+version: 2
 license: CC-BY-4.0
 situations:
   - kjøleskapet og fryseren sluttet å virke under strømbruddet
@@ -12,9 +12,9 @@ situations:
   - er maten i fryseren fortsatt trygg å spise
 keywords: [mat, kjøleskap, fryser, frysevarer, ødelagt, gått ut, bedervet, lettbedervelig, strømbrudd, kjøtt, melk, oppbevaring]
 sources:
-  - title: Food safety during power outages
+  - title: Food Safety During Power Outage
     publisher: FoodSafety.gov (US Department of Health and Human Services)
-    url: null
+    url: https://www.foodsafety.gov/food-safety-charts/food-safety-during-power-outage
     checked: false
 review:
   reviewer: null

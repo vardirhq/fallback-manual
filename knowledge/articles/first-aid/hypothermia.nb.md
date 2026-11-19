@@ -1,10 +1,10 @@
 ---
 id: hypothermia
 lang: nb
-translation_of: 3
+translation_of: 4
 title: Nedkjøling (hypotermi)
 status: draft
-version: 1
+version: 2
 license: CC-BY-4.0
 situations:
   - noen skjelver og er forvirret
@@ -13,13 +13,13 @@ situations:
   - snøvlete tale etter å ha vært ute i kulden
 keywords: [nedkjøling, nedkjølt, hypotermi, kald, kulde, fryser, skjelver, skjelving, oppvarming, kroppstemperatur, våt]
 sources:
-  - title: Hypothermia, signs and first aid
+  - title: Preventing Hypothermia
     publisher: Centers for Disease Control and Prevention
-    url: null
+    url: https://www.cdc.gov/winter-weather/prevention/index.html
     checked: false
-  - title: Hypothermia first aid
+  - title: Hypothermia
     publisher: National Health Service (UK)
-    url: null
+    url: https://www.nhs.uk/conditions/hypothermia/
     checked: false
 review:
   reviewer: null

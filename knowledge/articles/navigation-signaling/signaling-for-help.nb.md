@@ -1,10 +1,10 @@
 ---
 id: signaling-for-help
 lang: nb
-translation_of: 5
+translation_of: 6
 title: Signalisere etter hjelp
 status: draft
-version: 1
+version: 2
 license: CC-BY-4.0
 situations:
   - har gått meg bort eller sitter fast og må bli funnet
@@ -12,9 +12,9 @@ situations:
   - hvordan signalisere til et helikopter eller et letemannskap
 keywords: [signal, signalisere, redning, hjelp, sos, helikopter, redningshelikopter, oppmerksomhet, gått meg bort, gått seg bort, sitter fast, fløyte, speil, bål, røyk, mobil, telefon, ingen dekning, dekning, leting]
 sources:
-  - title: Survival, Field Manual 21-76
+  - title: ATP 3-50.21 Survival (replaces FM 21-76)
     publisher: US Department of the Army
-    url: null
+    url: https://armypubs.army.mil/ProductMaps/PubForm/Details.aspx?PUB_ID=1005316
     checked: false
   - title: Aeronautical Information Manual, Search and Rescue
     publisher: Federal Aviation Administration
