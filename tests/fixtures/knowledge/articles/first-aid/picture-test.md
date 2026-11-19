@@ -2,6 +2,7 @@
 id: picture-test
 title: Picture test
 category: first-aid
+code: FA-01
 status: draft
 version: 1
 high_risk: false

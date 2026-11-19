@@ -12,11 +12,10 @@ An open-source, fully offline emergency and survival reference for Android. A cu
 
 <p>
   <img src="docs/screenshots/01-home.png" width="200" alt="Home screen">
-  <img src="docs/screenshots/03-article.png" width="200" alt="Article screen">
+  <img src="docs/screenshots/03b-article-cpr.png" width="200" alt="CPR article">
+  <img src="docs/screenshots/13-step-mode-beat.png" width="200" alt="Step-by-step mode with beat guide">
   <img src="docs/screenshots/04-search-match.png" width="200" alt="Search result">
-  <img src="docs/screenshots/05-search-no-match.png" width="200" alt="No-match result">
-  <img src="docs/screenshots/07-share.png" width="200" alt="Share screen">
-  <img src="docs/screenshots/08-link-sheet.png" width="200" alt="Linked article in a sheet">
+  <img src="docs/screenshots/06-home-dark.png" width="200" alt="Home in dark mode">
 </p>
 
 ## Layout
@@ -62,7 +61,7 @@ cd android
 ./gradlew :app:assembleRelease -PallowDrafts=true   # release-type build with drafts, for testing only
 ```
 
-What the app does today: emergency tiles for high-risk articles, browsing by category, articles with numbered steps, warnings, sources and review status, links between articles that open in a sheet over the current one (e.g. "start CPR" in the carbon monoxide article), natural-language search that says "no match" instead of guessing, saved articles, light and dark themes, and offline sharing (below). It has no internet permission.
+What the app does today: step-by-step mode (one step at a time in very large text, screen kept on, read-aloud with the phone's offline voice, a beat guide for CPR compressions), emergency tiles for high-risk articles, browsing by category, articles with numbered steps, warnings, sources and review status, links between articles that open in a sheet over the current one (e.g. "start CPR" in the carbon monoxide article), natural-language search that says "no match" instead of guessing, saved articles, light and dark themes, and offline sharing (below). It has no internet permission.
 
 ### Offline sharing
 
@@ -77,7 +76,7 @@ It needs no permissions: an app can always read its own APK, and the receiving a
 
 The fingerprint check only means something once releases are signed with one stable key. Debug builds use each developer's own debug key, and release builds are currently unsigned.
 
-Sizes: debug APK 17.1 MB; release APK 6.8 MB containing three CPU architectures, roughly 3–4 MB per architecture if split.
+Sizes: debug APK 17.5 MB; release APK 7.5 MB containing three CPU architectures (fonts included), roughly 4 MB per architecture if split.
 
 Tested on one real phone (Samsung, Android, dark mode): the app starts, loads the bundled database and shows articles. Not yet tested on a real device: offline sharing between two phones, and older or low-end phones.
 

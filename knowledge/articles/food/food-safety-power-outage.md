@@ -2,6 +2,8 @@
 id: food-safety-power-outage
 title: Keeping food safe without a refrigerator
 category: food
+code: FO-01
+icon: fridge
 status: draft
 version: 2
 high_risk: false

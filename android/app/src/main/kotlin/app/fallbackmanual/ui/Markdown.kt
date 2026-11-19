@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.unit.sp
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -101,10 +104,27 @@ fun inline(text: String, linkColor: Color = Color.Unspecified, onLink: ((String)
         append(text.substring(last))
     }
 
+/** One step of an article's '## Steps' section, with the pictures placed under it. */
+data class StepItem(val number: String, val text: String, val images: List<Block.Image>)
+
+fun stepsOf(markdown: String): List<StepItem> {
+    val out = mutableListOf<StepItem>()
+    var section = ""
+    for (b in parseMarkdown(markdown)) {
+        when {
+            b is Block.Heading -> section = b.text
+            section != "Steps" -> {}
+            b is Block.Step -> out += StepItem(b.number, b.text, emptyList())
+            b is Block.Image && out.isNotEmpty() -> out[out.lastIndex] = out.last().let { it.copy(images = it.images + b) }
+        }
+    }
+    return out
+}
+
 @Composable
 fun MarkdownBody(markdown: String, modifier: Modifier = Modifier, onLink: ((String) -> Unit)? = null) {
     val blocks = remember(markdown) { parseMarkdown(markdown) }
-    val linkColor = MaterialTheme.colorScheme.primary
+    val linkColor = fm.accentText
     fun rich(text: String) = inline(text, linkColor, onLink)
     var section = ""
     Column(modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -114,32 +134,33 @@ fun MarkdownBody(markdown: String, modifier: Modifier = Modifier, onLink: ((Stri
                     section = b.text
                     val warn = section == "Warnings"
                     Text(
-                        b.text,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = if (warn) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(top = 14.dp).semantics { heading() },
+                        b.text.uppercase(),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (warn) MaterialTheme.colorScheme.error else fm.forest,
+                        modifier = Modifier.padding(top = 18.dp).semantics { heading() },
                     )
                 }
                 is Block.Step -> Row(verticalAlignment = Alignment.Top) {
-                    Box(
-                        Modifier.size(34.dp).background(MaterialTheme.colorScheme.primary, CircleShape),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(b.number, color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.titleMedium)
-                    }
-                    Text(rich(b.text), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 12.dp, top = 2.dp))
+                    Text(
+                        b.number,
+                        style = MaterialTheme.typography.headlineMedium.copy(fontSize = 30.sp, lineHeight = 30.sp),
+                        color = fm.accentText,
+                        modifier = Modifier.width(36.dp),
+                    )
+                    Text(rich(b.text), style = MaterialTheme.typography.bodyLarge, color = fm.ink,
+                        modifier = Modifier.padding(start = 10.dp))
                 }
                 is Block.Bullet -> Row {
                     val warn = section == "Warnings"
-                    Text(
-                        if (warn) "⚠" else "•",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = if (warn) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(end = 10.dp),
-                    )
-                    Text(rich(b.text), style = MaterialTheme.typography.bodyLarge)
+                    if (warn) {
+                        Icon(FmIcons.stroke(FmIcons.WARNING), contentDescription = "Warning",
+                            tint = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 2.dp, end = 10.dp).size(20.dp))
+                    } else {
+                        Text("•", style = MaterialTheme.typography.bodyLarge, color = fm.muted, modifier = Modifier.padding(end = 10.dp))
+                    }
+                    Text(rich(b.text), style = MaterialTheme.typography.bodyLarge, color = fm.ink)
                 }
-                is Block.Paragraph -> Text(rich(b.text), style = MaterialTheme.typography.bodyLarge)
+                is Block.Paragraph -> Text(rich(b.text), style = MaterialTheme.typography.bodyLarge, color = fm.ink)
                 // Pictures sit under their step, lined up with the step's text.
                 is Block.Image -> ArticlePicture(b.id, b.alt, Modifier.padding(start = 46.dp, bottom = 6.dp))
             }

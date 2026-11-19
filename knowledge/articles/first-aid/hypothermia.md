@@ -2,6 +2,8 @@
 id: hypothermia
 title: Hypothermia
 category: first-aid
+code: FA-04
+icon: snowflake
 status: draft
 version: 3
 high_risk: true

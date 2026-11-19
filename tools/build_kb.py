@@ -28,6 +28,7 @@ STOPWORDS_FILE = ROOT / "knowledge" / "stopwords.txt"
 CATEGORIES_FILE = ROOT / "knowledge" / "categories.yaml"
 REVIEWERS_FILE = ROOT / "knowledge" / "reviewers.yaml"
 IMAGES_FILE = ROOT / "knowledge" / "images.yaml"
+ICONS_FILE = ROOT / "knowledge" / "icons.yaml"
 IMAGES_DIR = ROOT / "knowledge" / "images"
 
 
@@ -38,8 +39,8 @@ def approved_reviewers() -> set[str]:
     return {str(r["name"]).strip() for r in data.get("reviewers") or [] if isinstance(r, dict) and r.get("name")}
 DEFAULT_OUT = ROOT / "build" / "knowledge.db"
 
-SCHEMA_VERSION = 2  # 2: images table
-REQUIRED_FIELDS = ["id", "title", "category", "status", "version", "high_risk", "license",
+SCHEMA_VERSION = 3  # 2: images table; 3: codes, icons, rhythm, lead
+REQUIRED_FIELDS = ["id", "title", "category", "code", "status", "version", "high_risk", "license",
                    "situations", "keywords", "sources", "review"]
 REQUIRED_SECTIONS = ["When to use", "What you need", "Steps", "Warnings", "Common mistakes", "Get help"]
 STATUSES = {"draft", "reviewed"}
@@ -67,6 +68,7 @@ class Article:
     body: str
     sections: dict[str, str] = field(default_factory=dict)
     images: list[tuple[str, int]] = field(default_factory=list)  # (image id, file line)
+    step_count: int = 0
 
     @property
     def id(self) -> str:
@@ -129,7 +131,9 @@ def _is_date(value) -> bool:
         return False
 
 
-ALLOWED_FIELDS = REQUIRED_FIELDS + ["diagrams_needed"]
+ALLOWED_FIELDS = REQUIRED_FIELDS + ["diagrams_needed", "icon", "rhythm"]
+CODE_RE = re.compile(r"^[A-Z]{2}-\d{2}$")
+RHYTHM_FIELDS = {"bpm", "from_step", "to_step"}
 SOURCE_FIELDS = {"title", "publisher", "url", "checked"}
 REVIEW_FIELDS = {"reviewer", "date", "review_by"}
 LICENSES = {"CC-BY-4.0"}
@@ -253,6 +257,17 @@ def validate(article: Article, report: Report, release: bool) -> None:
             report.error(p, "keywords must list at least 3 words or short phrases, e.g. [water, filter, cloth].")
         elif any(k != k.lower() for k in meta["keywords"]) and not any("TODO" in k for k in meta["keywords"]):
             report.error(p, "keywords must be lowercase. Fix: write e.g. 'cpr', not 'CPR'.")
+    if has("code") and not CODE_RE.match(str(meta["code"])):
+        report.error(p, f"code '{meta['code']}' is invalid. Fix: never write a code yourself; "
+                        "python -m tools.new_article assigns one (two capital letters, a hyphen, two digits, e.g. FA-06).")
+    if "icon" in meta and (not isinstance(meta["icon"], str) or not ID_RE.match(meta["icon"])):
+        report.error(p, "icon must be one name from knowledge/icons.yaml, or be left out.")
+    if "rhythm" in meta:
+        r = meta["rhythm"]
+        if not isinstance(r, dict) or set(r) != RHYTHM_FIELDS or not all(isinstance(r[k], int) and not isinstance(r[k], bool) for k in r):
+            report.error(p, "rhythm must be {bpm: <number>, from_step: <number>, to_step: <number>}, or be left out.")
+        elif not 30 <= r["bpm"] <= 200 or not 1 <= r["from_step"] <= r["to_step"]:
+            report.error(p, "rhythm: bpm must be 30-200 and from_step must not be after to_step.")
     if "diagrams_needed" in meta and meta["diagrams_needed"] not in (None, []) and not _is_str_list(meta["diagrams_needed"], 1):
         report.error(p, "diagrams_needed must be a list of short descriptions, or be left out.")
 
@@ -413,6 +428,7 @@ def validate_body(article: Article, report: Report) -> None:
                 elif words > STEP_WORDS_WARN:
                     report.warn(p, f"{step} has {words} words; aim for {STEP_WORDS_WARN} or fewer.")
             else:
+                article.step_count = len(nums)
                 if len(nums) < 2:
                     report.error(p, "'## Steps' needs at least 2 numbered steps.")
                 elif nums != list(range(1, len(nums) + 1)):
@@ -499,12 +515,55 @@ def check_image_use(articles: list[Article], images: list[dict], images_file: Pa
         report.error(images_file, f"picture '{iid}' is not used by any article. Fix: use it in an article, or remove it.")
 
 
-def load_categories(path: Path, report: Report) -> list[dict]:
+def load_categories(path: Path, report: Report, icons: dict[str, str] | None = None) -> list[dict]:
     cats = (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("categories", [])
+    codes = set()
     for i, c in enumerate(cats):
         if not isinstance(c, dict) or not c.get("id") or not c.get("title"):
             report.error(path, f"category {i + 1} needs an id and a title")
+            continue
+        code = str(c.get("code", ""))
+        if not re.fullmatch(r"[A-Z]{2}", code):
+            report.error(path, f"category '{c['id']}' needs a code of two capital letters, e.g. FA.")
+        elif code in codes:
+            report.error(path, f"category '{c['id']}': code {code} is already used by another category.")
+        codes.add(code)
+        if icons is not None and c.get("icon") not in icons:
+            report.error(path, f"category '{c['id']}': icon '{c.get('icon')}' is not in knowledge/icons.yaml.")
     return cats
+
+
+def load_icons(path: Path, report: Report) -> dict[str, str]:
+    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    icons = data.get("icons") or {}
+    out = {}
+    for name, d in icons.items():
+        if not isinstance(name, str) or not ID_RE.match(name) or not isinstance(d, str) \
+                or not re.fullmatch(r"[MmLlHhVvCcSsQqTtAaZz0-9 .,\-]+", d):
+            report.error(path, f"icon '{name}' must be a lowercase name with SVG path data.")
+            continue
+        out[name] = d
+    return out
+
+
+def check_codes_icons_rhythm(articles: list[Article], categories: list[dict], icons: dict[str, str], report: Report) -> None:
+    prefix = {c.get("id"): c.get("code") for c in categories if isinstance(c, dict)}
+    seen: dict[str, Path] = {}
+    for a in articles:
+        code, cat = a.meta.get("code"), a.meta.get("category")
+        if isinstance(code, str) and CODE_RE.match(code):
+            if prefix.get(cat) and not code.startswith(prefix[cat] + "-"):
+                report.error(a.path, f"code {code} does not match category '{cat}' (codes there start with "
+                                     f"{prefix[cat]}-). Fix: keep the code python -m tools.new_article gave it.")
+            if code in seen:
+                report.error(a.path, f"code {code} is already used by {_rel(seen[code])}. Every article needs its own code.")
+            seen.setdefault(code, a.path)
+        icon = a.meta.get("icon")
+        if isinstance(icon, str) and icon not in icons:
+            report.error(a.path, f"icon '{icon}' is not in knowledge/icons.yaml. Choose one of: {', '.join(sorted(icons))}.")
+        r = a.meta.get("rhythm")
+        if isinstance(r, dict) and isinstance(r.get("to_step"), int) and a.step_count and r["to_step"] > a.step_count:
+            report.error(a.path, f"rhythm.to_step is {r['to_step']} but the article has only {a.step_count} steps.")
 
 
 def load_stopwords(path: Path) -> list[str]:
@@ -584,7 +643,10 @@ def _json_default(o):
 
 
 def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, release: bool,
-             categories: list[dict] = (), stopwords: list[str] = (), images: list[dict] = ()) -> str:
+             categories: list[dict] = (), stopwords: list[str] = (), images: list[dict] = (),
+             icons: dict[str, str] | None = None) -> str:
+    icons = icons or {}
+    cat_icon = {c["id"]: c.get("icon") for c in categories}
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = out.with_suffix(".tmp")
     tmp.unlink(missing_ok=True)
@@ -606,8 +668,15 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
             reviewer TEXT,
             review_date TEXT,
             review_by TEXT,
-            diagrams_needed TEXT NOT NULL
+            diagrams_needed TEXT NOT NULL,
+            code TEXT NOT NULL,
+            icon TEXT,
+            lead TEXT NOT NULL,
+            rhythm_bpm INTEGER,
+            rhythm_from INTEGER,
+            rhythm_to INTEGER
         );
+        CREATE TABLE icons (name TEXT PRIMARY KEY, path TEXT NOT NULL);
         CREATE TABLE sources (
             article_id TEXT NOT NULL REFERENCES articles(id),
             position INTEGER NOT NULL,
@@ -625,7 +694,8 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
         CREATE INDEX synonyms_term ON synonyms(term);
         CREATE TABLE vocab (word TEXT PRIMARY KEY) WITHOUT ROWID;
         CREATE TABLE stopwords (word TEXT PRIMARY KEY) WITHOUT ROWID;
-        CREATE TABLE categories (id TEXT PRIMARY KEY, title TEXT NOT NULL, position INTEGER NOT NULL);
+        CREATE TABLE categories (id TEXT PRIMARY KEY, title TEXT NOT NULL, position INTEGER NOT NULL,
+                                 code TEXT NOT NULL, icon TEXT);
         CREATE TABLE images (
             id TEXT PRIMARY KEY,
             mime TEXT NOT NULL,
@@ -647,8 +717,10 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
             json.dumps(m["situations"]), json.dumps(m["keywords"]),
             _opt_str(review.get("reviewer")), _opt_str(review.get("date")), _opt_str(review.get("review_by")),
             json.dumps(m.get("diagrams_needed") or []),
+            m["code"], m.get("icon") or cat_icon.get(m["category"]), m["situations"][0],
+            *((m["rhythm"]["bpm"], m["rhythm"]["from_step"], m["rhythm"]["to_step"]) if m.get("rhythm") else (None, None, None)),
         )
-        con.execute("INSERT INTO articles VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", row)
+        con.execute("INSERT INTO articles VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", row)
         for i, src in enumerate(m["sources"]):
             con.execute("INSERT INTO sources VALUES (?,?,?,?,?,?)",
                         (m["id"], i, src["title"], src["publisher"], _opt_str(src.get("url")),
@@ -672,8 +744,10 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
         digest.update(json.dumps(group).encode())
     con.executemany("INSERT OR IGNORE INTO vocab VALUES (?)", ((w,) for w in sorted(vocab)))
     con.executemany("INSERT INTO stopwords VALUES (?)", ((w,) for w in stopwords))
-    con.executemany("INSERT INTO categories VALUES (?, ?, ?)",
-                    ((c["id"], c["title"], i) for i, c in enumerate(categories)))
+    con.executemany("INSERT INTO categories VALUES (?, ?, ?, ?, ?)",
+                    ((c["id"], c["title"], i, c.get("code", ""), c.get("icon")) for i, c in enumerate(categories)))
+    con.executemany("INSERT INTO icons VALUES (?, ?)", sorted(icons.items()))
+    digest.update(json.dumps(sorted(icons.items())).encode())
     digest.update(json.dumps([list(stopwords), list(categories)]).encode())
     for img in sorted(images, key=lambda i: i["id"]):
         data = img["path"].read_bytes()
@@ -699,20 +773,22 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
 def build(out: Path = DEFAULT_OUT, release: bool = False, check_only: bool = False,
           articles_dir: Path = ARTICLES_DIR, synonyms_file: Path = SYNONYMS_FILE,
           categories_file: Path = CATEGORIES_FILE, stopwords_file: Path = STOPWORDS_FILE,
-          images_file: Path = IMAGES_FILE, images_dir: Path = IMAGES_DIR) -> Report:
+          images_file: Path = IMAGES_FILE, images_dir: Path = IMAGES_DIR, icons_file: Path = ICONS_FILE) -> Report:
     report = Report()
     articles = load_articles(articles_dir, report, release)
     images = load_images(images_file, images_dir, report)
     check_image_use(articles, images, images_file, report)
     synonyms = load_synonyms(synonyms_file, report)
-    categories = load_categories(categories_file, report)
+    icons = load_icons(icons_file, report)
+    categories = load_categories(categories_file, report, icons)
+    check_codes_icons_rhythm(articles, categories, icons, report)
     known = {c.get("id") for c in categories if isinstance(c, dict)}
     for a in articles:
         if a.meta.get("category") and a.meta["category"] not in known:
             report.error(a.path, f"category '{a.meta['category']}' is not listed in {_rel(categories_file)}")
     stopwords = load_stopwords(stopwords_file)
     if not report.errors and not check_only:
-        write_db(articles, synonyms, out, release, categories, stopwords, images)
+        write_db(articles, synonyms, out, release, categories, stopwords, images, icons)
     return report
 
 
@@ -733,7 +809,8 @@ def main(argv: list[str] | None = None) -> int:
         paths = dict(articles_dir=k / "articles", synonyms_file=pick("synonyms.yaml", SYNONYMS_FILE),
                      categories_file=pick("categories.yaml", CATEGORIES_FILE),
                      stopwords_file=pick("stopwords.txt", STOPWORDS_FILE),
-                     images_file=k / "images.yaml", images_dir=k / "images")
+                     images_file=k / "images.yaml", images_dir=k / "images",
+                     icons_file=pick("icons.yaml", ICONS_FILE))
     report = build(args.out, args.release, args.check, **paths)
     if not args.quiet:
         for w in report.warnings:

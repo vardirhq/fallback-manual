@@ -55,6 +55,16 @@ class SearchParityTest {
         assertTrue(a.bodyMarkdown.contains("## Steps"))
         assertTrue(a.sources.isNotEmpty())
         assertEquals(KnowledgeBase.SUPPORTED_SCHEMA, kb.info.schemaVersion)
+        val cpr = kb.article("cpr")!!
+        assertEquals("FA-02", cpr.code)
+        assertEquals("First aid", cpr.categoryTitle)
+        assertEquals(Rhythm(110, 9, 13), cpr.rhythm)
+        assertTrue(cpr.iconPath!!.startsWith("M"))
+        assertTrue(cats.first { it.id == "first-aid" }.code == "FA")
+        assertTrue(kb.summary("cpr")!!.lead.isNotEmpty())
+        val r = kb.searcher.search("my dad collapsed and isn't breathing")
+        assertEquals("cpr", r.best?.id)
+        assertTrue(r.best!!.matched.isNotEmpty())
     }
 
     companion object {

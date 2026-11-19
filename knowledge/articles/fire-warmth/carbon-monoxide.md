@@ -2,6 +2,8 @@
 id: carbon-monoxide
 title: Carbon monoxide poisoning
 category: fire-warmth
+code: FW-01
+icon: cloud
 status: draft
 version: 4
 high_risk: true

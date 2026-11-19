@@ -37,10 +37,24 @@ def existing() -> dict[str, tuple[str, str]]:
     return out
 
 
+def next_code(category: str) -> str:
+    """The next free code in a category, e.g. FA-06. Codes are never reused or renumbered."""
+    prefix = next(c["code"] for c in categories() if c["id"] == category)
+    used = []
+    for p in ARTICLES.glob("*/*.md"):
+        m = re.search(rf"^code:\s*{prefix}-(\d+)\s*$", p.read_text(encoding="utf-8"), re.M)
+        if m:
+            used.append(int(m.group(1)))
+    return f"{prefix}-{max(used, default=0) + 1:02d}"
+
+
 def show_list() -> None:
     print("Categories (use the id):")
     for c in categories():
         print(f"  {c['id']:<22} {c['title']}")
+    icons = yaml.safe_load((ROOT / "knowledge" / "icons.yaml").read_text(encoding="utf-8"))["icons"]
+    print("\nIcons (optional: add  icon: <name>  to an article's header; otherwise it uses its category's icon):")
+    print("  " + ", ".join(sorted(icons)))
     print("\nExisting articles (link to them with [text](article:<id>)):")
     for aid, (cat, title) in existing().items():
         print(f"  {aid:<28} {cat:<22} {title}")
@@ -81,7 +95,8 @@ def main(argv: list[str] | None = None) -> int:
 
     title = args.title if not re.search(r"[:#'\"]", args.title) else '"' + args.title.replace('"', "'") + '"'
     text = TEMPLATE.read_text(encoding="utf-8").format(
-        id=args.aid, title=title, category=args.category, high_risk="true" if args.high_risk else "false",
+        id=args.aid, title=title, category=args.category, code=next_code(args.category),
+        high_risk="true" if args.high_risk else "false",
     )
     out = ARTICLES / args.category / f"{args.aid}.md"
     out.parent.mkdir(parents=True, exist_ok=True)

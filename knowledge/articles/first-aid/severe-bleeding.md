@@ -2,6 +2,8 @@
 id: severe-bleeding
 title: Severe bleeding
 category: first-aid
+code: FA-05
+icon: droplet
 status: draft
 version: 2
 high_risk: true

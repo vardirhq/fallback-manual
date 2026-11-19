@@ -27,30 +27,36 @@ class KnowledgeBase private constructor(private val connection: SQLiteConnection
     val searcher: Searcher by lazy { Searcher(connection) }
 
     fun categories(includeEmpty: Boolean = false): List<Category> = query(
-        "SELECT c.id, c.title, count(a.id) FROM categories c LEFT JOIN articles a ON a.category = c.id " +
+        "SELECT c.id, c.title, count(a.id), c.code, i.path FROM categories c " +
+            "LEFT JOIN articles a ON a.category = c.id LEFT JOIN icons i ON i.name = c.icon " +
             "GROUP BY c.id ORDER BY c.position",
-    ) { Category(it.getText(0), it.getText(1), it.getLong(2).toInt()) }
+    ) { Category(it.getText(0), it.getText(1), it.getLong(2).toInt(), it.getText(3), it.textOrNull(4)) }
         .filter { includeEmpty || it.articleCount > 0 }
 
     fun articles(category: String): List<ArticleSummary> =
-        summaries("WHERE category = ? ORDER BY title", category)
+        summaries("WHERE a.category = ? ORDER BY a.code", category)
 
-    fun highRiskArticles(): List<ArticleSummary> = summaries("WHERE high_risk = 1 ORDER BY title")
+    fun highRiskArticles(): List<ArticleSummary> = summaries("WHERE a.high_risk = 1 ORDER BY a.title")
 
     fun summaries(ids: Collection<String>): List<ArticleSummary> {
         val wanted = ids.toSet()
-        return summaries("ORDER BY title").filter { it.id in wanted }
+        return summaries("ORDER BY a.title").filter { it.id in wanted }
     }
 
+    fun summary(id: String): ArticleSummary? = summaries("WHERE a.id = ?", id).firstOrNull()
+
     fun article(id: String): Article? = query(
-        "SELECT id, title, category, status, version, high_risk, license, body_md, reviewer, review_date, review_by " +
-            "FROM articles WHERE id = ?",
+        "SELECT a.id, a.title, a.category, a.status, a.version, a.high_risk, a.license, a.body_md, a.reviewer, " +
+            "a.review_date, a.review_by, a.code, i.path, a.rhythm_bpm, a.rhythm_from, a.rhythm_to, c.title " +
+            "FROM articles a LEFT JOIN icons i ON i.name = a.icon LEFT JOIN categories c ON c.id = a.category " +
+            "WHERE a.id = ?",
         id,
     ) {
         Article(
             id = it.getText(0),
             title = it.getText(1),
             category = it.getText(2),
+            categoryTitle = it.textOrNull(16) ?: it.getText(2),
             reviewed = it.getText(3) == "reviewed",
             version = it.getLong(4).toInt(),
             highRisk = it.getLong(5) != 0L,
@@ -58,6 +64,9 @@ class KnowledgeBase private constructor(private val connection: SQLiteConnection
             bodyMarkdown = it.getText(7),
             sources = emptyList(),
             review = Review(it.textOrNull(8), it.textOrNull(9), it.textOrNull(10)),
+            code = it.getText(11),
+            iconPath = it.textOrNull(12),
+            rhythm = if (it.isNull(13)) null else Rhythm(it.getLong(13).toInt(), it.getLong(14).toInt(), it.getLong(15).toInt()),
         )
     }.firstOrNull()?.let { a ->
         a.copy(sources = query(
@@ -73,10 +82,16 @@ class KnowledgeBase private constructor(private val connection: SQLiteConnection
     fun categoryTitle(id: String): String =
         query("SELECT title FROM categories WHERE id = ?", id) { it.getText(0) }.firstOrNull() ?: id
 
-    private fun summaries(where: String, vararg args: String): List<ArticleSummary> =
-        query("SELECT id, title, category, high_risk, status FROM articles $where", *args) {
-            ArticleSummary(it.getText(0), it.getText(1), it.getText(2), it.getLong(3) != 0L, it.getText(4) == "reviewed")
-        }
+    private fun summaries(where: String, vararg args: String): List<ArticleSummary> = query(
+        "SELECT a.id, a.title, a.category, a.high_risk, a.status, a.code, i.path, a.lead " +
+            "FROM articles a LEFT JOIN icons i ON i.name = a.icon $where",
+        *args,
+    ) {
+        ArticleSummary(
+            it.getText(0), it.getText(1), it.getText(2), it.getLong(3) != 0L, it.getText(4) == "reviewed",
+            it.getText(5), it.textOrNull(6), it.getText(7),
+        )
+    }
 
     private fun <T> query(sql: String, vararg args: String, row: (SQLiteStatement) -> T): List<T> =
         connection.query(sql, *args, row = row)
@@ -84,7 +99,7 @@ class KnowledgeBase private constructor(private val connection: SQLiteConnection
     override fun close() = connection.close()
 
     companion object {
-        const val SUPPORTED_SCHEMA = 2
+        const val SUPPORTED_SCHEMA = 3
 
         fun open(path: String): KnowledgeBase =
             KnowledgeBase(BundledSQLiteDriver().open(path, SQLITE_OPEN_READONLY))

@@ -59,9 +59,9 @@ class ShareTest {
     private val fakeApk get() = app.fakeApk
 
     private fun openShareScreen() {
-        rule.waitUntilAtLeastOneExists(hasText("Emergency"), 30_000)
-        rule.onNodeWithContentDescription("Share this app").performClick()
-        rule.waitUntilAtLeastOneExists(hasText("On the other phone"), 5_000)
+        rule.waitUntilAtLeastOneExists(hasText("EMERGENCY"), 30_000)
+        rule.onNodeWithText("Share").performClick() // the Share tab
+        rule.waitUntilAtLeastOneExists(hasText("ON THE OTHER PHONE"), 5_000)
     }
 
     /** Clicks a send button and returns the intent handed to the share sheet, plus the file's bytes. */
