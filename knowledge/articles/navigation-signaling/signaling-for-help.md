@@ -5,7 +5,7 @@ category: navigation-signaling
 code: NS-01
 icon: signal
 status: draft
-version: 4
+version: 5
 high_risk: false
 license: CC-BY-4.0
 situations:
@@ -13,8 +13,6 @@ situations:
   - no phone signal and need rescue
   - how to signal a helicopter or search team
 keywords: [signal, rescue, help, sos, lost, stranded, whistle, mirror, fire, smoke, phone, no signal, reception, search]
-diagrams_needed:
-  - aiming a signal mirror
 sources:
   - title: Survival, Field Manual 21-76
     publisher: US Department of the Army
@@ -52,6 +50,7 @@ Use this when you are lost, stranded or injured and need rescuers to find you, e
 ![Ground-to-air codes include V for assistance, X for medical help, N for no, Y for yes, and an arrow for direction; SOS means distress](image:ground-air-survivor-signals)
 8. Use rocks, branches or bright cloth that contrasts with the ground. Make each letter several meters long.
 9. In daylight, flash sunlight at aircraft or searchers with a mirror or any shiny object.
+![A person holds a signal mirror right up to one eye and sights through it to aim the flash](image:signal-mirror-aiming)
 10. If you light a signal fire, add green leaves in daytime for white smoke; keep it bright at night.
 
 ## Warnings

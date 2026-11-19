@@ -36,3 +36,16 @@ images:
   creator: Federal Aviation Administration
   source: https://commons.wikimedia.org/wiki/File:Ground-Air_Visual_Code_for_Use_by_Survivors.png
   ai_generated: false
+- id: generator-co-warning
+  file: generator-co-warning.webp
+  license: public-domain
+  creator: US Consumer Product Safety Commission
+  source: 'https://commons.wikimedia.org/wiki/File:16_CFR_1407_Figure_1_-_On-product_carbon_monoxide_poisoning_label.svg
+    (16 CFR 1407, Figure 1: on-product carbon monoxide poisoning label)'
+  ai_generated: false
+- id: signal-mirror-aiming
+  file: signal-mirror-aiming.webp
+  license: public-domain
+  creator: US Air Force, photo by Airman 1st Class Jesse Shipps
+  source: https://commons.wikimedia.org/wiki/File:Glass_MIL-M-18371E_Type_II_Signal_Mirror_3x5.jpg
+  ai_generated: false
