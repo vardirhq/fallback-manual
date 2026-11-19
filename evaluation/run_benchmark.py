@@ -29,8 +29,14 @@ from retrieval.search import DEFAULT_DB, DEFAULT_THRESHOLD, Searcher
 QUESTIONS = Path(__file__).resolve().parent / "questions.yaml"
 
 
-def run(db: Path, threshold: float, which: str | None) -> dict:
+def questions(lang: str = "en") -> list[dict]:
+    """The questions for one language. A question without 'lang' is English."""
     qs = yaml.safe_load(QUESTIONS.read_text(encoding="utf-8"))["questions"]
+    return [q for q in qs if q.get("lang", "en") == lang]
+
+
+def run(db: Path, threshold: float, which: str | None, lang: str = "en") -> dict:
+    qs = questions(lang)
     if which:
         qs = [q for q in qs if q["set"] == which]
     s = Searcher(db, threshold)
@@ -74,19 +80,22 @@ def summarise(rows: list[dict]) -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--db", type=Path, default=DEFAULT_DB)
+    ap.add_argument("--lang", default="en", help="language of the questions and database (en, nb, ...)")
+    ap.add_argument("--db", type=Path, help="default: build/knowledge.db, or build/knowledge-<lang>.db")
     ap.add_argument("--threshold", type=float, default=DEFAULT_THRESHOLD)
     ap.add_argument("--set", choices=["dev", "heldout"])
     ap.add_argument("--failures", action="store_true", help="list every miss")
     args = ap.parse_args(argv)
 
+    from tools.build_kb import db_path
+    args.db = args.db or db_path(DEFAULT_DB, args.lang)
     if not args.db.exists():
         print(f"{args.db} not found; run `python -m tools.build_kb` first.", file=sys.stderr)
         return 1
-    out = run(args.db, args.threshold, args.set)
+    out = run(args.db, args.threshold, args.set, args.lang)
     rows = out["rows"]
     sets = [args.set] if args.set else ["dev", "heldout"]
-    print(f"Threshold {args.threshold:.2f}, {out['ms_per_query']:.1f} ms/query\n")
+    print(f"Language {args.lang}, threshold {args.threshold:.2f}, {out['ms_per_query']:.1f} ms/query\n")
     print(f"{'set':<9}{'n':>4}{'top-1':>9}{'top-3':>9}{'no-match':>10}{'dangerous':>11}")
     for name in sets + (["all"] if len(sets) > 1 else []):
         sub = rows if name == "all" else [r for r in rows if r["set"] == name]

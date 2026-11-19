@@ -26,13 +26,17 @@ val exportExpected by tasks.registering(Exec::class) {
     inputs.dir(repoRoot.dir("tools"))
     inputs.dir(repoRoot.dir("retrieval"))
     inputs.dir(repoRoot.dir("evaluation"))
-    outputs.files(repoRoot.file("build/knowledge.db"), repoRoot.file("build/expected_search.tsv"))
-    commandLine("sh", "-c", "python3 -m tools.build_kb --quiet && python3 -m evaluation.export_expected")
+    outputs.files(repoRoot.file("build/knowledge.db"), repoRoot.file("build/expected_search.tsv"),
+        repoRoot.file("build/knowledge-nb.db"), repoRoot.file("build/expected_search-nb.tsv"))
+    commandLine("sh", "-c", "python3 -m tools.build_kb --quiet && python3 -m evaluation.export_expected " +
+        "&& python3 -m evaluation.export_expected --lang nb")
 }
 
 tasks.test {
     dependsOn(exportExpected)
     systemProperty("kb.path", repoRoot.file("build/knowledge.db").asFile.absolutePath)
     systemProperty("expected.path", repoRoot.file("build/expected_search.tsv").asFile.absolutePath)
+    systemProperty("kb.nb.path", repoRoot.file("build/knowledge-nb.db").asFile.absolutePath)
+    systemProperty("expected.nb.path", repoRoot.file("build/expected_search-nb.tsv").asFile.absolutePath)
     testLogging { events("failed"); exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL }
 }

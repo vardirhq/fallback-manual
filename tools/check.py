@@ -22,7 +22,8 @@ ROOT = Path(__file__).resolve().parent.parent
 QUESTIONS = ROOT / "evaluation" / "questions.yaml"
 
 
-def check_questions(article_ids: set[str], problems: list[str]) -> list[dict]:
+def check_questions(article_ids: set[str], translated: dict[str, set[str]], problems: list[str]) -> list[dict]:
+    """translated: language -> ids of the articles translated into it."""
     rel = QUESTIONS.relative_to(ROOT)
     try:
         data = yaml.safe_load(QUESTIONS.read_text(encoding="utf-8"))
@@ -36,8 +37,13 @@ def check_questions(article_ids: set[str], problems: list[str]) -> list[dict]:
         return []
     seen = set()
     for i, q in enumerate(qs, 1):
-        if not isinstance(q, dict) or set(q) != {"set", "q", "expect"}:
-            problems.append(f"{rel}: question {i} must have exactly set, q and expect.")
+        if not isinstance(q, dict) or not {"set", "q", "expect"} <= set(q) <= {"set", "q", "expect", "lang"}:
+            problems.append(f"{rel}: question {i} must have exactly set, q and expect (and lang, for a question "
+                            "in another language than English).")
+            continue
+        if q.get("lang", "en") not in build_kb.LANGUAGES or q.get("lang") == "en":
+            problems.append(f"{rel}: question {i} ('{q['q']}'): lang must be one of "
+                            f"{', '.join(l for l in build_kb.LANGUAGES if l != 'en')}; leave it out for English.")
             continue
         if q["set"] not in ("dev", "heldout"):
             problems.append(f"{rel}: question {i} ('{q['q']}'): set must be dev or heldout.")
@@ -53,11 +59,17 @@ def check_questions(article_ids: set[str], problems: list[str]) -> list[dict]:
         for aid in q["expect"]:
             if aid not in article_ids:
                 problems.append(f"{rel}: question {i} ('{q['q']}') expects '{aid}', which is not an article id.")
-    covered = {aid for q in qs if isinstance(q, dict) and q.get("set") == "dev"
-               for aid in (q.get("expect") or []) if isinstance(q.get("expect"), list)}
-    for aid in sorted(article_ids - covered):
+    def covered(lang: str) -> set[str]:
+        return {aid for q in qs if isinstance(q, dict) and q.get("set") == "dev" and q.get("lang", "en") == lang
+                for aid in (q.get("expect") or []) if isinstance(q.get("expect"), list)}
+    for aid in sorted(article_ids - covered("en")):
         problems.append(f"{rel}: no dev question finds article '{aid}'. Fix: add at least 2 lines like "
                         f'- {{set: dev, q: "<how a person would ask>", expect: [{aid}]}}')
+    for lang, ids in sorted(translated.items()):
+        for aid in sorted(ids - covered(lang)):
+            problems.append(f"{rel}: no {lang} dev question finds the {lang} translation of '{aid}'. Fix: add at "
+                            f'least 2 lines like - {{set: dev, lang: {lang}, q: "<how a person would ask, in that '
+                            f'language>", expect: [{aid}]}}')
     return qs
 
 
@@ -74,20 +86,28 @@ def main() -> int:
         print(f"[{status}] articles are valid")
 
         # 2. Benchmark questions and search quality
-        ids = {p.stem for p in build_kb.ARTICLES_DIR.glob("*/*.md")}
+        ids = {p.stem for p in build_kb.ARTICLES_DIR.glob("*/*.md") if "." not in p.stem}
+        translated: dict[str, set[str]] = {}
+        for p in build_kb.ARTICLES_DIR.glob("*/*.*.md"):
+            base, _, lang = p.stem.rpartition(".")
+            translated.setdefault(lang, set()).add(base)
         before = len(problems)
-        qs = check_questions(ids, problems)
+        qs = check_questions(ids, translated, problems)
         if not report.errors and qs and len(problems) == before:
             from evaluation.run_benchmark import run, summarise
-            rows = run(db, 0.6, None)["rows"]
+            rows = []
+            for lang in build_kb.LANGUAGES:
+                rows += run(build_kb.db_path(db, lang), 0.6, None, lang)["rows"]
             for r in rows:
                 if r["set"] == "dev" and not r["ok"]:
                     want = ", ".join(r["expect"]) or "no match"
                     got = r["ids"][0] if r["confident"] and r["ids"] else "no confident match"
+                    lang = r.get("lang", "en")
+                    where = ("knowledge/synonyms.yaml" if lang == "en" else f"knowledge/synonyms.{lang}.yaml")
                     problems.append(
                         f"search: dev question '{r['q']}' should find {want} but found {got}. Fix: add the words "
-                        "from this question to that article's situations or keywords (or a group in "
-                        "knowledge/synonyms.yaml). Do not change the question to make it pass.")
+                        f"from this question to that article's situations or keywords{'' if lang == 'en' else f' (in its {lang} translation)'} "
+                        f"(or a group in {where}). Do not change the question to make it pass.")
                 if r["dangerous"]:
                     problems.append(f"search: '{r['q']}' gives a confident WRONG answer ({r['ids'][0]}). "
                                     "Fix: make that article's situations/keywords more specific.")

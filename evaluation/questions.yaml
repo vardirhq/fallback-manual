@@ -91,6 +91,50 @@ questions:
   - {set: dev, q: "officials say we have to leave our home where do we go", expect: [evacuation]}
   - {set: dev, q: "what should I take when I evacuate", expect: [evacuation]}
 
+  # --- burns (nb) ---
+  - {set: dev, lang: nb, q: "jeg sølte kokende vann på armen", expect: [burns]}
+  - {set: dev, lang: nb, q: "brannsår med blemmer etter stekepanne", expect: [burns]}
+  # --- cpr (nb) ---
+  - {set: dev, lang: nb, q: "faren min falt om og puster ikke", expect: [cpr]}
+  - {set: dev, lang: nb, q: "hvordan gjør man hjerte-lunge-redning", expect: [cpr]}
+  # --- dehydration (nb) ---
+  - {set: dev, lang: nb, q: "barnet har kastet opp hele dagen og tisser nesten ikke", expect: [dehydration]}
+  - {set: dev, lang: nb, q: "tørr i munnen og mørk urin", expect: [dehydration]}
+  # --- hypothermia (nb) ---
+  - {set: dev, lang: nb, q: "han skjelver og snakker rart etter å ha falt i vannet", expect: [hypothermia]}
+  - {set: dev, lang: nb, q: "noen er nedkjølt etter fjelltur", expect: [hypothermia]}
+  # --- severe-bleeding (nb) ---
+  - {set: dev, lang: nb, q: "det blør veldig mye fra et kutt i beinet", expect: [severe-bleeding]}
+  - {set: dev, lang: nb, q: "blodet spruter ut av såret", expect: [severe-bleeding]}
+  # --- carbon-monoxide (nb) ---
+  - {set: dev, lang: nb, q: "alle har hodepine etter at vi brukte gassovnen inne", expect: [carbon-monoxide]}
+  - {set: dev, lang: nb, q: "kan jeg bruke aggregat i garasjen", expect: [carbon-monoxide]}
+  # --- staying-warm-power-outage (nb) ---
+  - {set: dev, lang: nb, q: "strømmen har gått og det blir kaldt i huset", expect: [staying-warm-power-outage]}
+  - {set: dev, lang: nb, q: "hvordan holde varmen uten strøm om vinteren", expect: [staying-warm-power-outage]}
+  # --- food-safety-power-outage (nb) ---
+  - {set: dev, lang: nb, q: "er maten i fryseren trygg etter strømbruddet", expect: [food-safety-power-outage]}
+  - {set: dev, lang: nb, q: "hvor lenge holder kjøleskapet seg kaldt uten strøm", expect: [food-safety-power-outage]}
+  # --- signaling-for-help (nb) ---
+  - {set: dev, lang: nb, q: "jeg har gått meg bort og har ingen dekning", expect: [signaling-for-help]}
+  - {set: dev, lang: nb, q: "hvordan få oppmerksomhet fra et redningshelikopter", expect: [signaling-for-help]}
+  # --- boiling-water (nb) ---
+  - {set: dev, lang: nb, q: "kan jeg drikke vann fra bekken hvis jeg koker det", expect: [boiling-water]}
+  - {set: dev, lang: nb, q: "hvor lenge skal vannet koke ved kokevarsel", expect: [boiling-water]}
+  # --- emergency-water-storage (nb) ---
+  - {set: dev, lang: nb, q: "hvor mye vann bør vi lagre hjemme", expect: [emergency-water-storage]}
+  - {set: dev, lang: nb, q: "hvor ofte må jeg bytte lagret drikkevann", expect: [emergency-water-storage]}
+  # --- emergency-supplies (nb) ---
+  - {set: dev, lang: nb, q: "hva bør vi ha i beredskapslageret hjemme", expect: [emergency-supplies]}
+  - {set: dev, lang: nb, q: "hva trenger familien hvis det blir krise", expect: [emergency-supplies]}
+  # --- evacuation (nb) ---
+  - {set: dev, lang: nb, q: "politiet sier vi må forlate huset nå", expect: [evacuation]}
+  - {set: dev, lang: nb, q: "hva skal jeg ta med når vi må evakuere", expect: [evacuation]}
+  # --- not in the library (nb) ---
+  - {set: dev, lang: nb, q: "hvordan fikser jeg en punktert sykkel", expect: []}
+  - {set: dev, lang: nb, q: "hvordan baker jeg brød", expect: []}
+  - {set: dev, lang: nb, q: "beste måte å lære gitar", expect: []}
+
   # --- not in the library: the correct answer is "no match" ---
   - {set: dev, q: "how do I fix a flat bike tire", expect: []}
   - {set: dev, q: "snake bite", expect: []}

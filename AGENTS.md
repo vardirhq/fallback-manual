@@ -26,7 +26,7 @@ If it prints `RESULT: FAIL`, it lists every problem with a "Fix:". Do what it sa
 8. **Only edit these files:**
    - `knowledge/articles/**/*.md` (articles)
    - `evaluation/questions.yaml` (only add `set: dev` lines)
-   - `knowledge/synonyms.yaml` (only if a check tells you to)
+   - `knowledge/synonyms.yaml` and `knowledge/synonyms.nb.yaml` (only if a check tells you to)
    - `knowledge/images/` and `knowledge/images.yaml`, **only through** `python -m tools.add_image` (see "Adding a picture")
 
    Do not edit anything in `android/`, `tools/`, `retrieval/`, `tests/`, `.github/`, or `knowledge/categories.yaml`, unless the person you work for explicitly asks.
@@ -119,7 +119,7 @@ Writing rules:
 - Short sentences. Plain words. Write for someone who is scared and reading on a phone.
 - Steps are instructions: start with a verb ("Press...", "Call...", "Move...").
 - One action per step. **Aim for 20 words or fewer per step; more than 25 is rejected.** If a step is too long, split it into two steps.
-- **American English** in titles and article text: color, center, liter, meter, diarrhea, recognize, signaling, gray, diapers (not nappies), plastic wrap (not cling film), soda (not fizzy drinks). The check rejects common British spellings and words. (In `keywords` and `situations`, British spellings are fine, because people type both.)
+- **American English** in titles and article text of English articles (translations: see "Task: translate an article"): color, center, liter, meter, diarrhea, recognize, signaling, gray, diapers (not nappies), plastic wrap (not cling film), soda (not fizzy drinks). The check rejects common British spellings and words. (In `keywords` and `situations`, British spellings are fine, because people type both.)
 - Give measurements in metric first, then imperial in brackets: `5–6 cm (about 2 inches)`.
 - You may use `**bold**` for a few critical words.
 - To refer to another article, link it: `[start CPR](article:cpr)`. Use only ids from `python -m tools.new_article --list`.
@@ -212,6 +212,45 @@ Then remove that picture from the article's `diagrams_needed` list, and run `pyt
 3. Increase `version` by 1 (e.g. `version: 2` becomes `version: 3`).
 4. If the article was `status: reviewed`, change it to `status: draft` and set `reviewer`, `date` and `review_by` to `null`, and every source's `checked` to `false`. Changed content must be reviewed again.
 5. Run `python -m tools.check` until it prints `RESULT: PASS`.
+
+Translations of the article (`<id>.nb.md` and so on) now show a warning that they are outdated, and the app shows the English article instead until they are updated. If you can, update each translation as in "Task: translate an article"; otherwise tell the person you work for.
+
+---
+
+## Task: translate an article
+
+Translations are separate files next to the English article. Today the only other language is Norwegian Bokmål (`nb`). The English article is always the original; a translation says the same thing in another language, nothing more and nothing less.
+
+1. Copy `knowledge/articles/<category>/<id>.md` to `knowledge/articles/<category>/<id>.nb.md` (or open the existing translation).
+2. Make the header exactly these fields, in this order. Remove every other field (`category`, `code`, `high_risk`, `icon`, `rhythm`, `diagrams_needed`): the translation takes them from the English article.
+
+   ```yaml
+   id: <same id as the English article>
+   lang: nb
+   translation_of: <the English article's version number>
+   title: <the title, translated>
+   status: draft
+   version: <1 for a new translation; increase by 1 when you change it>
+   license: CC-BY-4.0
+   situations: <rewritten as a frightened person in that language would say it>
+   keywords: <the words people in that language would type>
+   sources: <copied unchanged from the English article>
+   review: <reviewer, date and review_by all null>
+   ```
+
+3. Use these six headings, in this order: `## Når brukes dette`, `## Dette trenger du`, `## Trinn`, `## Advarsler`, `## Vanlige feil`, `## Få hjelp`.
+4. Translate every sentence. Keep **the same number of steps and the same number of warnings**, in the same order. Do not merge, split, add or drop any. The check rejects a translation whose counts differ.
+5. Keep every link (`article:<id>`, same id) and every picture (`image:<id>`, same id). Translate only the picture's description.
+6. Add nothing that is not in the English article, even if it is good advice. Give metric units only (drop the imperial ones in brackets). The American English rule does not apply to translations.
+7. In `evaluation/questions.yaml`, add at least 2 questions in that language just above `# --- not in the library`, with `lang: nb`:
+
+   ```yaml
+     - {set: dev, lang: nb, q: "han skjelver og snakker rart", expect: [hypothermia]}
+   ```
+
+8. Run `python -m tools.check` until it prints `RESULT: PASS`. If a Norwegian question doesn't find the article, add words to the translation's `situations` or `keywords`, or a group to `knowledge/synonyms.nb.yaml`.
+
+A translation, like any article, stays `status: draft` until a human expert who reads the language reviews it.
 
 ---
 

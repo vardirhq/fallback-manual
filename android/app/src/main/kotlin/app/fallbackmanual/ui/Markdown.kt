@@ -106,16 +106,24 @@ fun inline(text: String, linkColor: Color = Color.Unspecified, onLink: ((String)
         append(text.substring(last))
     }
 
-/** One step of an article's '## Steps' section, with the pictures placed under it. */
+/**
+ * Articles always have the same six sections in the same order (tools/build_kb.py enforces it), but
+ * their headings are in the article's language ("Steps", "Trinn"...). So sections are found by
+ * position: the 3rd is the steps, the 4th the warnings.
+ */
+private const val STEPS_SECTION = 2
+private const val WARNINGS_SECTION = 3
+
+/** One step of an article's steps section, with the pictures placed under it. */
 data class StepItem(val number: String, val text: String, val images: List<Block.Image>)
 
 fun stepsOf(markdown: String): List<StepItem> {
     val out = mutableListOf<StepItem>()
-    var section = ""
+    var section = -1
     for (b in parseMarkdown(markdown)) {
         when {
-            b is Block.Heading -> section = b.text
-            section != "Steps" -> {}
+            b is Block.Heading -> section++
+            section != STEPS_SECTION -> {}
             b is Block.Step -> out += StepItem(b.number, b.text, emptyList())
             b is Block.Image && out.isNotEmpty() -> out[out.lastIndex] = out.last().let { it.copy(images = it.images + b) }
         }
@@ -128,15 +136,15 @@ fun MarkdownBody(markdown: String, modifier: Modifier = Modifier, onLink: ((Stri
     val blocks = remember(markdown) { parseMarkdown(markdown) }
     val linkColor = fm.accentText
     fun rich(text: String) = inline(text, linkColor, onLink)
-    var section = ""
+    var section = -1
     var under: Block? = null // the step, bullet or paragraph that the next picture belongs to
     Column(modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         for (b in blocks) {
             if (b !is Block.Image) under = b
             when (b) {
                 is Block.Heading -> {
-                    section = b.text
-                    val warn = section == "Warnings"
+                    section++
+                    val warn = section == WARNINGS_SECTION
                     Text(
                         b.text.uppercase(),
                         style = MaterialTheme.typography.labelMedium,
@@ -155,7 +163,7 @@ fun MarkdownBody(markdown: String, modifier: Modifier = Modifier, onLink: ((Stri
                         modifier = Modifier.padding(start = 10.dp))
                 }
                 is Block.Bullet -> Row {
-                    val warn = section == "Warnings"
+                    val warn = section == WARNINGS_SECTION
                     if (warn) {
                         Icon(FmIcons.stroke(FmIcons.WARNING), contentDescription = stringResource(R.string.warning),
                             tint = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 2.dp, end = 10.dp).size(20.dp))
