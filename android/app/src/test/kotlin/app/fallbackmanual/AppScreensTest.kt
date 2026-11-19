@@ -136,7 +136,10 @@ class AppScreensTest {
         rule.onNodeWithContentDescription("Save article").performClick()
         rule.onNodeWithContentDescription("Remove from saved").assertExists()
         rule.onNodeWithContentDescription("Back").performClick()
-        waitFor("SAVED") // the Saved section on Home
+        waitFor("EMERGENCY")
+        // The Saved section sits below the Emergency tiles, which can fill the screen: scroll to it.
+        rule.onNode(hasScrollAction()).performScrollToNode(hasText("SAVED"))
+        rule.onNodeWithText("SAVED").assertExists()
     }
 
     private fun openCarbonMonoxideAndTapCprLink() {
