@@ -4,12 +4,13 @@ lang: nb
 translation_of: 5
 title: Kullosforgiftning
 status: draft
-version: 1
+version: 2
 license: CC-BY-4.0
 situations:
   - hodepine og svimmelhet mens vi bruker ovn, komfyr eller aggregat innendørs
   - flere i huset føler seg dårlige samtidig
   - bruker aggregat, grill eller primus under strømbrudd
+  - bruke aggregat i garasjen eller kjelleren
 keywords: [kullos, kullosforgiftning, karbonmonoksid, co, co-forgiftning, gass, eksos, aggregat, ovn, gassovn, grill, primus, forgiftning, hodepine, lufting, kullosvarsler]
 sources:
   - title: Carbon monoxide poisoning prevention
