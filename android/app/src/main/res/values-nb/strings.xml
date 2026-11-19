@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Norwegian Bokmål. Same names and placeholders as values/strings.xml; StringsTest checks this. -->
+<resources>
+    <!-- Shared -->
+    <string name="back">Tilbake</string>
+    <string name="close">Lukk</string>
+    <string name="unavailable">Ikke tilgjengelig</string>
+    <string name="unknown">ukjent</string>
+    <string name="article_not_found">Fant ikke artikkelen «%1$s».</string>
+    <string name="load_failed">Kunne ikke laste inn håndboken</string>
+    <string name="draft_strip">UTKAST · IKKE GJENNOMGÅTT ENNÅ</string>
+    <string name="row_draft">utkast</string>
+    <plurals name="category_articles">
+        <item quantity="one">%1$d artikkel</item>
+        <item quantity="other">%1$d artikler</item>
+    </plurals>
+
+    <!-- Bottom navigation -->
+    <string name="tab_home">Hjem</string>
+    <string name="tab_manual">Håndbok</string>
+    <string name="tab_saved">Lagret</string>
+    <string name="tab_share">Del</string>
+
+    <!-- Home -->
+    <string name="about">Om appen</string>
+    <string name="home_question">Hva skjer?</string>
+    <string name="search_description">Hva skjer? Beskriv problemet</string>
+    <string name="search_hint">f.eks. skjelver og er forvirret</string>
+    <string name="search_clear">Tøm</string>
+    <string name="section_emergency">Nødsituasjon</string>
+    <string name="section_saved">Lagret</string>
+    <string name="section_manual">Håndbok</string>
+
+    <!-- Manual and categories -->
+    <string name="bar_offline_manual">Håndbok uten nett</string>
+    <string name="bar_category">%1$s · håndbok</string>
+
+    <!-- Article -->
+    <string name="save_article">Lagre artikkel</string>
+    <string name="remove_from_saved">Fjern fra lagret</string>
+    <string name="chip_draft">Utkast · ikke gjennomgått</string>
+    <plurals name="chip_steps">
+        <item quantity="one">%1$d trinn · v%2$d</item>
+        <item quantity="other">%1$d trinn · v%2$d</item>
+    </plurals>
+    <string name="call_title">Ring nødnummeret først</string>
+    <string name="call_body">Gjør det nå hvis du kan. Bruk høyttaler så du har hendene fri.</string>
+    <string name="step_by_step">Trinn for trinn</string>
+    <string name="warning">Advarsel</string>
+    <string name="show_sources">Vis kilder</string>
+    <string name="hide_sources">Skjul kilder</string>
+    <string name="sources_review">KILDER OG GJENNOMGANG</string>
+    <string name="source_line">%1$s, %2$s</string>
+    <string name="source_line_unchecked">%1$s, %2$s (ikke kontrollert mot originalen ennå)</string>
+    <string name="reviewed_by">Gjennomgått av %1$s %2$s</string>
+    <string name="not_reviewed">Ikke gjennomgått</string>
+    <string name="article_meta">%1$s · versjon %2$d · %3$s · %4$s</string>
+
+    <!-- Linked-article sheet -->
+    <string name="sheet_back">Tilbake til forrige artikkel</string>
+    <string name="sheet_from">Fra: %1$s</string>
+    <string name="sheet_open_full">Åpne hele artikkelen</string>
+
+    <!-- Pictures -->
+    <string name="picture_open">Åpne bildet i fullskjerm</string>
+    <string name="picture_missing">Bilde: %1$s</string>
+    <string name="picture_close">Lukk bildet</string>
+
+    <!-- Step-by-step mode -->
+    <string name="step_close">Lukk trinn for trinn</string>
+    <string name="step_of">%1$s · TRINN %2$s AV %3$d</string>
+    <string name="screen_on">SKJERMEN ER PÅ</string>
+    <string name="step_spoken">Trinn %1$s. %2$s</string>
+    <string name="state_on">På</string>
+    <string name="state_off">Av</string>
+    <string name="voice_missing">Ingen stemme er installert på denne telefonen</string>
+    <string name="voice_reading">Leser opp · trykk for å stoppe</string>
+    <string name="voice_read">Les opp trinnene</string>
+    <string name="step_back">TILBAKE</string>
+    <string name="step_next">Neste</string>
+    <string name="step_done">Ferdig</string>
+    <string name="beat_title">FØLG TAKTEN</string>
+    <string name="beat_rate">%1$d i minuttet</string>
+    <string name="no_steps">Denne artikkelen har ingen trinn.</string>
+
+    <!-- Search -->
+    <string name="bar_search">Søk · uten nett</string>
+    <string name="searched_for">Søkte etter: %1$s</string>
+    <string name="best_match">Beste treff</string>
+    <string name="best_match_lead">Når %1$s.</string>
+    <string name="matched">Treff: %1$s</string>
+    <string name="also_related">Også relevant</string>
+    <string name="no_match_title">Ingen gjennomgått artikkel passer til spørsmålet</string>
+    <string name="no_match_body">Prøv andre ord, eller bla i håndboken.</string>
+    <string name="closest">Nærmest (kanskje ikke relevant)</string>
+    <string name="not_what_you_need">IKKE DET DU TRENGER?</string>
+    <string name="search_disclaimer">Appen viser bare instruksjoner fra sine egne artikler. Når ingenting passer, sier den det i stedet for å gjette.</string>
+    <string name="browse_manual">Bla i håndboken</string>
+
+    <!-- Saved -->
+    <string name="bar_on_this_phone">På denne telefonen</string>
+    <string name="nothing_saved">Ingenting er lagret ennå. Trykk på bokmerket i en artikkel for å ha den her når du trenger den.</string>
+
+    <!-- About -->
+    <string name="about_tagline">Kunnskap når alt annet svikter.</string>
+    <string name="about_not_substitute_title">Ikke en erstatning for profesjonell hjelp</string>
+    <string name="about_not_substitute_body">Appen erstatter ikke nødetatene, helsepersonell eller opplæring. Kontakt dem når du kan.</string>
+    <string name="about_offline">Fungerer helt uten nett. Appen har ikke tilgang til internett, og har ingen kontoer, ingen reklame og ingen sporing. Søkene dine og lagrede artikler forlater aldri telefonen.</string>
+    <string name="about_fingerprint">Signeringsfingeravtrykk</string>
+    <string name="about_fingerprint_body">En kopi du har fått fra en annen telefon er ekte hvis den viser samme fingeravtrykk som avsenderens.</string>
+    <string name="about_content">Innhold</string>
+    <plurals name="about_content_line">
+        <item quantity="one">%1$d artikkel · innhold %2$s · %3$s</item>
+        <item quantity="other">%1$d artikler · innhold %2$s · %3$s</item>
+    </plurals>
+    <string name="build_release">ferdig utgave</string>
+    <string name="build_development">utviklingsutgave (utkast som ikke er gjennomgått)</string>
+    <string name="about_fonts">Skrifttyper</string>
+    <string name="about_fonts_body">Barlow og JetBrains Mono, under SIL Open Font License 1.1.</string>
+    <string name="about_installation">Installasjon</string>
+    <string name="about_version">Versjon %1$s. %2$s</string>
+    <string name="installed_play">Installert fra Google Play.</string>
+    <string name="updates_play">Oppdateringer kommer via Google Play.</string>
+    <string name="installed_fdroid">Installert fra F-Droid.</string>
+    <string name="updates_fdroid">Oppdateringer kommer via F-Droid.</string>
+    <string name="installed_apk">Installert fra en appfil (APK).</string>
+    <string name="updates_apk">Appen oppdaterer seg aldri selv. For å oppdatere, installer en nyere APK fra %1$s, eller få en fra noen med en nyere versjon via «Del appen».</string>
+    <string name="installed_unknown">Android registrerte ikke hvor appen kom fra.</string>
+    <string name="updates_unknown">Appen oppdaterer seg aldri selv. For å oppdatere, installer en nyere APK fra %1$s.</string>
+    <string name="about_no_internet">Appen har ikke tilgang til internett og ser aldri etter oppdateringer.</string>
+
+    <!-- Share -->
+    <string name="bar_share">Del appen</string>
+    <string name="share_intro">Gi Fallback Manual til en telefon i nærheten. Du trenger verken internett eller mobildekning.</string>
+    <string name="share_size">Størrelse: %1$.1f MB. Hele håndboken er med.</string>
+    <string name="share_send">Send med Quick Share, Bluetooth …</string>
+    <string name="share_send_zip">Send som ZIP</string>
+    <string name="share_bluetooth_note">Noen telefoner nekter å sende eller ta imot appfiler over Bluetooth. Send den i så fall som ZIP; den andre telefonen pakker den ut med Filer-appen.</string>
+    <string name="share_save_copy">Lagre en kopi (SD-kort, USB, Nedlastinger)</string>
+    <string name="share_no_app">Ingen app på denne telefonen kan sende filer. Prøv «Lagre en kopi» i stedet.</string>
+    <string name="share_prepare_failed">Kunne ikke klargjøre filen: %1$s</string>
+    <string name="share_saved">Lagret. Kopier den til den andre telefonen og åpne den der.</string>
+    <string name="share_save_failed">Kunne ikke lagre: %1$s</string>
+    <string name="share_split_title">Denne kopien kan ikke deles</string>
+    <string name="share_split_body">Den ble installert fra en appbutikk i flere deler, og Android kan ikke installere de delene på en annen telefon. Installer den komplette versjonen fra F-Droid eller prosjektets utgivelsesside, så kan den deles etter det.</string>
+    <string name="share_missing_title">Fant ikke appfilen</string>
+    <string name="share_missing_body">Deling er ikke tilgjengelig på denne telefonen.</string>
+    <string name="share_other_phone">På den andre telefonen</string>
+    <string name="share_other_1">Godta filen når den kommer. Med Quick Share må begge telefonene ha Bluetooth på og være nær hverandre.</string>
+    <string name="share_other_2">Åpne filen. Hvis den kom som ZIP, åpne den i Filer-appen og pakk den ut først.</string>
+    <string name="share_other_3">Hvis Android spør, la den appen installere ukjente apper. Android viser innstillingen.</string>
+    <string name="share_other_4">Trykk Installer, og åpne Fallback Manual. Den virker uten nett med en gang.</string>
+    <string name="share_genuine">Sjekk at den er ekte</string>
+    <string name="share_genuine_body">Begge telefonene skal vise samme signeringsfingeravtrykk her eller under Om appen. Hvis de er forskjellige, er kopien bygget på nytt av noen andre: ikke stol på den.</string>
+    <string name="share_fingerprint_unavailable">Ikke tilgjengelig på denne telefonen</string>
+    <string name="share_subject">Fallback Manual (nødhåndbok uten nett)</string>
+    <string name="share_chooser">Send Fallback Manual</string>
+</resources>

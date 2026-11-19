@@ -36,10 +36,12 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import app.fallbackmanual.R
 
 // Pictures are always shown on a light panel so line drawings stay readable in dark mode.
 private val PanelColor = Color(0xFFFFFFFF)
@@ -60,6 +62,7 @@ fun ArticlePicture(id: String, alt: String, modifier: Modifier = Modifier) {
         }
     }
     var fullScreen by rememberSaveable(id) { mutableStateOf(false) }
+    val openLabel = stringResource(R.string.picture_open)
     val picture = state.value?.getOrNull()
 
     Column(modifier.fillMaxWidth()) {
@@ -67,7 +70,7 @@ fun ArticlePicture(id: String, alt: String, modifier: Modifier = Modifier) {
             Box(
                 Modifier.fillMaxWidth().clip(PanelShape).background(PanelColor)
                     .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), PanelShape)
-                    .clickable(onClickLabel = "Open picture full screen", role = Role.Image) { fullScreen = true }
+                    .clickable(onClickLabel = openLabel, role = Role.Image) { fullScreen = true }
                     .padding(8.dp),
                 contentAlignment = Alignment.Center,
             ) {
@@ -80,7 +83,7 @@ fun ArticlePicture(id: String, alt: String, modifier: Modifier = Modifier) {
             // Missing or unreadable picture: still tell the reader what it would have shown.
             Box(
                 Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.outline, PanelShape).padding(12.dp),
-            ) { Text("Picture: $alt", style = MaterialTheme.typography.bodyMedium) }
+            ) { Text(stringResource(R.string.picture_missing, alt), style = MaterialTheme.typography.bodyMedium) }
         }
         Text(
             alt,
@@ -114,7 +117,7 @@ private fun FullScreenPicture(bitmap: ImageBitmap, alt: String, credit: String, 
                 onClick = close,
                 modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
                     .background(Color(0xCCFFFFFF), RoundedCornerShape(50)),
-            ) { Icon(Icons.Filled.Close, contentDescription = "Close picture", tint = Color(0xFF1A1C18)) }
+            ) { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.picture_close), tint = Color(0xFF1A1C18)) }
             Column(
                 Modifier.align(Alignment.BottomCenter).fillMaxWidth().background(Color(0xE6FFFFFF)).padding(16.dp),
             ) {

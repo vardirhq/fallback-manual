@@ -6,14 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -46,6 +46,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -54,6 +56,7 @@ import app.fallbackmanual.Bookmarks
 import app.fallbackmanual.InstallChannel
 import app.fallbackmanual.InstallSources
 import app.fallbackmanual.KnowledgeStore
+import app.fallbackmanual.R
 import app.fallbackmanual.core.Article
 import app.fallbackmanual.core.ArticleSummary
 import app.fallbackmanual.core.Category
@@ -119,22 +122,22 @@ fun HomeScreen(go: (String) -> Unit, bottomBar: @Composable () -> Unit) {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         LogoMark()
-                        Text("FALLBACK MANUAL", style = MaterialTheme.typography.titleLarge, color = fm.ink,
+                        Text(stringResource(R.string.app_name).uppercase(), style = MaterialTheme.typography.titleLarge, color = fm.ink,
                             modifier = Modifier.weight(1f).padding(start = 10.dp))
                         IconButton(onClick = { go("about") }) {
-                            Icon(FmIcons.stroke(FmIcons.INFO), contentDescription = "About", tint = fm.muted)
+                            Icon(FmIcons.stroke(FmIcons.INFO), contentDescription = stringResource(R.string.about), tint = fm.muted)
                         }
                     }
                 }
                 if (!d.release) item { DraftStrip(Modifier.padding(Gutter).padding(top = 4.dp)) }
                 item {
                     Column(Modifier.padding(Gutter).padding(top = 18.dp)) {
-                        Text("What's happening?", style = MaterialTheme.typography.headlineLarge, color = fm.ink,
+                        Text(stringResource(R.string.home_question), style = MaterialTheme.typography.headlineLarge, color = fm.ink,
                             modifier = Modifier.padding(bottom = 12.dp).semantics { heading() })
                         SearchBox { go("search/$it") }
                     }
                 }
-                item { SectionLabel("Emergency", Modifier.padding(Gutter), accent = true) }
+                item { SectionLabel(stringResource(R.string.section_emergency), Modifier.padding(Gutter), accent = true) }
                 items(d.emergency.chunked(2)) { pair ->
                     // Both tiles in a row take the height of the taller one.
                     Row(
@@ -146,10 +149,10 @@ fun HomeScreen(go: (String) -> Unit, bottomBar: @Composable () -> Unit) {
                     }
                 }
                 if (d.saved.isNotEmpty()) {
-                    item { SectionLabel("Saved", Modifier.padding(Gutter)) }
+                    item { SectionLabel(stringResource(R.string.section_saved), Modifier.padding(Gutter)) }
                     items(d.saved, key = { "saved-" + it.id }) { a -> ArticleRow(a) { go("article/${a.id}") } }
                 }
-                item { SectionLabel("Manual", Modifier.padding(Gutter)) }
+                item { SectionLabel(stringResource(R.string.section_manual), Modifier.padding(Gutter)) }
                 items(d.categories, key = { "cat-" + it.id }) { c -> CategoryRow(c) { go("category/${c.id}") } }
             }
         }
@@ -161,10 +164,10 @@ fun HomeScreen(go: (String) -> Unit, bottomBar: @Composable () -> Unit) {
 @Composable
 fun ManualScreen(go: (String) -> Unit, bottomBar: @Composable () -> Unit) {
     val data = load(Unit) { kb -> kb.categories() }
-    Scaffold(containerColor = fm.bg, topBar = { Bar("Offline manual", null) }, bottomBar = bottomBar) { pad ->
+    Scaffold(containerColor = fm.bg, topBar = { Bar(stringResource(R.string.bar_offline_manual), null) }, bottomBar = bottomBar) { pad ->
         Loaded(data) { cats ->
             LazyColumn(Modifier.fillMaxSize().padding(pad)) {
-                item { ScreenTitle("Manual") }
+                item { ScreenTitle(stringResource(R.string.section_manual)) }
                 items(cats, key = { it.id }) { c -> CategoryRow(c) { go("category/${c.id}") } }
             }
         }
@@ -176,7 +179,7 @@ fun CategoryScreen(id: String, go: (String) -> Unit, back: () -> Unit) {
     val data = load(id) { kb -> kb.categories().firstOrNull { it.id == id } to kb.articles(id) }
     val list = rememberLazyListState()
     val code = data.value?.getOrNull()?.first?.code
-    Scaffold(containerColor = fm.bg, topBar = { Bar(code?.let { "$it · manual" } ?: "", back) }) { pad ->
+    Scaffold(containerColor = fm.bg, topBar = { Bar(code?.let { stringResource(R.string.bar_category, it) } ?: "", back) }) { pad ->
         Loaded(data) { (cat, articles) ->
             LazyColumn(Modifier.fillMaxSize().padding(pad), state = list) {
                 item { ScreenTitle(cat?.title ?: id) }
@@ -203,7 +206,7 @@ fun ArticleScreen(id: String, go: (String) -> Unit, back: () -> Unit) {
             IconButton(onClick = { bookmarks.toggle(id) }, modifier = Modifier.size(48.dp)) {
                 Icon(
                     if (saved) FmIcons.fill(FmIcons.BOOKMARK) else FmIcons.stroke(FmIcons.BOOKMARK),
-                    contentDescription = if (saved) "Remove from saved" else "Save article",
+                    contentDescription = stringResource(if (saved) R.string.remove_from_saved else R.string.save_article),
                     tint = if (saved) fm.accentText else fm.ink,
                 )
             }
@@ -211,7 +214,7 @@ fun ArticleScreen(id: String, go: (String) -> Unit, back: () -> Unit) {
     }) { pad ->
         Loaded(data) { a ->
             if (a == null) {
-                LoadFailed(IllegalStateException("Article '$id' was not found."))
+                LoadFailed(IllegalStateException(stringResource(R.string.article_not_found, id)))
                 return@Loaded
             }
             ArticleContent(
@@ -234,38 +237,40 @@ private const val CHEVRON_UP = "M5 15l7-7 7 7"
 fun ArticleContent(a: Article, onLink: (String) -> Unit, modifier: Modifier = Modifier, onStepByStep: (() -> Unit)? = null) {
     val steps = remember(a.bodyMarkdown) { stepsOf(a.bodyMarkdown).size }
     var sourcesOpen by rememberSaveable(a.id) { mutableStateOf(false) }
+    val toggleLabel = stringResource(if (sourcesOpen) R.string.hide_sources else R.string.show_sources)
     Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(a.title, style = MaterialTheme.typography.displaySmall, color = fm.ink,
             modifier = Modifier.semantics { heading() })
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            if (!a.reviewed) Chip("Draft · not reviewed", fm.draftBg, fm.draftInk)
-            Chip("$steps steps · v${a.version}", fm.chipBg, fm.chipInk)
+            if (!a.reviewed) Chip(stringResource(R.string.chip_draft), fm.draftBg, fm.draftInk)
+            Chip(pluralStringResource(R.plurals.chip_steps, steps, steps, a.version), fm.chipBg, fm.chipInk)
         }
         if (a.highRisk) CallBlock(Modifier.padding(top = 4.dp))
-        if (onStepByStep != null && steps >= 2) BigButton("Step by step", icon = FmIcons.PLAY, onClick = onStepByStep)
+        if (onStepByStep != null && steps >= 2) BigButton(stringResource(R.string.step_by_step), icon = FmIcons.PLAY, onClick = onStepByStep)
         MarkdownBody(a.bodyMarkdown, onLink = onLink)
 
         // Sources and review status matter, but are noise in an emergency: folded away by default.
         Row(
             Modifier.fillMaxWidth().padding(top = 20.dp).heightIn(min = 48.dp)
-                .clickable(role = Role.Button, onClickLabel = if (sourcesOpen) "Hide sources" else "Show sources") {
+                .clickable(role = Role.Button, onClickLabel = toggleLabel) {
                     sourcesOpen = !sourcesOpen
                 },
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("SOURCES & REVIEW", style = MaterialTheme.typography.labelMedium, color = fm.forest, modifier = Modifier.weight(1f))
+            Text(stringResource(R.string.sources_review), style = MaterialTheme.typography.labelMedium, color = fm.forest, modifier = Modifier.weight(1f))
             Icon(FmIcons.stroke(if (sourcesOpen) CHEVRON_UP else FmIcons.CHEVRON_DOWN),
                 contentDescription = null, tint = fm.forest, modifier = Modifier.size(20.dp))
         }
         if (sourcesOpen) {
             a.sources.forEach { s ->
                 Text(
-                    "${s.title}, ${s.publisher}" + if (!s.checked) " (not yet checked against the original)" else "",
+                    stringResource(if (s.checked) R.string.source_line else R.string.source_line_unchecked, s.title, s.publisher),
                     style = MaterialTheme.typography.bodyMedium, color = fm.ink,
                 )
             }
-            val reviewed = a.review.reviewer?.let { "Reviewed by $it on ${a.review.date}" } ?: "Not reviewed"
-            Text("${a.code} · version ${a.version} · $reviewed · ${a.license}",
+            val reviewed = a.review.reviewer?.let { stringResource(R.string.reviewed_by, it, a.review.date ?: "") }
+                ?: stringResource(R.string.not_reviewed)
+            Text(stringResource(R.string.article_meta, a.code, a.version, reviewed, a.license),
                 style = MaterialTheme.typography.labelSmall, color = fm.muted)
         }
     }
@@ -287,50 +292,50 @@ fun SearchScreen(query: String, go: (String) -> Unit, replace: (String) -> Unit,
             kb.categories().associate { it.id to it.title })
     }
     val list = rememberLazyListState()
-    Scaffold(containerColor = fm.bg, topBar = { Bar("Search · offline", back) }) { pad ->
+    Scaffold(containerColor = fm.bg, topBar = { Bar(stringResource(R.string.bar_search), back) }) { pad ->
         Loaded(data) { d ->
             val r = d.result
             LazyColumn(Modifier.fillMaxSize().padding(pad), state = list, contentPadding = PaddingValues(bottom = 32.dp)) {
                 item { Column(Modifier.padding(Gutter)) { SearchBox(query) { replace("search/$it") } } }
                 if (r.corrections.isNotEmpty()) item {
-                    Text("Searched for: " + r.corrections.values.joinToString(", "), style = MaterialTheme.typography.bodyMedium,
+                    Text(stringResource(R.string.searched_for, r.corrections.values.joinToString(", ")), style = MaterialTheme.typography.bodyMedium,
                         color = fm.muted, modifier = Modifier.padding(Gutter).padding(top = 8.dp))
                 }
                 if (r.confident) {
                     val best = r.matches.first()
-                    item { SectionLabel("Best match", Modifier.padding(Gutter).padding(top = 6.dp), accent = true) }
+                    item { SectionLabel(stringResource(R.string.best_match), Modifier.padding(Gutter).padding(top = 6.dp), accent = true) }
                     d.summaries[best.id]?.let { s ->
                         item { BestMatchCard(s, d.categoryTitles[s.category] ?: s.category, best.matched) { go("article/${s.id}") } }
                     }
                     val rest = r.matches.drop(1).filter { it.coverage >= 0.5 }.mapNotNull { d.summaries[it.id] }
                     if (rest.isNotEmpty()) {
-                        item { SectionLabel("Also related", Modifier.padding(Gutter)) }
+                        item { SectionLabel(stringResource(R.string.also_related), Modifier.padding(Gutter)) }
                         items(rest, key = { it.id }) { s -> ArticleRow(s) { go("article/${s.id}") } }
                     }
                 } else {
                     item {
                         Callout(
                             CalloutKind.Info,
-                            "No reviewed article matches this question",
-                            "Try other words, or browse the manual.",
+                            stringResource(R.string.no_match_title),
+                            stringResource(R.string.no_match_body),
                             Modifier.padding(Gutter).padding(top = 16.dp),
                         )
                     }
                     val closest = r.matches.mapNotNull { d.summaries[it.id] }
                     if (closest.isNotEmpty()) {
-                        item { SectionLabel("Closest (may not be relevant)", Modifier.padding(Gutter)) }
+                        item { SectionLabel(stringResource(R.string.closest), Modifier.padding(Gutter)) }
                         items(closest, key = { it.id }) { s -> ArticleRow(s) { go("article/${s.id}") } }
                     }
                 }
                 item {
                     Column(Modifier.padding(Gutter).padding(top = 22.dp)) {
-                        Text("NOT WHAT YOU NEED?", style = MaterialTheme.typography.labelMedium, color = fm.forest)
+                        Text(stringResource(R.string.not_what_you_need), style = MaterialTheme.typography.labelMedium, color = fm.forest)
                         Text(
-                            "This app only shows instructions from its own articles. When nothing fits, it says so instead of guessing.",
+                            stringResource(R.string.search_disclaimer),
                             style = MaterialTheme.typography.bodyMedium, color = fm.muted,
                             modifier = Modifier.padding(top = 6.dp, bottom = 12.dp),
                         )
-                        OutlineButton("Browse the manual", onClick = home)
+                        OutlineButton(stringResource(R.string.browse_manual), onClick = home)
                     }
                 }
             }
@@ -351,10 +356,11 @@ private fun BestMatchCard(s: ArticleSummary, categoryTitle: String, matched: Lis
             Text("${s.code} · $categoryTitle".uppercase(), style = MaterialTheme.typography.labelSmall, color = fm.onOrange)
         }
         Text(s.title, style = MaterialTheme.typography.headlineMedium, color = fm.onOrange)
-        Text("For when ${s.lead.replaceFirstChar { it.lowercase() }}.", style = MaterialTheme.typography.bodyLarge, color = fm.onOrange)
+        Text(stringResource(R.string.best_match_lead, s.lead.replaceFirstChar { it.lowercase() }), style = MaterialTheme.typography.bodyLarge, color = fm.onOrange)
         if (matched.isNotEmpty()) {
+            val firstMatched = stringResource(R.string.matched, matched.first())
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                matched.forEachIndexed { i, w -> Chip(if (i == 0) "Matched: $w" else w, Color(0x1F16181B), fm.onOrange) }
+                matched.forEachIndexed { i, w -> Chip(if (i == 0) firstMatched else w, Color(0x1F16181B), fm.onOrange) }
             }
         }
     }
@@ -366,13 +372,13 @@ private fun BestMatchCard(s: ArticleSummary, categoryTitle: String, matched: Lis
 fun SavedScreen(go: (String) -> Unit, bottomBar: @Composable () -> Unit) {
     val ids = LocalBookmarks.current.ids
     val data = load(ids) { kb -> kb.summaries(ids) }
-    Scaffold(containerColor = fm.bg, topBar = { Bar("On this phone", null) }, bottomBar = bottomBar) { pad ->
+    Scaffold(containerColor = fm.bg, topBar = { Bar(stringResource(R.string.bar_on_this_phone), null) }, bottomBar = bottomBar) { pad ->
         Loaded(data) { list ->
             LazyColumn(Modifier.fillMaxSize().padding(pad)) {
-                item { ScreenTitle("Saved") }
+                item { ScreenTitle(stringResource(R.string.section_saved)) }
                 if (list.isEmpty()) item {
                     Text(
-                        "Nothing saved yet. Tap the bookmark on an article to keep it here for quick access.",
+                        stringResource(R.string.nothing_saved),
                         style = MaterialTheme.typography.bodyLarge, color = fm.muted,
                         modifier = Modifier.padding(Gutter).padding(top = 8.dp),
                     )
@@ -388,7 +394,7 @@ fun SavedScreen(go: (String) -> Unit, bottomBar: @Composable () -> Unit) {
 @Composable
 fun AboutScreen(back: () -> Unit) {
     val data = load(Unit) { kb -> kb.info }
-    Scaffold(containerColor = fm.bg, topBar = { Bar("About", back) }) { pad ->
+    Scaffold(containerColor = fm.bg, topBar = { Bar(stringResource(R.string.about), back) }) { pad ->
         Loaded(data) { info ->
             Column(
                 Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(Gutter).padding(bottom = 32.dp),
@@ -396,35 +402,36 @@ fun AboutScreen(back: () -> Unit) {
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     LogoMark(44)
-                    Text("Fallback Manual", style = MaterialTheme.typography.headlineLarge, color = fm.ink,
+                    Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineLarge, color = fm.ink,
                         modifier = Modifier.padding(start = 14.dp))
                 }
-                Text("Knowledge when everything else fails.", style = MaterialTheme.typography.bodyLarge, color = fm.ink)
+                Text(stringResource(R.string.about_tagline), style = MaterialTheme.typography.bodyLarge, color = fm.ink)
                 Callout(
                     CalloutKind.Info,
-                    "Not a substitute for professional help",
-                    "This app does not replace emergency services, medical professionals or training. Contact them whenever you can.",
+                    stringResource(R.string.about_not_substitute_title),
+                    stringResource(R.string.about_not_substitute_body),
                 )
                 Text(
-                    "Works fully offline. The app has no internet permission, no accounts, no ads and no tracking. " +
-                        "Your searches and saved articles never leave this phone.",
+                    stringResource(R.string.about_offline),
                     style = MaterialTheme.typography.bodyLarge, color = fm.ink,
                 )
-                SectionTitle("Signing fingerprint")
-                Text(LocalSharing.current.signingFingerprint() ?: "Unavailable", style = MaterialTheme.typography.labelSmall, color = fm.ink)
+                SectionTitle(stringResource(R.string.about_fingerprint))
+                Text(LocalSharing.current.signingFingerprint() ?: stringResource(R.string.unavailable), style = MaterialTheme.typography.labelSmall, color = fm.ink)
                 Text(
-                    "A copy received from another phone is genuine if it shows the same fingerprint as the sender's.",
+                    stringResource(R.string.about_fingerprint_body),
                     style = MaterialTheme.typography.bodySmall, color = fm.muted,
                 )
-                SectionTitle("Content")
+                SectionTitle(stringResource(R.string.about_content))
                 Text(
-                    "${info.articleCount} articles · content ${info.contentHash} · " +
-                        if (info.releaseBuild) "release build" else "development build (unreviewed drafts)",
+                    pluralStringResource(
+                        R.plurals.about_content_line, info.articleCount, info.articleCount, info.contentHash,
+                        stringResource(if (info.releaseBuild) R.string.build_release else R.string.build_development),
+                    ),
                     style = MaterialTheme.typography.bodyMedium, color = fm.ink,
                 )
                 InstallationSection()
-                SectionTitle("Fonts")
-                Text("Barlow and JetBrains Mono, under the SIL Open Font License 1.1.",
+                SectionTitle(stringResource(R.string.about_fonts))
+                Text(stringResource(R.string.about_fonts_body),
                     style = MaterialTheme.typography.bodyMedium, color = fm.ink)
             }
         }
@@ -440,20 +447,17 @@ private fun InstallationSection() {
     val context = LocalContext.current
     val source = remember { InstallSources.detect(context) }
     val version = remember {
-        runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "unknown"
-    }
+        runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull()
+    } ?: stringResource(R.string.unknown)
     val (where, update) = when (source.channel) {
-        InstallChannel.PlayStore -> "Installed from Google Play." to "Updates come through Google Play."
-        InstallChannel.FDroid -> "Installed from F-Droid." to "Updates come through F-Droid."
-        InstallChannel.ApkFile -> "Installed from an app file (APK)." to
-            "This app never updates itself. To update, install a newer APK from $RELEASES, " +
-            "or get one from someone with a newer version using Share this app."
-        InstallChannel.Unknown -> "Android didn't record where this app came from." to
-            "This app never updates itself. To update, install a newer APK from $RELEASES."
+        InstallChannel.PlayStore -> stringResource(R.string.installed_play) to stringResource(R.string.updates_play)
+        InstallChannel.FDroid -> stringResource(R.string.installed_fdroid) to stringResource(R.string.updates_fdroid)
+        InstallChannel.ApkFile -> stringResource(R.string.installed_apk) to stringResource(R.string.updates_apk, RELEASES)
+        InstallChannel.Unknown -> stringResource(R.string.installed_unknown) to stringResource(R.string.updates_unknown, RELEASES)
     }
-    SectionTitle("Installation")
-    Text("Version $version. $where", style = MaterialTheme.typography.bodyMedium, color = fm.ink)
+    SectionTitle(stringResource(R.string.about_installation))
+    Text(stringResource(R.string.about_version, version, where), style = MaterialTheme.typography.bodyMedium, color = fm.ink)
     Text(update, style = MaterialTheme.typography.bodyMedium, color = fm.ink)
-    Text("The app has no internet access and never checks for updates.",
+    Text(stringResource(R.string.about_no_internet),
         style = MaterialTheme.typography.bodySmall, color = fm.muted)
 }

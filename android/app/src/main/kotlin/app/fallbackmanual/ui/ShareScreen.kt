@@ -28,9 +28,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import app.fallbackmanual.AppSharing
+import app.fallbackmanual.R
 import kotlinx.coroutines.launch
 
 val LocalSharing = staticCompositionLocalOf<AppSharing> { error("no AppSharing") }
@@ -52,9 +54,9 @@ fun ShareScreen(bottomBar: @Composable () -> Unit = {}) {
                 context.startActivity(sharing.shareIntent(sharing.prepare(asZip)))
                 null
             } catch (e: ActivityNotFoundException) {
-                "No app on this phone can send files. Try \"Save a copy\" instead."
+                context.getString(R.string.share_no_app)
             } catch (e: Exception) {
-                "Could not prepare the file: ${e.message}"
+                context.getString(R.string.share_prepare_failed, e.message ?: e.toString())
             } finally {
                 busy = false
             }
@@ -64,24 +66,24 @@ fun ShareScreen(bottomBar: @Composable () -> Unit = {}) {
     val saver = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(AppSharing.APK_MIME)) { uri ->
         if (uri != null) scope.launch {
             status = runCatching { sharing.saveTo(uri) }
-                .fold({ "Saved. Copy it to the other phone and open it there." }, { "Could not save: ${it.message}" })
+                .fold({ context.getString(R.string.share_saved) }, { context.getString(R.string.share_save_failed, it.message ?: it.toString()) })
         }
     }
 
-    Scaffold(containerColor = fm.bg, topBar = { Bar("Share this app", null) }, bottomBar = bottomBar) { pad ->
+    Scaffold(containerColor = fm.bg, topBar = { Bar(stringResource(R.string.bar_share), null) }, bottomBar = bottomBar) { pad ->
         Column(
             Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                "Give Fallback Manual to a phone nearby. No internet or mobile signal is needed.",
+                stringResource(R.string.share_intro),
                 style = MaterialTheme.typography.bodyLarge,
             )
 
             when (availability) {
                 is AppSharing.Availability.Ready -> {
                     Text(
-                        "Size: %.1f MB. The manual and everything in it are included.".format(availability.sizeBytes / 1_000_000.0),
+                        stringResource(R.string.share_size, availability.sizeBytes / 1_000_000.0),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -91,15 +93,15 @@ fun ShareScreen(bottomBar: @Composable () -> Unit = {}) {
                         modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
                     ) {
                         Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.padding(end = 10.dp))
-                        Text("Send with Quick Share, Bluetooth…")
+                        Text(stringResource(R.string.share_send))
                     }
                     OutlinedButton(
                         onClick = { send(asZip = true) },
                         enabled = !busy,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                    ) { Text("Send as ZIP") }
+                    ) { Text(stringResource(R.string.share_send_zip)) }
                     Text(
-                        "Some phones refuse to send or receive app files over Bluetooth. If that happens, send it as a ZIP; the other phone unzips it with its Files app.",
+                        stringResource(R.string.share_bluetooth_note),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -107,41 +109,36 @@ fun ShareScreen(bottomBar: @Composable () -> Unit = {}) {
                         onClick = { saver.launch(sharing.suggestedFileName()) },
                         enabled = !busy,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                    ) { Text("Save a copy (SD card, USB, Downloads)") }
+                    ) { Text(stringResource(R.string.share_save_copy)) }
                 }
                 AppSharing.Availability.SplitInstall -> Callout(
                     CalloutKind.Caution,
-                    "This copy can't be shared",
-                    "It was installed from an app store in several parts, and Android can't install those parts on another phone. " +
-                        "Install the complete version from F-Droid or the project's releases page, and it can be shared from then on.",
+                    stringResource(R.string.share_split_title),
+                    stringResource(R.string.share_split_body),
                 )
                 AppSharing.Availability.Missing -> Callout(
                     CalloutKind.Caution,
-                    "The app file could not be found",
-                    "Sharing isn't available on this phone.",
+                    stringResource(R.string.share_missing_title),
+                    stringResource(R.string.share_missing_body),
                 )
             }
 
             status?.let { Callout(CalloutKind.Info, it) }
 
-            SectionTitle("On the other phone")
+            SectionTitle(stringResource(R.string.share_other_phone))
             listOf(
-                "Accept the file when it arrives. With Quick Share, both phones need Bluetooth on and must be close together.",
-                "Open the file. If it arrived as a ZIP, open it in the Files app and extract it first.",
-                "If Android asks, allow that app to install unknown apps. Android shows the setting.",
-                "Tap Install, then open Fallback Manual. It works offline straight away.",
+                R.string.share_other_1, R.string.share_other_2, R.string.share_other_3, R.string.share_other_4,
             ).forEachIndexed { i, s ->
-                MarkdownBody("${i + 1}. $s")
+                MarkdownBody("${i + 1}. ${stringResource(s)}")
             }
 
-            SectionTitle("Check it's genuine")
+            SectionTitle(stringResource(R.string.share_genuine))
             Text(
-                "Both phones should show the same signing fingerprint here, or under About. If they differ, the copy was " +
-                    "rebuilt by someone else: don't rely on it.",
+                stringResource(R.string.share_genuine_body),
                 style = MaterialTheme.typography.bodyMedium,
             )
             Text(
-                fingerprint ?: "Unavailable on this phone",
+                fingerprint ?: stringResource(R.string.share_fingerprint_unavailable),
                 style = MaterialTheme.typography.bodyMedium,
                 fontFamily = FontFamily.Monospace,
             )

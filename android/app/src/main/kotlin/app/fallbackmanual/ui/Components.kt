@@ -1,8 +1,7 @@
 package app.fallbackmanual.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
-import app.fallbackmanual.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -42,6 +41,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -51,6 +53,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.fallbackmanual.R
 import app.fallbackmanual.core.ArticleSummary
 import app.fallbackmanual.core.Category
 
@@ -67,7 +70,7 @@ fun Bar(title: String, onBack: (() -> Unit)?, actions: @Composable RowScope.() -
     ) {
         if (onBack != null) {
             IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
-                Icon(FmIcons.stroke(FmIcons.BACK, 2.2f), contentDescription = "Back", tint = fm.ink)
+                Icon(FmIcons.stroke(FmIcons.BACK, 2.2f), contentDescription = stringResource(R.string.back), tint = fm.ink)
             }
         } else {
             Spacer(Modifier.width(12.dp))
@@ -89,11 +92,11 @@ fun LogoMark(size: Int = 30) {
     )
 }
 
-enum class Tab(val route: String, val label: String, val icon: String) {
-    Home("home", "Home", FmIcons.HOME),
-    Manual("manual", "Manual", FmIcons.BOOK),
-    Saved("saved", "Saved", FmIcons.BOOKMARK),
-    Share("share", "Share", FmIcons.SHARE),
+enum class Tab(val route: String, @StringRes val label: Int, val icon: String) {
+    Home("home", R.string.tab_home, FmIcons.HOME),
+    Manual("manual", R.string.tab_manual, FmIcons.BOOK),
+    Saved("saved", R.string.tab_saved, FmIcons.BOOKMARK),
+    Share("share", R.string.tab_share, FmIcons.SHARE),
 }
 
 @Composable
@@ -104,9 +107,10 @@ fun BottomNav(current: Tab, onSelect: (Tab) -> Unit) {
             Tab.entries.forEach { tab ->
                 val on = tab == current
                 val color = if (on) fm.accentText else fm.muted
+                val label = stringResource(tab.label)
                 Column(
                     Modifier.weight(1f).fillMaxSize()
-                        .clickable(role = Role.Tab, onClickLabel = tab.label) { onSelect(tab) }
+                        .clickable(role = Role.Tab, onClickLabel = label) { onSelect(tab) }
                         .semantics { selected = on },
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
@@ -116,7 +120,7 @@ fun BottomNav(current: Tab, onSelect: (Tab) -> Unit) {
                             .background(if (on) fm.activePill else Color.Transparent),
                         contentAlignment = Alignment.Center,
                     ) { Icon(FmIcons.stroke(tab.icon), contentDescription = null, tint = color, modifier = Modifier.size(22.dp)) }
-                    Text(tab.label, style = MaterialTheme.typography.titleSmall.copy(fontSize = 12.sp), color = color)
+                    Text(label, style = MaterialTheme.typography.titleSmall.copy(fontSize = 12.sp), color = color)
                 }
             }
         }
@@ -150,7 +154,7 @@ fun Chip(text: String, bg: Color, ink: Color) {
 @Composable
 fun DraftStrip(modifier: Modifier = Modifier) {
     Text(
-        "DRAFT CONTENT · NOT YET REVIEWED", style = MaterialTheme.typography.labelSmall, color = fm.draftInk,
+        stringResource(R.string.draft_strip), style = MaterialTheme.typography.labelSmall, color = fm.draftInk,
         modifier = modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp)).background(fm.draftBg)
             .padding(horizontal = 10.dp, vertical = 6.dp),
     )
@@ -162,6 +166,7 @@ fun DraftStrip(modifier: Modifier = Modifier) {
 fun SearchBox(initial: String = "", onSearch: (String) -> Unit) {
     var text by rememberSaveable { mutableStateOf(initial) }
     val keyboard = LocalSoftwareKeyboardController.current
+    val description = stringResource(R.string.search_description)
     val submit = {
         if (text.isNotBlank()) {
             keyboard?.hide()
@@ -176,7 +181,7 @@ fun SearchBox(initial: String = "", onSearch: (String) -> Unit) {
         cursorBrush = SolidColor(fm.accentText),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { submit() }),
-        modifier = Modifier.fillMaxWidth().semantics { contentDescription = "What's happening? Describe the problem" },
+        modifier = Modifier.fillMaxWidth().semantics { contentDescription = description },
         decorationBox = { inner ->
             Row(
                 Modifier.fillMaxWidth().height(58.dp).clip(Radius).background(fm.surface)
@@ -186,14 +191,14 @@ fun SearchBox(initial: String = "", onSearch: (String) -> Unit) {
                 Icon(FmIcons.stroke(FmIcons.SEARCH, 2.2f), contentDescription = null, tint = fm.ink, modifier = Modifier.size(22.dp))
                 Box(Modifier.weight(1f).padding(start = 12.dp)) {
                     if (text.isEmpty()) {
-                        Text("e.g. shivering and confused", style = MaterialTheme.typography.bodyLarge,
+                        Text(stringResource(R.string.search_hint), style = MaterialTheme.typography.bodyLarge,
                             color = fm.muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     inner()
                 }
                 if (text.isNotEmpty()) {
                     IconButton(onClick = { text = "" }) {
-                        Icon(FmIcons.stroke(FmIcons.CLOSE), contentDescription = "Clear", tint = fm.muted)
+                        Icon(FmIcons.stroke(FmIcons.CLOSE), contentDescription = stringResource(R.string.search_clear), tint = fm.muted)
                     }
                 }
             }
@@ -225,7 +230,7 @@ fun ArticleRow(a: ArticleSummary, supporting: String? = null, onClick: () -> Uni
         IconBox(a.iconPath, a.highRisk)
         Column(Modifier.weight(1f).padding(horizontal = 14.dp)) {
             Text(a.title, style = MaterialTheme.typography.titleMedium, color = fm.ink)
-            val bits = listOfNotNull(a.code, supporting, if (!a.reviewed) "draft" else null)
+            val bits = listOfNotNull(a.code, supporting, if (!a.reviewed) stringResource(R.string.row_draft) else null)
             Text(bits.joinToString(" · ").uppercase(), style = MaterialTheme.typography.labelSmall, color = fm.muted,
                 modifier = Modifier.padding(top = 2.dp))
         }
@@ -243,8 +248,9 @@ fun CategoryRow(c: Category, onClick: () -> Unit) {
         IconBox(c.iconPath, highRisk = false)
         Text(c.title, style = MaterialTheme.typography.titleMedium, color = fm.ink,
             modifier = Modifier.weight(1f).padding(horizontal = 14.dp))
+        val count = pluralStringResource(R.plurals.category_articles, c.articleCount, c.articleCount)
         Text(c.articleCount.toString(), style = MaterialTheme.typography.labelMedium, color = fm.muted,
-            modifier = Modifier.semantics { contentDescription = "${c.articleCount} articles" })
+            modifier = Modifier.semantics { contentDescription = count })
         Icon(FmIcons.stroke(FmIcons.CHEVRON), contentDescription = null, tint = fm.muted,
             modifier = Modifier.padding(start = 6.dp).size(20.dp))
     }
@@ -277,9 +283,9 @@ fun CallBlock(modifier: Modifier = Modifier) {
     ) {
         Icon(FmIcons.stroke(FmIcons.PHONE), contentDescription = null, tint = fm.onEmergency, modifier = Modifier.size(28.dp))
         Column(Modifier.padding(start = 14.dp)) {
-            Text("Call emergency services first", style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp),
+            Text(stringResource(R.string.call_title), style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp),
                 color = fm.onEmergency)
-            Text("If you can, do it now. Use speakerphone to keep your hands free.",
+            Text(stringResource(R.string.call_body),
                 style = MaterialTheme.typography.bodyMedium, color = fm.onEmergency, modifier = Modifier.padding(top = 2.dp))
         }
     }
@@ -343,6 +349,6 @@ fun Loading() {
 @Composable
 fun LoadFailed(error: Throwable) {
     Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center) {
-        Callout(CalloutKind.Emergency, "The manual could not be loaded", error.message ?: error.toString())
+        Callout(CalloutKind.Emergency, stringResource(R.string.load_failed), error.message ?: error.toString())
     }
 }
