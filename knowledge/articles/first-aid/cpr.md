@@ -5,7 +5,7 @@ category: first-aid
 code: FA-02
 icon: heart-pulse
 status: draft
-version: 4
+version: 5
 high_risk: true
 # Beat guide in step-by-step mode for the compression steps (sources: 100-120 a minute).
 rhythm: {bpm: 110, from_step: 9, to_step: 13}
@@ -16,9 +16,6 @@ situations:
   - someone is only gasping or making occasional breaths
   - the heart has stopped
 keywords: [cpr, resuscitation, chest compressions, cardiac arrest, not breathing, unresponsive, collapsed, aed, defibrillator, heart]
-diagrams_needed:
-  - hand position on the centre of the chest
-  - body position with straight arms over the chest
 sources:
   - title: Guidelines for CPR and Emergency Cardiovascular Care
     publisher: American Heart Association
@@ -54,7 +51,9 @@ This article is for adults. Children and babies need a different technique (arti
 5. Send someone to find an AED if possible.
 6. Kneel beside them. Put the heel of one hand on the center of the chest, on the lower half of the breastbone.
 7. Put your other hand on top and lock your fingers together.
+![Hands placed over the center of an adult's chest](image:cpr-hand-position)
 8. Keep your arms straight with your shoulders directly above your hands.
+![A kneeling rescuer leans over an adult with arms extended toward the chest](image:cpr-body-position)
 9. Push straight down 5–6 cm (about 2 inches), then let the chest come all the way back up.
 10. Push hard and fast: 100–120 times a minute, about two pushes a second.
 11. If you are trained and willing, give 2 rescue breaths after every 30 pushes. If not, just keep pushing without stopping.

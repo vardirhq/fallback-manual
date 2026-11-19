@@ -52,8 +52,10 @@ def kb(tmp_path: Path):
     def make(text: str, name: str = "test-article.md", release=False):
         (articles / name).write_text(text)
         out = tmp_path / "kb.db"
+        # Own (empty) picture registry: test articles must not depend on the real manual's pictures.
         report = build_kb.build(out, release=release, articles_dir=tmp_path / "articles",
-                                synonyms_file=syn)
+                                synonyms_file=syn, images_file=tmp_path / "images.yaml",
+                                images_dir=tmp_path / "images")
         return report, out
     return make
 
