@@ -4,13 +4,14 @@ lang: nb
 translation_of: 2
 title: Uttørking
 status: draft
-version: 1
+version: 2
 license: CC-BY-4.0
 situations:
   - jeg har ikke drukket nok og føler meg svimmel, tørst og svak
   - barnet mitt kaster opp eller har diaré og har nesten ikke tisset i dag
   - noen er tørr i munnen og har mørk urin etter sykdom eller varme
   - babyen min har færre våte bleier enn vanlig og virker uvanlig søvnig
+  - barnet har kastet opp hele dagen og tisser nesten ikke
 keywords: [uttørking, uttørket, dehydrering, dehydrert, tørst, tørr munn, mørk urin, tisser lite, færre våte bleier, svimmel, oppkast, diaré, væsketap, rehydreringsvæske]
 sources:
   - title: Dehydration

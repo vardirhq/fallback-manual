@@ -379,7 +379,9 @@ def test_new_article_assigns_next_code():
             if (m := re.search(r"^code:\s*FA-(\d+)\s*$", f.read_text(encoding="utf-8"), re.M))]
     assert used, "the real articles include first-aid ones"
     assert next_code("first-aid") == f"FA-{max(used) + 1:02d}"   # one past the highest, never reused
-    assert next_code("shelter") == "SH-01"     # no shelter articles yet
+    from tools.new_article import categories
+    empty = next(c for c in categories() if not any((ARTICLES / c["id"]).glob("*.md")))
+    assert next_code(empty["id"]) == f"{empty['code']}-01"   # a category with no articles starts at 01
 
 
 
@@ -508,3 +510,12 @@ def test_unknown_language_is_rejected(kb, tmp_path):
 def test_translations_skip_the_american_english_rule(kb_nb):
     report, _, _ = kb_nb(translation(body=NB_BODY.replace("Ring noen.", "Ring noen. Colour centre.")))
     assert report.errors == []
+
+
+def test_vocab_knows_the_parts_of_hyphenated_words(kb):
+    # Search splits "hjerte-lunge-redning" into three words; if "lunge" were unknown, spelling
+    # correction would turn it into some other known word.
+    report, out = kb(article(keywords=["hjerte-lunge-redning", "example", "sample"]))
+    assert report.errors == []
+    words = {w for (w,) in sqlite3.connect(out).execute("SELECT word FROM vocab")}
+    assert {"hjerte-lunge-redning", "hjerte", "lunge", "redning"} <= words

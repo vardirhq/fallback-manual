@@ -886,6 +886,9 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
         )
         for text in (m["title"], situations, keywords, body):
             vocab.update(w.lower() for w in WORD_RE.findall(text))
+            # Search splits queries at hyphens and apostrophes ("hjerte-lunge-redning" becomes three
+            # words), so the parts must be known words too, or spelling correction "fixes" them.
+            vocab.update(w.lower() for w in re.findall(r"[^\W_]+", text))
         digest.update(json.dumps(row, sort_keys=True).encode())
 
     for gid, group in enumerate(synonyms):

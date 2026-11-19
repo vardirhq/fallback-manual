@@ -48,8 +48,10 @@ class AppScreensTest {
     fun homeShowsEmergencyTilesAndCategories() {
         waitFor("EMERGENCY")
         rule.onNodeWithText("DRAFT CONTENT · NOT YET REVIEWED").assertExists()
-        rule.onNodeWithText("Severe bleeding").assertExists()
         shot("01-home")
+        // With 11 emergency tiles, some sit below the first screen of the list.
+        rule.onNode(hasScrollAction()).performScrollToNode(hasText("Severe bleeding"))
+        rule.onNodeWithText("Severe bleeding").assertExists()
         rule.onNode(hasScrollAction()).performScrollToNode(hasText("Navigation and signaling"))
         shot("02-home-manual")
     }
@@ -184,6 +186,7 @@ class AppScreensTest {
         rule.onNodeWithText("Hva skjer?").assertExists()
         rule.onNodeWithText("Hjerte-lunge-redning (voksne)").assertExists()
         shot("15-home-norwegian")
+        rule.onNode(hasScrollAction()).performScrollToNode(hasText("Nedkjøling (hypotermi)"))
         rule.onNodeWithText("Nedkjøling (hypotermi)").performClick()
         waitFor("TRINN FOR TRINN")
         rule.onNodeWithText("Ring nødnummeret først").assertExists()
