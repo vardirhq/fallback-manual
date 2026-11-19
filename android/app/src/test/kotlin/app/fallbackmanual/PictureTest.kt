@@ -29,7 +29,7 @@ class PictureTest {
 
     class FixtureApp : FallbackApp() {
         override val knowledge by lazy {
-            KnowledgeStore(this) { File(System.getProperty("fixture.db")!!).inputStream() }
+            KnowledgeStore(this, source = { File(System.getProperty("fixture.db")!!).inputStream() })
         }
     }
 

@@ -5,7 +5,7 @@ category: water
 code: WA-01
 icon: pot
 status: draft
-version: 3
+version: 4
 high_risk: false
 license: CC-BY-4.0
 situations:
@@ -53,7 +53,7 @@ Use this when you have to drink water that may contain germs: from rivers, lakes
 ## Warnings
 
 - Boiling kills germs but does not remove chemicals, fuel, salt or heavy metals. Do not rely on it for water that may be polluted by chemicals or floodwater from industrial areas.
-- If you cannot boil water, see other purification methods (to be added).
+- If you cannot boil water, see [Disinfecting water with bleach](article:bleach-water).
 - Handle boiling water carefully to avoid scalds. See [Burns and scalds](article:burns).
 
 ## Common mistakes

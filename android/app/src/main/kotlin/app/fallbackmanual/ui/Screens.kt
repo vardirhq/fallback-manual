@@ -1,5 +1,16 @@
 package app.fallbackmanual.ui
 
+import android.net.Uri
+import android.content.Intent
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import app.fallbackmanual.Settings
+import app.fallbackmanual.ThemeMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -67,6 +78,7 @@ import kotlinx.coroutines.withContext
 
 val LocalStore = staticCompositionLocalOf<KnowledgeStore> { error("no KnowledgeStore") }
 val LocalBookmarks = staticCompositionLocalOf<Bookmarks> { error("no Bookmarks") }
+val LocalSettings = staticCompositionLocalOf<Settings> { error("no Settings") }
 
 /** Loads data from the knowledge base off the main thread. Null while loading. */
 @Composable
@@ -124,6 +136,9 @@ fun HomeScreen(go: (String) -> Unit, bottomBar: @Composable () -> Unit) {
                         LogoMark()
                         Text(stringResource(R.string.app_name).uppercase(), style = MaterialTheme.typography.titleLarge, color = fm.ink,
                             modifier = Modifier.weight(1f).padding(start = 10.dp))
+                        IconButton(onClick = { go("settings") }) {
+                            Icon(FmIcons.stroke(FmIcons.SETTINGS), contentDescription = stringResource(R.string.settings), tint = fm.muted)
+                        }
                         IconButton(onClick = { go("about") }) {
                             Icon(FmIcons.stroke(FmIcons.INFO), contentDescription = stringResource(R.string.about), tint = fm.muted)
                         }
@@ -141,8 +156,8 @@ fun HomeScreen(go: (String) -> Unit, bottomBar: @Composable () -> Unit) {
                 items(d.emergency.chunked(2)) { pair ->
                     // Both tiles in a row take the height of the taller one.
                     Row(
-                        Modifier.padding(Gutter).padding(bottom = 10.dp).height(IntrinsicSize.Min),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        Modifier.padding(Gutter).padding(bottom = 8.dp).height(IntrinsicSize.Min),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         pair.forEach { a -> EmergencyTile(a, Modifier.weight(1f).fillMaxHeight()) { go("article/${a.id}") } }
                         if (pair.size == 1) Spacer(Modifier.weight(1f))
@@ -431,12 +446,90 @@ fun AboutScreen(back: () -> Unit) {
                     style = MaterialTheme.typography.bodyMedium, color = fm.ink,
                 )
                 InstallationSection()
+                SupportSection()
                 SectionTitle(stringResource(R.string.about_fonts))
                 Text(stringResource(R.string.about_fonts_body),
                     style = MaterialTheme.typography.bodyMedium, color = fm.ink)
             }
         }
     }
+}
+
+// -- Settings -----------------------------------------------------------------
+
+@Composable
+fun SettingsScreen(back: () -> Unit) {
+    val settings = LocalSettings.current
+    val activity = LocalContext.current.findActivity()
+    val language = remember { settings.language() }
+    Scaffold(containerColor = fm.bg, topBar = { Bar(stringResource(R.string.settings), back) }) { pad ->
+        Column(Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+            ScreenTitle(stringResource(R.string.settings))
+            SectionLabel(stringResource(R.string.settings_language), Modifier.padding(Gutter))
+            Column(Modifier.selectableGroup()) {
+                ChoiceRow(stringResource(R.string.settings_system_default), language == null) {
+                    activity?.let { settings.setLanguage(it, null) }
+                }
+                // Each language is named in its own language, so a reader can always find theirs.
+                Settings.LANGUAGES.forEach { (tag, name) ->
+                    ChoiceRow(name, language == tag) { activity?.let { settings.setLanguage(it, tag) } }
+                }
+            }
+            SectionLabel(stringResource(R.string.settings_theme), Modifier.padding(Gutter))
+            Column(Modifier.selectableGroup()) {
+                listOf(
+                    ThemeMode.System to R.string.settings_system_default,
+                    ThemeMode.Light to R.string.theme_light,
+                    ThemeMode.Dark to R.string.theme_dark,
+                ).forEach { (mode, label) ->
+                    ChoiceRow(stringResource(label), settings.theme == mode) { settings.theme = mode }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChoiceRow(label: String, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 56.dp)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = null,
+            colors = RadioButtonDefaults.colors(selectedColor = fm.accentText, unselectedColor = fm.muted))
+        Text(label, style = MaterialTheme.typography.titleMedium, color = fm.ink, modifier = Modifier.padding(start = 14.dp))
+    }
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
+// -- Support (part of About) ----------------------------------------------------
+
+private const val SUPPORT_URL = "https://buymeacoffee.com/madsendev"
+
+/**
+ * A link for readers who want to support the project. The app itself stays offline: the link is
+ * handed to the phone's browser. Not shown in copies from Google Play, whose payment rules cover
+ * tips to developers.
+ */
+@Composable
+private fun SupportSection() {
+    val context = LocalContext.current
+    val channel = remember { InstallSources.detect(context).channel }
+    if (channel == InstallChannel.PlayStore) return
+    SectionTitle(stringResource(R.string.about_support))
+    Text(stringResource(R.string.about_support_body), style = MaterialTheme.typography.bodyMedium, color = fm.ink)
+    OutlineButton(stringResource(R.string.about_support_button), Modifier.fillMaxWidth()) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(SUPPORT_URL)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { context.startActivity(intent) } // a phone with no browser simply does nothing
+    }
+    Text(SUPPORT_URL.removePrefix("https://"), style = MaterialTheme.typography.bodySmall, color = fm.muted)
 }
 
 // -- Installation (part of About) ---------------------------------------------

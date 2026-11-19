@@ -1,5 +1,6 @@
 package app.fallbackmanual
 
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -38,7 +39,7 @@ class InstallSourceTest {
         assertEquals(InstallChannel.Unknown, InstallSources.classify(""))
     }
 
-    private fun aboutShows(installing: String?, initiating: String?, expected: String) {
+    private fun aboutShows(installing: String?, initiating: String?, expected: String, coffee: Boolean = true) {
         rule.waitUntilAtLeastOneExists(hasText("EMERGENCY"), 30_000)
         // Set only after the app has loaded: changing package info earlier interferes with how
         // Robolectric serves the app's assets (the knowledge database).
@@ -48,10 +49,13 @@ class InstallSourceTest {
         rule.waitUntilAtLeastOneExists(hasText("INSTALLATION"), 10_000)
         rule.onNodeWithText(expected, substring = true).performScrollTo().assertExists()
         rule.onNodeWithText("never checks for updates", substring = true).assertExists()
+        // The support link is left out of Google Play copies (Play's payment rules).
+        val support = rule.onAllNodesWithText("Buy me a coffee").fetchSemanticsNodes().size
+        assertEquals(if (coffee) 1 else 0, support)
     }
 
     @Test
-    fun aboutSaysPlay() = aboutShows("com.android.vending", "com.android.vending", "Installed from Google Play")
+    fun aboutSaysPlay() = aboutShows("com.android.vending", "com.android.vending", "Installed from Google Play", coffee = false)
 
     @Test
     fun aboutSaysFDroid() = aboutShows("org.fdroid.fdroid", "org.fdroid.fdroid", "Installed from F-Droid")

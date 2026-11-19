@@ -265,20 +265,20 @@ fun CategoryRow(c: Category, onClick: () -> Unit) {
     HorizontalDivider(Modifier.padding(horizontal = 20.dp), color = fm.rule)
 }
 
-/** A big orange tile for an emergency topic on the home screen. */
+/**
+ * An orange tile for an emergency topic on the home screen: icon and title side by side, compact
+ * enough that the whole emergency list fits on about one screen, two to a row.
+ */
 @Composable
 fun EmergencyTile(a: ArticleSummary, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Column(
-        modifier.heightIn(min = 104.dp).clip(Radius).background(fm.orange).clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
+    Row(
+        modifier.heightIn(min = 64.dp).clip(Radius).background(fm.orange).clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-            a.iconPath?.let { Icon(FmIcons.stroke(it), contentDescription = null, tint = fm.onOrange, modifier = Modifier.size(28.dp)) }
-            Spacer(Modifier.weight(1f))
-            Text(a.code, style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), color = fm.onOrange)
-        }
-        WholeWordsTitle(a.title, MaterialTheme.typography.titleLarge, fm.onOrange, Modifier.padding(top = 10.dp))
+        a.iconPath?.let { Icon(FmIcons.stroke(it), contentDescription = null, tint = fm.onOrange, modifier = Modifier.size(22.dp)) }
+        WholeWordsTitle(a.title, MaterialTheme.typography.titleLarge.copy(fontSize = 18.sp, lineHeight = 19.sp), fm.onOrange,
+            Modifier.padding(start = 8.dp))
     }
 }
 

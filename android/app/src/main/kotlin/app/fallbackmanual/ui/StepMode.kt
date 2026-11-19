@@ -54,7 +54,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.fallbackmanual.R
 import app.fallbackmanual.core.Article
-import java.util.Locale
 
 /**
  * One step at a time, in very large text, for when hands are busy: big Back/Next buttons, the
@@ -222,9 +221,11 @@ private fun rememberVoice(): Voice {
     val context = LocalContext.current
     val voice = remember { Voice() }
     DisposableEffect(Unit) {
+        // Read in the app's language (Norwegian articles in a Norwegian voice), if the phone has one.
+        val locale = context.resources.configuration.locales[0]
         val t = TextToSpeech(context) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                voice.tts?.language = Locale.US
+            val result = if (status == TextToSpeech.SUCCESS) voice.tts?.setLanguage(locale) else null
+            if (result != null && result >= TextToSpeech.LANG_AVAILABLE) {
                 voice.ready = true
             } else {
                 voice.failed = true

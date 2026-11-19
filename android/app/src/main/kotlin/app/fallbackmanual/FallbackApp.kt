@@ -9,7 +9,8 @@ import java.io.File
 import java.util.concurrent.Executors
 
 open class FallbackApp : Application() {
-    open val knowledge by lazy { KnowledgeStore(this) }
+    val settings by lazy { Settings(this) }
+    open val knowledge by lazy { KnowledgeStore(this, chosenLanguage = { settings.language() }) }
     val bookmarks by lazy { Bookmarks(this) }
     open val sharing by lazy { AppSharing(this) }
 }
@@ -27,6 +28,8 @@ class KnowledgeStore(
     private val context: Context,
     /** Where a database comes from, by asset name. Tests replace this with a fixture database. */
     private val source: ((String) -> java.io.InputStream)? = null,
+    /** The language the reader chose in the app, or null to follow the phone. */
+    private val chosenLanguage: () -> String? = { null },
 ) {
     private val dispatcher = Executors.newSingleThreadExecutor { r -> Thread(r, "knowledge-db") }
         .asCoroutineDispatcher()
@@ -37,7 +40,7 @@ class KnowledgeStore(
 
     /** The database for the app's current language, or English if there is none for it. */
     private fun asset(): String {
-        val lang = context.resources.configuration.locales[0].language
+        val lang = chosenLanguage() ?: context.resources.configuration.locales[0].language
         val wanted = LANGUAGE_ASSETS[lang] ?: return ASSET
         if (source != null) return wanted
         return if (runCatching { context.assets.open(wanted).close() }.isSuccess) wanted else ASSET

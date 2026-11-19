@@ -1,12 +1,17 @@
 package app.fallbackmanual
 
+import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
+import androidx.activity.SystemBarStyle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.mutableStateListOf
@@ -29,18 +34,36 @@ import app.fallbackmanual.ui.ShareScreen
 import app.fallbackmanual.ui.LocalStore
 import app.fallbackmanual.ui.SavedScreen
 import app.fallbackmanual.ui.SearchScreen
+import app.fallbackmanual.ui.LocalSettings
+import app.fallbackmanual.ui.SettingsScreen
 
 class MainActivity : ComponentActivity() {
+    // Android 12 and older have no per-app language, so the reader's choice is applied here.
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(Settings(newBase).wrap(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val app = application as FallbackApp
         setContent {
-            FallbackTheme {
+            val dark = when (app.settings.theme) {
+                ThemeMode.Light -> false
+                ThemeMode.Dark -> true
+                ThemeMode.System -> isSystemInDarkTheme()
+            }
+            // Status and navigation bar icons follow the app's theme, not only the phone's.
+            LaunchedEffect(dark) {
+                val style = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { dark }
+                enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
+            }
+            FallbackTheme(dark) {
                 CompositionLocalProvider(
                     LocalStore provides app.knowledge,
                     LocalBookmarks provides app.bookmarks,
                     LocalSharing provides app.sharing,
+                    LocalSettings provides app.settings,
                 ) {
                     App()
                 }
@@ -51,7 +74,7 @@ class MainActivity : ComponentActivity() {
 
 /**
  * Routes: home, manual, saved, share (the four tabs), category/<id>, article/<id>, steps/<id>,
- * search/<query>, about. Switching tabs resets the stack to that tab, with Home underneath.
+ * search/<query>, about, settings. Switching tabs resets the stack to that tab, with Home underneath.
  */
 @Composable
 fun App() {
@@ -94,6 +117,7 @@ fun App() {
                 "saved" -> SavedScreen(go) { nav(Tab.Saved) }
                 "share" -> ShareScreen { nav(Tab.Share) }
                 "about" -> AboutScreen(back)
+                "settings" -> SettingsScreen(back)
                 else -> HomeScreen(go) { nav(Tab.Home) }
             }
         }

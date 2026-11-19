@@ -41,6 +41,7 @@ object FmIcons {
     const val HOME = "M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"
     const val BOOK = "M4 4.5A1.5 1.5 0 0 1 5.5 3H20v16H5.5A1.5 1.5 0 0 0 4 20.5z M4 20.5A1.5 1.5 0 0 0 5.5 22H20"
     const val SHARE = "M12 3v12 M7 8l5-5 5 5 M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"
+    const val SETTINGS = "M4 7h9 M17 7h3 M15 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z M4 17h3 M11 17h9 M9 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"
     const val INFO = "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 11v5 M12 8h.01"
     const val PHONE = "M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"
     const val PLAY = "M8 5v14l11-7z"
