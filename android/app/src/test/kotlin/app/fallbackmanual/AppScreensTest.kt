@@ -99,8 +99,9 @@ class AppScreensTest {
     fun tabsSwitchBetweenHomeManualSavedAndShare() {
         waitFor("EMERGENCY")
         rule.onNodeWithText("Manual").performClick()
-        waitFor("OFFLINE MANUAL")
-        rule.onNodeWithText("Fire and warmth").assertExists()
+        // Wait for the list itself: the top bar appears before the categories have loaded.
+        waitFor("Fire and warmth")
+        rule.onNodeWithText("OFFLINE MANUAL").assertExists()
         shot("14-manual-tab")
         rule.onNodeWithText("Saved").performClick()
         waitFor("Nothing saved yet")
