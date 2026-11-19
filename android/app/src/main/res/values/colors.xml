@@ -1,4 +1,8 @@
 <resources>
     <color name="background">#FFF6F4EE</color>
-    <color name="ic_background">#FF2F5D3A</color>
+    <!-- Logo colors: the same in light and dark mode. -->
+    <color name="logo_ink">#FF16181B</color>
+    <color name="logo_orange">#FFFF5B1F</color>
+    <color name="logo_paper">#FFF3F0E8</color>
+    <color name="ic_background">@color/logo_ink</color>
 </resources>
