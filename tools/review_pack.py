@@ -5,8 +5,9 @@ Usage:
     python -m tools.review_pack --out <folder>
     python -m tools.review_pack --only cpr,choking   # just these articles (all their languages)
 
-The pages need no internet, no server and no git: send the folder (or the zip CI builds) to a
-reviewer. Each page shows the article as readers see it, its sources with links, a checklist and a
+The pages need no server and no git. On every push to main, .github/workflows/review-site.yml
+publishes them to GitHub Pages, so a reviewer just gets a link; the folder also works offline, from
+a zip. Every page carries a noindex tag and a "draft, not for emergencies" banner. Each page shows the article as readers see it, its sources with links, a checklist and a
 sign-off form. The reviewer saves or copies the sign-off and sends it back; the project owner then
 applies it with  python -m tools.apply_review <sign-off file>.
 
@@ -37,6 +38,10 @@ CHECKLIST = [
     "Pictures, if any, show the right thing.",
 ]
 TRANSLATION_CHECK = "The translation says the same as the English article: nothing added, nothing left out."
+
+
+BANNER = ('<p class="banner">Draft for expert review. Not checked yet: do not use it in an emergency. '
+          'The checked manual is in the Fallback Manual app.</p>')
 
 
 def fingerprint(article: build_kb.Article) -> str:
@@ -147,6 +152,7 @@ button { font: inherit; font-weight: 700; padding: 10px 16px; border-radius: 8px
 button.secondary { background: transparent; color: var(--ink); }
 pre { white-space: pre-wrap; background: #f0ece2; border-radius: 8px; padding: 12px; font-size: 14px; }
 .problem { color: var(--bad); font-weight: 600; }
+.banner { background: #ffe39a; color: #16181b; border-radius: 10px; padding: 10px 14px; font-weight: 600; font-size: 15px; }
 table { border-collapse: collapse; width: 100%; font-size: 15px; }
 td, th { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
 a { color: #8a3a12; }
@@ -247,8 +253,10 @@ def article_page(a: build_kb.Article, english: build_kb.Article | None, ids: set
     return f"""<!doctype html>
 <html lang="{lang}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>Review: {title}</title><style>{STYLE}</style></head>
 <body><main>
+{BANNER}
 <p class="meta"><a href="index.html">All articles</a></p>
 <div>{"".join(tags)}</div>
 <h1>{title}</h1>
@@ -304,8 +312,10 @@ def index_page(entries: list[tuple[build_kb.Article, build_kb.Article | None]]) 
             f'<td>{build_kb.LANGUAGES[a.lang]["name"]}</td><td>{risk}</td><td>{html.escape(str(m.get("status")))}</td></tr>')
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>Fallback Manual review pack</title><style>{STYLE}</style></head>
 <body><main>
+{BANNER}
 <h1>Fallback Manual: review pack</h1>
 <div class="card">
 Fallback Manual is a free, offline emergency manual for phones. People read these articles in real

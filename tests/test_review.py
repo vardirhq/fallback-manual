@@ -50,6 +50,10 @@ def test_pack_has_a_page_per_article_and_language(tmp_path):
     assert "Hjerte-lunge-redning" in page
     # Works offline: no scripts, styles, fonts or pictures fetched from anywhere else.
     assert "<script src" not in page and "<link" not in page and 'src="http' not in page
+    # Published as a website, so every page is marked as a draft and kept out of search engines.
+    for name in ("index.html", "cpr.html", "cpr.nb.html"):
+        html = (out / name).read_text()
+        assert 'name="robots" content="noindex' in html and "Draft for expert review" in html
 
 
 def test_approved_signoff_marks_the_article_reviewed(manual, tmp_path):
