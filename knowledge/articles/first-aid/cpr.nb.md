@@ -1,10 +1,10 @@
 ---
 id: cpr
 lang: nb
-translation_of: 5
+translation_of: 6
 title: Hjerte-lunge-redning (voksne)
 status: draft
-version: 1
+version: 2
 license: CC-BY-4.0
 situations:
   - noen har falt om og puster ikke
@@ -31,7 +31,7 @@ review:
 
 Bruk dette når en voksen ikke reagerer og ikke puster normalt. Gisping, eller et pust bare nå og da, er ikke normal pust: start HLR.
 
-Denne artikkelen gjelder voksne. Barn og babyer trenger en annen teknikk (artikkel kommer senere). Hvis du ikke har noe annet, er ufullkommen HLR langt bedre enn å ikke gjøre noe.
+Denne artikkelen gjelder voksne. Barn og spedbarn trenger en annen teknikk: se [Hjerte-lunge-redning (barn og spedbarn)](article:cpr-children). Hvis du ikke har noe annet, er ufullkommen HLR langt bedre enn å ikke gjøre noe.
 
 ## Dette trenger du
 

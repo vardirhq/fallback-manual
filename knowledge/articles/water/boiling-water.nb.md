@@ -1,10 +1,10 @@
 ---
 id: boiling-water
 lang: nb
-translation_of: 3
+translation_of: 4
 title: Gjøre vann trygt ved koking
 status: draft
-version: 1
+version: 2
 license: CC-BY-4.0
 situations:
   - vann fra elv, innsjø eller bekk må gjøres trygt å drikke
@@ -48,7 +48,7 @@ Bruk dette når du må drikke vann som kan inneholde smittestoffer: fra elver, i
 ## Advarsler
 
 - Koking dreper smittestoffer, men fjerner ikke kjemikalier, drivstoff, salt eller tungmetaller. Ikke stol på koking for vann som kan være forurenset av kjemikalier eller flomvann fra industriområder.
-- Hvis du ikke kan koke vannet, se andre rensemetoder (kommer senere).
+- Hvis du ikke kan koke vannet, se [Desinfisere vann med klor](article:bleach-water).
 - Vær forsiktig med kokende vann så du ikke skålder deg. Se [Brannskader og skålding](article:burns).
 
 ## Vanlige feil

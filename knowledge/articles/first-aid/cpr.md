@@ -5,7 +5,7 @@ category: first-aid
 code: FA-02
 icon: heart-pulse
 status: draft
-version: 5
+version: 6
 high_risk: true
 emergency: true
 # Beat guide in step-by-step mode for the compression steps (sources: 100-120 a minute).
@@ -36,7 +36,7 @@ review:
 
 Use this when an adult is unresponsive and not breathing normally. Gasping, or a breath only now and then, is not normal breathing: start CPR.
 
-This article is for adults. Children and babies need a different technique (article still to be written). If you have nothing else, doing CPR imperfectly is far better than doing nothing.
+This article is for adults. Children and babies need a different technique: see [CPR (children and babies)](article:cpr-children). If you have nothing else, doing CPR imperfectly is far better than doing nothing.
 
 ## What you need
 
