@@ -6,7 +6,9 @@ Usage:
 
 A file can be the saved sign-off, or any text that contains it (a pasted email, a GitHub issue).
 Sign-offs sent from the review site as GitHub issues are applied by .github/workflows/review-signoff.yml,
-which runs this tool with --github-user, and opens a pull request for the owner to merge.
+which runs this tool with --github-user, and opens a pull request for the owner to merge. A sign-off
+the owner relays (pastes into an issue from a reviewer's email) runs with --relayed-by instead: the
+owner vouches for where it came from, so the GitHub account check is skipped.
 
 A sign-off is applied only if:
 - the reviewer is listed in knowledge/reviewers.yaml (the owner adds people there; this tool never does),
@@ -48,6 +50,23 @@ class ChangesRequested(Refused):
 SIGNOFF_RE = re.compile(r"^fallback-manual-review: 1$.*?(?=^```|\Z)", re.M | re.S)
 
 
+def _signoff_lines(text: str) -> str:
+    """The sign-off's own lines inside an email: from 'fallback-manual-review: 1' to the first line
+    that is neither a field nor part of the indented comments (a signature, a reply). Quote marks
+    ('> ') that mail programs add in replies and forwards are removed."""
+    lines = [re.sub(r"^(> ?)+", "", l) for l in text.split("\n")]
+    start = next((i for i, l in enumerate(lines) if l.strip() == "fallback-manual-review: 1"), None)
+    if start is None:
+        return ""
+    out = []
+    for l in lines[start:]:
+        if re.match(r"^[a-z_-]+:", l) or l.startswith(("  ", "- ")) or (out and out[-1].startswith("comments:") and not l):
+            out.append(l)
+        else:
+            break
+    return "\n".join(out) + "\n"
+
+
 def _is_signoff(data) -> bool:
     return isinstance(data, dict) and "fallback-manual-review" in data
 
@@ -59,6 +78,7 @@ def signoff_from_text(text: str) -> dict:
     m = SIGNOFF_RE.search(text)
     if m:
         candidates.append(m.group(0))
+    candidates.append(_signoff_lines(text))
     for c in candidates:
         try:
             data = yaml.safe_load(c)
@@ -156,7 +176,9 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("signoffs", nargs="+", type=Path)
     ap.add_argument("--dry-run", action="store_true", help="check the sign-offs, change nothing")
-    ap.add_argument("--github-user", help="the GitHub account that sent the sign-off; it must be the reviewer's")
+    who = ap.add_mutually_exclusive_group()
+    who.add_argument("--github-user", help="the GitHub account that sent the sign-off; it must be the reviewer's")
+    who.add_argument("--relayed-by", help="a maintainer's GitHub account that relays a sign-off the reviewer emailed")
     ap.add_argument("--result", type=Path, help="write the outcome of the (single) sign-off here, as JSON")
     args = ap.parse_args(argv)
     failed = 0
@@ -175,7 +197,7 @@ def main(argv: list[str] | None = None) -> int:
             message = (f"{verb} {build_kb._rel(article.path)} reviewed by {review['reviewer']} "
                        f"(review again by {review['review_by']}).")
             result.update(outcome="applied", file=build_kb._rel(article.path), version=article.meta.get("version"),
-                          message=message)
+                          message=message, relayed_by=args.relayed_by)
             print(f"{path}: {message}")
         except ChangesRequested as e:
             failed += 1

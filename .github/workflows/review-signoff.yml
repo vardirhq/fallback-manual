@@ -6,6 +6,11 @@ name: Review sign-off
 # issue). If it is valid, it opens a pull request marking the article reviewed, for the owner to
 # merge. Otherwise it answers on the issue: why it can't be applied, or that changes were asked for.
 #
+# Reviewers without GitHub email their sign-off ("Send review by email"); the owner pastes the email
+# into a new issue. An issue from the repository's owner or an organization member counts as a
+# relay: they vouch for where it came from, so the GitHub account check is skipped. Every other
+# check still applies, and the reviewer must still be in knowledge/reviewers.yaml.
+#
 # Needs: Settings > Actions > General > "Allow GitHub Actions to create and approve pull requests".
 
 on:
@@ -43,9 +48,14 @@ jobs:
         env:
           BODY: ${{ github.event.issue.body }}
           AUTHOR: ${{ github.event.issue.user.login }}
+          ASSOCIATION: ${{ github.event.issue.author_association }}
         run: |
           printf '%s' "$BODY" > "$RUNNER_TEMP/signoff.txt"
-          python -m tools.apply_review --github-user "$AUTHOR" --result "$RUNNER_TEMP/result.json" \
+          case "$ASSOCIATION" in
+            OWNER|MEMBER) who="--relayed-by" ;;   # a maintainer relaying an emailed sign-off
+            *) who="--github-user" ;;            # the reviewer themself; must be their registered account
+          esac
+          python -m tools.apply_review "$who" "$AUTHOR" --result "$RUNNER_TEMP/result.json" \
             "$RUNNER_TEMP/signoff.txt" || true
           cat "$RUNNER_TEMP/result.json"
 
@@ -84,8 +94,13 @@ jobs:
           git push --force origin "$branch"
           if [ -z "$(gh pr list --head "$branch" --json number --jq '.[0].number')" ]; then
             { jq -r '.message' "$r"; echo
-              echo "The sign-off was sent in #$ISSUE from the GitHub account registered for this reviewer, and"
-              echo "matches the article's current version and text. \`python -m tools.check\` passes with it applied."
+              relay=$(jq -r '.relayed_by // empty' "$r")
+              if [ -n "$relay" ]; then
+                echo "The sign-off was relayed in #$ISSUE by @$relay, who vouches that it came from the reviewer."
+              else
+                echo "The sign-off was sent in #$ISSUE from the GitHub account registered for this reviewer."
+              fi
+              echo "It matches the article's current version and text. \`python -m tools.check\` passes with it applied."
               echo; echo "Merging publishes this article in the next release build."; echo; echo "Closes #$ISSUE"; } > "$note"
             gh pr create --base "${{ github.event.repository.default_branch }}" --head "$branch" \
               --title "Review: mark $file reviewed by $reviewer" --body-file "$note"

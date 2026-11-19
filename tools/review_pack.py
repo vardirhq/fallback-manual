@@ -48,6 +48,9 @@ BANNER = ('<p class="banner">Draft for expert review. Not checked yet: do not us
 # Where "Send review on GitHub" opens a new issue. In GitHub Actions this is the repository the
 # site is built from; locally, the project's own.
 REPO = os.environ.get("GITHUB_REPOSITORY") or "vardirhq/fallback-manual"
+# Where "Send review by email" sends sign-offs, for reviewers without a GitHub account. Set by the
+# repository variable REVIEW_EMAIL when the site is built; without it, that button is left out.
+REVIEW_EMAIL = os.environ.get("REVIEW_EMAIL", "").strip()
 
 
 def fingerprint(article: build_kb.Article) -> str:
@@ -223,6 +226,12 @@ function sendGithub() {
   window.open('https://github.com/' + d.repo + '/issues/new?labels=review&title=' + encodeURIComponent(title) +
     '&body=' + encodeURIComponent(body), '_blank', 'noopener');
 }
+function sendEmail() {
+  const text = signoff(); if (!text) return;
+  const d = JSON.parse(document.getElementById('data').textContent);
+  const subject = 'Review: ' + d.id + (d.lang === 'en' ? '' : ' (' + d.lang + ')') + ', version ' + d.version;
+  location.href = 'mailto:' + d.email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
+}
 function copyText() {
   const text = signoff(); if (!text) return;
   navigator.clipboard.writeText(text).then(() => { document.getElementById('copied').textContent = 'Copied.'; },
@@ -264,7 +273,7 @@ def article_page(a: build_kb.Article, english: build_kb.Article | None, ids: set
     checks = CHECKLIST + ([TRANSLATION_CHECK] if english is not None else [])
     checks_html = "".join(f'<label><input type="checkbox" name="check"> {html.escape(c)}</label>' for c in checks)
     data = json.dumps({"id": a.id, "lang": lang, "version": m.get("version"), "fingerprint": fingerprint(a),
-                       "repo": REPO})
+                       "repo": REPO, "email": REVIEW_EMAIL})
 
     return f"""<!doctype html>
 <html lang="{lang}">
@@ -280,10 +289,10 @@ def article_page(a: build_kb.Article, english: build_kb.Article | None, ids: set
 
 <div class="card">
 <strong>How to review.</strong> Read the article below as someone in an emergency would. Open each
-source and check that the article agrees with it. Then fill in the form at the bottom and press
-"Send review on GitHub" (you need a GitHub account, and to submit the page that opens). No GitHub
-account? Save or copy your sign-off and send it to the project owner instead. If anything is wrong
-or unclear, choose "changes needed" and say what: that is just as useful as an approval.
+source and check that the article agrees with it. Then fill in the form at the bottom and send it:
+"Send review on GitHub" if you have a GitHub account (submit the page that opens){' or "Send review by email"' if REVIEW_EMAIL else ''}. You can also
+save or copy your sign-off and send it to the project owner. If anything is wrong or unclear,
+choose "changes needed" and say what: that is just as useful as an approval.
 </div>
 
 <div class="card article">
@@ -303,6 +312,7 @@ or unclear, choose "changes needed" and say what: that is just as useful as an a
 <label>Comments, corrections or concerns<textarea name="comments"></textarea></label>
 <div id="problems"></div>
 <button type="button" onclick="sendGithub()">Send review on GitHub</button>
+{'<button type="button" onclick="sendEmail()">Send review by email</button>' if REVIEW_EMAIL else ""}
 <button type="button" class="secondary" onclick="save()">Save sign-off file</button>
 <button type="button" class="secondary" onclick="copyText()">Copy sign-off text</button>
 <span id="copied" class="meta"></span>
