@@ -1,6 +1,9 @@
 """The review pack (tools/review_pack.py) and applying sign-offs (tools/apply_review.py)."""
 
+import json
+import re
 import shutil
+from pathlib import Path
 
 import pytest
 import yaml
@@ -105,3 +108,69 @@ def test_editing_the_article_invalidates_an_old_signoff(manual, tmp_path, capsys
     path.write_text(new)
     assert apply_review.main([str(write(tmp_path, s))]) == 1
     assert "has changed" in capsys.readouterr().err
+
+
+def issue_body(s: dict) -> Path:
+    """A sign-off as the review site puts it into a GitHub issue."""
+    return ("Sent from the Fallback Manual review site. Please do not edit the block below.\r\n\r\n"
+            "```yaml\r\n" + yaml.safe_dump(s, sort_keys=False, allow_unicode=True).replace("\n", "\r\n") + "```\r\n")
+
+
+@pytest.fixture
+def github_reviewer(manual, tmp_path):
+    (tmp_path / "reviewers.yaml").write_text(f'reviewers:\n  - name: "{REVIEWER}"\n    github: "@DrExample"\n')
+
+
+def test_signoff_sent_from_the_reviewers_github_account(manual, github_reviewer, tmp_path):
+    body = tmp_path / "issue.txt"
+    body.write_text(issue_body(signoff()))
+    result = tmp_path / "result.json"
+    assert apply_review.main(["--github-user", "drexample", "--result", str(result), str(body)]) == 0
+    assert "status: reviewed" in (manual / "cpr.md").read_text()
+    out = json.loads(result.read_text())
+    assert out["outcome"] == "applied" and out["article"] == "cpr" and out["file"].endswith("cpr.md")
+
+
+@pytest.mark.parametrize("user, expected", [
+    ("someone-else", "not theirs"),
+])
+def test_signoff_from_another_github_account_is_refused(manual, github_reviewer, tmp_path, user, expected):
+    body = tmp_path / "issue.txt"
+    body.write_text(issue_body(signoff()))
+    result = tmp_path / "result.json"
+    assert apply_review.main(["--github-user", user, "--result", str(result), str(body)]) == 1
+    out = json.loads(result.read_text())
+    assert out["outcome"] == "refused" and expected in out["message"]
+    assert "status: draft" in (manual / "cpr.md").read_text()
+
+
+def test_reviewer_without_a_github_username_cant_sign_off_from_github(manual, tmp_path):
+    body = tmp_path / "issue.txt"
+    body.write_text(issue_body(signoff()))
+    result = tmp_path / "result.json"
+    assert apply_review.main(["--github-user", "drexample", "--result", str(result), str(body)]) == 1
+    assert "no GitHub username" in json.loads(result.read_text())["message"]
+
+
+def test_changes_requested_from_github(manual, github_reviewer, tmp_path):
+    body = tmp_path / "issue.txt"
+    body.write_text(issue_body(signoff(decision="changes", comments="Step 3 is wrong.")))
+    result = tmp_path / "result.json"
+    assert apply_review.main(["--github-user", "DrExample", "--result", str(result), str(body)]) == 1
+    out = json.loads(result.read_text())
+    assert out["outcome"] == "changes" and "Step 3 is wrong." in out["message"]
+
+
+def test_text_without_a_signoff(tmp_path, capsys):
+    body = tmp_path / "issue.txt"
+    body.write_text("I think the CPR article is great!")
+    assert apply_review.main([str(body)]) == 1
+    assert "no sign-off found" in capsys.readouterr().err
+
+
+def test_page_script_has_no_line_breaks_inside_strings():
+    # A "\n" written without escaping in the Python source becomes a real line break inside a
+    # JavaScript string, which breaks every button on the page.
+    for n, line in enumerate(review_pack.SCRIPT.splitlines(), 1):
+        code = re.sub(r"\\.", "", line)
+        assert code.count("'") % 2 == 0, f"line {n} of the page script has an unclosed string: {line}"

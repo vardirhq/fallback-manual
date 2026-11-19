@@ -54,20 +54,28 @@ python -m pytest -q
 Nothing reaches a release until a qualified person has reviewed it: release builds include only
 reviewed articles. Reviewers don't need git or any tools:
 
-1. Add the reviewer to `knowledge/reviewers.yaml` (name, qualification, areas). Only the project
-   owner does this.
+1. Add the reviewer to `knowledge/reviewers.yaml`: name, qualification, areas, and their GitHub
+   username if they have one (`github: drexample`). Only the project owner does this.
 2. Send them the link to the review site. Every push to `main` publishes the review pack to GitHub
    Pages (`.github/workflows/review-site.yml`), so it always shows the current text. Each article
    and language has its own page. The pages are marked as drafts and ask search engines not to
    index them. To build it locally (it also works offline, from a zip):
    `python -m tools.review_pack` writes `build/review/` (`--only cpr,choking` for just some).
-3. The reviewer reads each article, opens its sources, ticks the checklist, and saves or copies a
-   sign-off from the bottom of the page: approve, or changes needed with comments.
-4. Apply returned sign-offs: `python -m tools.apply_review review-cpr.yaml ...`. It refuses a
-   sign-off from someone not in `reviewers.yaml`, one for an article that has changed since the
-   pack was made (each sign-off carries the article's version and a fingerprint of its text), or
-   one that doesn't confirm every source. A "changes needed" sign-off prints the comments instead.
-5. Run `python -m tools.check` and commit.
+3. The reviewer reads each article, opens its sources, ticks the checklist, and fills in the
+   sign-off at the bottom of the page: approve, or changes needed with comments. Then:
+   - **With a GitHub account:** they press "Send review on GitHub" and submit the issue that opens.
+     `.github/workflows/review-signoff.yml` checks it and opens a pull request that marks the
+     article reviewed, with CI running on it. You merge it. If the sign-off can't be applied, or
+     asks for changes, the workflow answers on the issue instead. This needs the reviewer's GitHub
+     username in `reviewers.yaml` (`github: <username>`), because anyone can open an issue, and
+     "Allow GitHub Actions to create and approve pull requests" switched on under Settings >
+     Actions > General.
+   - **Without one:** they save or copy the sign-off and send it to you. Run
+     `python -m tools.apply_review <file>` on it (a pasted email works too), then
+     `python -m tools.check`, and commit.
+4. Either way, a sign-off is refused if the reviewer isn't in `reviewers.yaml`, if the article has
+   changed since they read it (each sign-off carries the article's version and a fingerprint of
+   its text), or if it doesn't confirm every source.
 
 Editing a reviewed article sets it back to draft (see AGENTS.md), so it needs a new review.
 

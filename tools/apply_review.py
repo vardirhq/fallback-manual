@@ -4,6 +4,10 @@ Usage:
     python -m tools.apply_review review-cpr.yaml [review-choking.nb.yaml ...]
     python -m tools.apply_review --dry-run review-cpr.yaml
 
+A file can be the saved sign-off, or any text that contains it (a pasted email, a GitHub issue).
+Sign-offs sent from the review site as GitHub issues are applied by .github/workflows/review-signoff.yml,
+which runs this tool with --github-user, and opens a pull request for the owner to merge.
+
 A sign-off is applied only if:
 - the reviewer is listed in knowledge/reviewers.yaml (the owner adds people there; this tool never does),
 - the article has not changed since the reviewer read it (same version and fingerprint),
@@ -37,6 +41,34 @@ class Refused(Exception):
     pass
 
 
+class ChangesRequested(Refused):
+    pass
+
+
+SIGNOFF_RE = re.compile(r"^fallback-manual-review: 1$.*?(?=^```|\Z)", re.M | re.S)
+
+
+def _is_signoff(data) -> bool:
+    return isinstance(data, dict) and "fallback-manual-review" in data
+
+
+def signoff_from_text(text: str) -> dict:
+    """The sign-off in a saved file, or inside other text (an email, a GitHub issue body)."""
+    text = text.replace("\r\n", "\n")
+    candidates = [text] + re.findall(r"^```[a-z]*\n(.*?)^```", text, re.M | re.S)
+    m = SIGNOFF_RE.search(text)
+    if m:
+        candidates.append(m.group(0))
+    for c in candidates:
+        try:
+            data = yaml.safe_load(c)
+        except yaml.YAMLError:
+            continue
+        if _is_signoff(data):
+            return data
+    raise Refused("no sign-off found (it starts with the line 'fallback-manual-review: 1').")
+
+
 def _date(value, name: str) -> str:
     try:
         return dt.date.fromisoformat(str(value)).isoformat()
@@ -57,7 +89,7 @@ def find_article(aid: str, lang: str) -> build_kb.Article:
     return match[0]
 
 
-def check(signoff: dict) -> tuple[build_kb.Article, dict]:
+def check(signoff: dict, github_user: str | None = None) -> tuple[build_kb.Article, dict]:
     if not isinstance(signoff, dict) or signoff.get("fallback-manual-review") != 1:
         raise Refused("this is not a Fallback Manual review sign-off.")
     unknown = set(signoff) - FIELDS
@@ -67,7 +99,7 @@ def check(signoff: dict) -> tuple[build_kb.Article, dict]:
     article = find_article(aid, lang)
     name = f"{aid}" + ("" if lang == "en" else f" ({lang})")
     if signoff.get("decision") == "changes":
-        raise Refused(f"{signoff.get('reviewer')} asked for changes to {name}. Their comments:\n\n"
+        raise ChangesRequested(f"{signoff.get('reviewer')} asked for changes to {name}. Their comments:\n\n"
                       f"{str(signoff.get('comments', '')).rstrip()}\n\n"
                       "Make the changes (that raises the version), then send a new review pack.")
     if signoff.get("decision") != "approve":
@@ -79,6 +111,17 @@ def check(signoff: dict) -> tuple[build_kb.Article, dict]:
     if reviewer not in build_kb.approved_reviewers():
         raise Refused(f"'{reviewer}' is not in knowledge/reviewers.yaml. If you trust this person to review, "
                       "add them there yourself (with their qualification), then run this again.")
+    if github_user is not None:
+        # Sent from GitHub: anyone can open an issue, so the account must be the reviewer's own.
+        record = next(r for r in build_kb.reviewer_records() if str(r["name"]).strip() == reviewer)
+        registered = str(record.get("github") or "").strip().lstrip("@").lower()
+        if not registered:
+            raise Refused(f"'{reviewer}' has no GitHub username in knowledge/reviewers.yaml, so a sign-off from "
+                          "GitHub can't be checked. The owner can add it (github: <username>), or apply the "
+                          "sign-off by hand.")
+        if registered != github_user.strip().lower():
+            raise Refused(f"this sign-off names '{reviewer}', but was sent from the GitHub account "
+                          f"'{github_user}', not theirs. Only the reviewer themself can send their sign-off.")
     sources = article.meta.get("sources") or []
     confirmed = set(signoff.get("sources_confirmed") or [])
     missing = [i for i in range(len(sources)) if i not in confirmed]
@@ -113,21 +156,38 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("signoffs", nargs="+", type=Path)
     ap.add_argument("--dry-run", action="store_true", help="check the sign-offs, change nothing")
+    ap.add_argument("--github-user", help="the GitHub account that sent the sign-off; it must be the reviewer's")
+    ap.add_argument("--result", type=Path, help="write the outcome of the (single) sign-off here, as JSON")
     args = ap.parse_args(argv)
     failed = 0
+    result: dict = {}
     for path in args.signoffs:
         try:
-            signoff = yaml.safe_load(path.read_text(encoding="utf-8"))
-            article, review = check(signoff)
+            signoff = signoff_from_text(path.read_text(encoding="utf-8"))
+            if isinstance(signoff, dict):
+                result = {"article": str(signoff.get("article")), "lang": str(signoff.get("lang", "en")),
+                          "reviewer": str(signoff.get("reviewer", "")).strip()}
+            article, review = check(signoff, args.github_user)
             new = apply(article, review)
             if not args.dry_run:
                 article.path.write_text(new, encoding="utf-8")
             verb = "Would mark" if args.dry_run else "Marked"
-            print(f"{path}: {verb} {build_kb._rel(article.path)} reviewed by {review['reviewer']} "
-                  f"(review again by {review['review_by']}).")
+            message = (f"{verb} {build_kb._rel(article.path)} reviewed by {review['reviewer']} "
+                       f"(review again by {review['review_by']}).")
+            result.update(outcome="applied", file=build_kb._rel(article.path), version=article.meta.get("version"),
+                          message=message)
+            print(f"{path}: {message}")
+        except ChangesRequested as e:
+            failed += 1
+            result.update(outcome="changes", message=str(e))
+            print(f"{path}: not applied: {e}", file=sys.stderr)
         except (Refused, yaml.YAMLError, OSError) as e:
             failed += 1
+            result.update(outcome="refused", message=str(e))
             print(f"{path}: not applied: {e}", file=sys.stderr)
+    if args.result:
+        import json
+        args.result.write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
     if not args.dry_run and failed < len(args.signoffs):
         print("Now run: python -m tools.check")
     return 1 if failed else 0
