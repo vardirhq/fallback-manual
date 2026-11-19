@@ -1,0 +1,96 @@
+name: Review sign-off
+
+# A reviewer presses "Send review on GitHub" on the review site, which opens an issue holding their
+# sign-off. This checks it with tools/apply_review.py, including that the issue was opened from the
+# GitHub account registered for that reviewer in knowledge/reviewers.yaml (anyone can open an
+# issue). If it is valid, it opens a pull request marking the article reviewed, for the owner to
+# merge. Otherwise it answers on the issue: why it can't be applied, or that changes were asked for.
+#
+# Needs: Settings > Actions > General > "Allow GitHub Actions to create and approve pull requests".
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: write
+
+concurrency:
+  group: review-signoff-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  apply:
+    if: github.event.issue.state == 'open' && contains(github.event.issue.body, 'fallback-manual-review')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ISSUE: ${{ github.event.issue.number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt
+
+      # The issue text is untrusted: it only ever reaches tools as a file, never as shell code.
+      - name: Check the sign-off
+        env:
+          BODY: ${{ github.event.issue.body }}
+          AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          printf '%s' "$BODY" > "$RUNNER_TEMP/signoff.txt"
+          python -m tools.apply_review --github-user "$AUTHOR" --result "$RUNNER_TEMP/result.json" \
+            "$RUNNER_TEMP/signoff.txt" || true
+          cat "$RUNNER_TEMP/result.json"
+
+      - name: Open a pull request, or answer on the issue
+        run: |
+          r="$RUNNER_TEMP/result.json"
+          outcome=$(jq -r '.outcome // "refused"' "$r")
+          note="$RUNNER_TEMP/note.md"
+          if [ "$outcome" = changes ]; then
+            { echo "Thank you. This review asks for changes, so the article stays a draft for now:"; echo
+              jq -r '.message' "$r" | sed 's/^/> /'; echo
+              echo "Once the article is updated, the review site shows the new version, ready for a new review."; } > "$note"
+            gh issue comment "$ISSUE" --body-file "$note"
+            exit 0
+          fi
+          if [ "$outcome" != applied ]; then
+            { echo "This sign-off can't be applied yet:"; echo; jq -r '.message' "$r" | sed 's/^/> /'; echo
+              echo "Fix it and edit this issue (keep the block as the review site made it), or ask the project owner."; } > "$note"
+            gh issue comment "$ISSUE" --body-file "$note"
+            exit 0
+          fi
+          if ! python -m tools.check > "$RUNNER_TEMP/check.txt" 2>&1; then
+            { echo "The sign-off is valid, but the manual's checks fail with it applied, so the owner needs to look:"
+              echo; echo '```'; tail -20 "$RUNNER_TEMP/check.txt"; echo '```'; } > "$note"
+            gh issue comment "$ISSUE" --body-file "$note"
+            exit 1
+          fi
+          article=$(jq -r '.article' "$r"); lang=$(jq -r '.lang' "$r"); file=$(jq -r '.file' "$r")
+          reviewer=$(jq -r '.reviewer' "$r")
+          branch="review/${article}-${lang}-issue${ISSUE}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$branch"
+          git add "$file"
+          git commit -m "Mark $file reviewed by $reviewer" -m "Sign-off sent in #$ISSUE."
+          git push --force origin "$branch"
+          if [ -z "$(gh pr list --head "$branch" --json number --jq '.[0].number')" ]; then
+            { jq -r '.message' "$r"; echo
+              echo "The sign-off was sent in #$ISSUE from the GitHub account registered for this reviewer, and"
+              echo "matches the article's current version and text. \`python -m tools.check\` passes with it applied."
+              echo; echo "Merging publishes this article in the next release build."; echo; echo "Closes #$ISSUE"; } > "$note"
+            gh pr create --base "${{ github.event.repository.default_branch }}" --head "$branch" \
+              --title "Review: mark $file reviewed by $reviewer" --body-file "$note"
+          fi
+          # Pushes made with this workflow's token don't start other workflows, so start CI by hand.
+          gh workflow run knowledge.yml --ref "$branch"
+          pr=$(gh pr list --head "$branch" --json url --jq '.[0].url')
+          gh issue comment "$ISSUE" --body "Thank you. Your sign-off is valid; the owner can now merge it: $pr"

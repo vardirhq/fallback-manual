@@ -22,6 +22,7 @@ import base64
 import hashlib
 import html
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -42,6 +43,11 @@ TRANSLATION_CHECK = "The translation says the same as the English article: nothi
 
 BANNER = ('<p class="banner">Draft for expert review. Not checked yet: do not use it in an emergency. '
           'The checked manual is in the Fallback Manual app.</p>')
+
+
+# Where "Send review on GitHub" opens a new issue. In GitHub Actions this is the repository the
+# site is built from; locally, the project's own.
+REPO = os.environ.get("GITHUB_REPOSITORY") or "vardirhq/fallback-manual"
 
 
 def fingerprint(article: build_kb.Article) -> str:
@@ -208,6 +214,15 @@ function save() {
   a.download = 'review-' + d.id + (d.lang === 'en' ? '' : '.' + d.lang) + '.yaml';
   a.click();
 }
+function sendGithub() {
+  const text = signoff(); if (!text) return;
+  const d = JSON.parse(document.getElementById('data').textContent);
+  const title = 'Review: ' + d.id + (d.lang === 'en' ? '' : ' (' + d.lang + ')') + ', version ' + d.version;
+  const body = 'Sent from the Fallback Manual review site. Please do not edit the block below.\\n\\n' +
+    '```yaml\\n' + text + '```\\n';
+  window.open('https://github.com/' + d.repo + '/issues/new?labels=review&title=' + encodeURIComponent(title) +
+    '&body=' + encodeURIComponent(body), '_blank', 'noopener');
+}
 function copyText() {
   const text = signoff(); if (!text) return;
   navigator.clipboard.writeText(text).then(() => { document.getElementById('copied').textContent = 'Copied.'; },
@@ -248,7 +263,8 @@ def article_page(a: build_kb.Article, english: build_kb.Article | None, ids: set
             f'<small>I opened this source, and the article agrees with it.</small></label>')
     checks = CHECKLIST + ([TRANSLATION_CHECK] if english is not None else [])
     checks_html = "".join(f'<label><input type="checkbox" name="check"> {html.escape(c)}</label>' for c in checks)
-    data = json.dumps({"id": a.id, "lang": lang, "version": m.get("version"), "fingerprint": fingerprint(a)})
+    data = json.dumps({"id": a.id, "lang": lang, "version": m.get("version"), "fingerprint": fingerprint(a),
+                       "repo": REPO})
 
     return f"""<!doctype html>
 <html lang="{lang}">
@@ -264,9 +280,10 @@ def article_page(a: build_kb.Article, english: build_kb.Article | None, ids: set
 
 <div class="card">
 <strong>How to review.</strong> Read the article below as someone in an emergency would. Open each
-source and check that the article agrees with it. Then fill in the form at the bottom, and save or
-copy your sign-off and send it to the project owner. If anything is wrong or unclear, choose
-"changes needed" and say what: that is just as useful as an approval.
+source and check that the article agrees with it. Then fill in the form at the bottom and press
+"Send review on GitHub" (you need a GitHub account, and to submit the page that opens). No GitHub
+account? Save or copy your sign-off and send it to the project owner instead. If anything is wrong
+or unclear, choose "changes needed" and say what: that is just as useful as an approval.
 </div>
 
 <div class="card article">
@@ -285,7 +302,8 @@ copy your sign-off and send it to the project owner. If anything is wrong or unc
 <label>Review again by<input type="date" name="review_by" value="{next_review}"></label>
 <label>Comments, corrections or concerns<textarea name="comments"></textarea></label>
 <div id="problems"></div>
-<button type="button" onclick="save()">Save sign-off file</button>
+<button type="button" onclick="sendGithub()">Send review on GitHub</button>
+<button type="button" class="secondary" onclick="save()">Save sign-off file</button>
 <button type="button" class="secondary" onclick="copyText()">Copy sign-off text</button>
 <span id="copied" class="meta"></span>
 <pre id="out"></pre>

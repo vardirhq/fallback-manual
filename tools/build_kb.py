@@ -32,11 +32,17 @@ ICONS_FILE = ROOT / "knowledge" / "icons.yaml"
 IMAGES_DIR = ROOT / "knowledge" / "images"
 
 
-def approved_reviewers() -> set[str]:
+def reviewer_records() -> list[dict]:
+    """The people in knowledge/reviewers.yaml: name, qualification, areas, and optionally github
+    (their GitHub username, which lets them send sign-offs from the review site)."""
     if not REVIEWERS_FILE.exists():
-        return set()
+        return []
     data = yaml.safe_load(REVIEWERS_FILE.read_text(encoding="utf-8")) or {}
-    return {str(r["name"]).strip() for r in data.get("reviewers") or [] if isinstance(r, dict) and r.get("name")}
+    return [r for r in data.get("reviewers") or [] if isinstance(r, dict) and r.get("name")]
+
+
+def approved_reviewers() -> set[str]:
+    return {str(r["name"]).strip() for r in reviewer_records()}
 DEFAULT_OUT = ROOT / "build" / "knowledge.db"
 
 SCHEMA_VERSION = 4  # 2: images table; 3: codes, icons, rhythm, lead; 4: emergency

@@ -3,6 +3,7 @@ name: Knowledge base
 on:
   push:
   pull_request:
+  workflow_dispatch:  # started by review-signoff.yml for the pull requests it opens
 
 jobs:
   check:
