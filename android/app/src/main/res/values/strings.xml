@@ -137,6 +137,9 @@
     <string name="about_fonts">Fonts</string>
     <string name="about_fonts_body">Barlow and JetBrains Mono, under the SIL Open Font License 1.1.</string>
     <string name="about_installation">Installation</string>
+    <string name="about_support">Support the project</string>
+    <string name="about_support_body">Fallback Manual is free, with no ads or tracking. If it helps you, you can buy the developer a coffee. The link opens in your web browser.</string>
+    <string name="about_support_button">Buy me a coffee</string>
     <!-- App version, then where it was installed from -->
     <string name="about_version">Version %1$s. %2$s</string>
     <string name="installed_play">Installed from Google Play.</string>

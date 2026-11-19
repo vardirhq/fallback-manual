@@ -1,5 +1,7 @@
 package app.fallbackmanual.ui
 
+import android.net.Uri
+import android.content.Intent
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -154,8 +156,8 @@ fun HomeScreen(go: (String) -> Unit, bottomBar: @Composable () -> Unit) {
                 items(d.emergency.chunked(2)) { pair ->
                     // Both tiles in a row take the height of the taller one.
                     Row(
-                        Modifier.padding(Gutter).padding(bottom = 10.dp).height(IntrinsicSize.Min),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        Modifier.padding(Gutter).padding(bottom = 8.dp).height(IntrinsicSize.Min),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         pair.forEach { a -> EmergencyTile(a, Modifier.weight(1f).fillMaxHeight()) { go("article/${a.id}") } }
                         if (pair.size == 1) Spacer(Modifier.weight(1f))
@@ -444,6 +446,7 @@ fun AboutScreen(back: () -> Unit) {
                     style = MaterialTheme.typography.bodyMedium, color = fm.ink,
                 )
                 InstallationSection()
+                SupportSection()
                 SectionTitle(stringResource(R.string.about_fonts))
                 Text(stringResource(R.string.about_fonts_body),
                     style = MaterialTheme.typography.bodyMedium, color = fm.ink)
@@ -504,6 +507,29 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()
     else -> null
+}
+
+// -- Support (part of About) ----------------------------------------------------
+
+private const val SUPPORT_URL = "https://buymeacoffee.com/madsendev"
+
+/**
+ * A link for readers who want to support the project. The app itself stays offline: the link is
+ * handed to the phone's browser. Not shown in copies from Google Play, whose payment rules cover
+ * tips to developers.
+ */
+@Composable
+private fun SupportSection() {
+    val context = LocalContext.current
+    val channel = remember { InstallSources.detect(context).channel }
+    if (channel == InstallChannel.PlayStore) return
+    SectionTitle(stringResource(R.string.about_support))
+    Text(stringResource(R.string.about_support_body), style = MaterialTheme.typography.bodyMedium, color = fm.ink)
+    OutlineButton(stringResource(R.string.about_support_button), Modifier.fillMaxWidth()) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(SUPPORT_URL)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { context.startActivity(intent) } // a phone with no browser simply does nothing
+    }
+    Text(SUPPORT_URL.removePrefix("https://"), style = MaterialTheme.typography.bodySmall, color = fm.muted)
 }
 
 // -- Installation (part of About) ---------------------------------------------

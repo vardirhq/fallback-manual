@@ -126,6 +126,9 @@
     <string name="about_fonts">Skrifttyper</string>
     <string name="about_fonts_body">Barlow og JetBrains Mono, under SIL Open Font License 1.1.</string>
     <string name="about_installation">Installasjon</string>
+    <string name="about_support">Støtt prosjektet</string>
+    <string name="about_support_body">Fallback Manual er gratis, uten reklame og sporing. Hvis appen hjelper deg, kan du spandere en kaffe på utvikleren. Lenken åpnes i nettleseren.</string>
+    <string name="about_support_button">Spander en kaffe</string>
     <string name="about_version">Versjon %1$s. %2$s</string>
     <string name="installed_play">Installert fra Google Play.</string>
     <string name="updates_play">Oppdateringer kommer via Google Play.</string>
