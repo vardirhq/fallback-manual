@@ -56,9 +56,11 @@ reviewed articles. Reviewers don't need git or any tools:
 
 1. Add the reviewer to `knowledge/reviewers.yaml` (name, qualification, areas). Only the project
    owner does this.
-2. Build a review pack: `python -m tools.review_pack` writes `build/review/`, with an index and one
-   page per article and language (`--only cpr,choking` for just some). CI also builds it as the
-   `review-pack` artifact. The pages work offline: zip the folder and send it.
+2. Send them the link to the review site. Every push to `main` publishes the review pack to GitHub
+   Pages (`.github/workflows/review-site.yml`), so it always shows the current text. Each article
+   and language has its own page. The pages are marked as drafts and ask search engines not to
+   index them. To build it locally (it also works offline, from a zip):
+   `python -m tools.review_pack` writes `build/review/` (`--only cpr,choking` for just some).
 3. The reviewer reads each article, opens its sources, ticks the checklist, and saves or copies a
    sign-off from the bottom of the page: approve, or changes needed with comments.
 4. Apply returned sign-offs: `python -m tools.apply_review review-cpr.yaml ...`. It refuses a
