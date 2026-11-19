@@ -306,8 +306,10 @@ def test_oversized_picture_is_rejected(kb_img):
 @pytest.mark.parametrize("body,expected", [
     (GOOD_BODY.replace("1. Do this.", "1. Do this.\n![pic](image:test-pic)"), "must say what it shows"),
     (GOOD_BODY.replace("1. Do this.", "1. Do this. ![A hand on a wound](image:test-pic)"), "on a line of its own"),
-    (GOOD_BODY.replace("When it applies.", "When it applies.\n\n![A hand on a wound](image:test-pic)"),
-     "only allowed in '## Steps'"),
+    (GOOD_BODY.replace("Call someone.", "Call someone.\n\n![A hand on a wound](image:test-pic)"),
+     "not allowed in '## Get help'"),
+    (GOOD_BODY.replace("## Warnings\n- Careful.", "## Warnings\n![A hand on a wound](image:test-pic)\n- Careful."),
+     "can't be the first thing in '## Warnings'"),
     (GOOD_BODY.replace("1. Do this.", "![A hand on a wound](image:test-pic)\n1. Do this."), "directly under the step"),
     (GOOD_BODY.replace("1. Do this.", "1. Do this.\n![A hand on a wound](image:other-pic)"), "is not in"),
 ])
@@ -360,3 +362,17 @@ def test_new_article_assigns_next_code():
     from tools.new_article import next_code
     assert next_code("first-aid") == "FA-06"   # FA-01..FA-05 exist
     assert next_code("shelter") == "SH-01"     # no shelter articles yet
+
+
+
+@pytest.mark.parametrize("body", [
+    # A recognition picture under a paragraph in When to use
+    GOOD_BODY.replace("When it applies.", "When it applies.\n\n![A hand on a wound with a cloth](image:test-pic)"),
+    # Under a bullet in Warnings, What you need and Common mistakes
+    GOOD_BODY.replace("- Careful.", "- Careful.\n![A hand on a wound with a cloth](image:test-pic)"),
+    GOOD_BODY.replace("- Things", "- Things\n![A hand on a wound with a cloth](image:test-pic)"),
+    GOOD_BODY.replace("- Oops.", "- Oops.\n![A hand on a wound with a cloth](image:test-pic)"),
+])
+def test_pictures_allowed_under_bullets_and_paragraphs(kb_img, body):
+    report, _ = kb_img(article(body=body), [IMG], {"test-pic.png": 0})
+    assert report.errors == []

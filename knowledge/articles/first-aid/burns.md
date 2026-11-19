@@ -16,7 +16,7 @@ situations:
 keywords: [burn, burned, burnt, scald, scalded, blister, fire, hot water, steam, spilled, spill]
 diagrams_needed:
   - cooling a burn under running water
-  - covering a burn loosely with cling film
+  - covering a burn loosely with plastic wrap
 sources:
   - title: Burns and scalds, treatment
     publisher: National Health Service (UK)

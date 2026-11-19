@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.captureScreenRoboImage
 import org.junit.Rule
@@ -52,6 +53,12 @@ class PictureTest {
         openFixtureArticle()
         rule.onNodeWithText(alt).assertExists() // caption under the picture
         shot("09-picture-in-step")
+        // A picture can also sit under a bullet in another section, here a warning.
+        val warningAlt = "The same test picture, placed under a warning"
+        rule.onNode(androidx.compose.ui.test.hasScrollAction())
+            .performScrollToNode(androidx.compose.ui.test.hasContentDescription(warningAlt))
+        rule.onNodeWithContentDescription(warningAlt).assertExists()
+        shot("09b-picture-under-warning")
     }
 
     @Test

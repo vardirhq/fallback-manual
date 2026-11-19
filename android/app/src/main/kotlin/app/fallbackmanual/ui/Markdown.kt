@@ -127,8 +127,10 @@ fun MarkdownBody(markdown: String, modifier: Modifier = Modifier, onLink: ((Stri
     val linkColor = fm.accentText
     fun rich(text: String) = inline(text, linkColor, onLink)
     var section = ""
+    var under: Block? = null // the step, bullet or paragraph that the next picture belongs to
     Column(modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         for (b in blocks) {
+            if (b !is Block.Image) under = b
             when (b) {
                 is Block.Heading -> {
                     section = b.text
@@ -161,8 +163,15 @@ fun MarkdownBody(markdown: String, modifier: Modifier = Modifier, onLink: ((Stri
                     Text(rich(b.text), style = MaterialTheme.typography.bodyLarge, color = fm.ink)
                 }
                 is Block.Paragraph -> Text(rich(b.text), style = MaterialTheme.typography.bodyLarge, color = fm.ink)
-                // Pictures sit under their step, lined up with the step's text.
-                is Block.Image -> ArticlePicture(b.id, b.alt, Modifier.padding(start = 46.dp, bottom = 6.dp))
+                // A picture lines up with the text of the step or bullet it belongs to.
+                is Block.Image -> {
+                    val indent = when (under) {
+                        is Block.Step -> 46.dp
+                        is Block.Bullet -> 30.dp
+                        else -> 0.dp
+                    }
+                    ArticlePicture(b.id, b.alt, Modifier.padding(start = indent, bottom = 6.dp))
+                }
             }
         }
     }

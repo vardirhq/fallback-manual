@@ -50,7 +50,8 @@ WORD_RE = re.compile(r"[^\W_]+(?:['-][^\W_]+)*", re.UNICODE)
 # the app is offline, and every link must lead to reviewed content inside it.
 ARTICLE_LINK_RE = re.compile(r"\[([^\]]+)\]\(article:([^)\s]*)\)")
 ANY_LINK_RE = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)]*)\)")
-# A picture, on a line of its own directly under the step it belongs to: ![alt text](image:<id>)
+# A picture, on a line of its own directly under the step, bullet or paragraph it shows:
+# ![alt text](image:<id>)
 IMAGE_LINE_RE = re.compile(r"^!\[([^\]]+)\]\(image:([a-z0-9]+(?:-[a-z0-9]+)*)\)$")
 IMAGE_ANY_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
 
@@ -433,10 +434,15 @@ def validate_body(article: Article, report: Report) -> None:
                     report.error(p, "'## Steps' needs at least 2 numbered steps.")
                 elif nums != list(range(1, len(nums) + 1)):
                     report.error(p, f"steps must be numbered 1, 2, 3, ... without gaps. Found: {nums}.")
-        else:
-            if any(IMAGE_LINE_RE.match(l.strip()) for l in lines):
-                report.error(p, f"pictures are only allowed in '## Steps', directly under the step they show. "
-                                f"Found one in '## {name}'.")
+        elif any(IMAGE_LINE_RE.match(l.strip()) for l in lines):
+            # Elsewhere, a picture goes directly under the paragraph or bullet it shows. It can't open
+            # a section (it would belong to nothing), and '## Get help' has no use for one.
+            if name == "Get help":
+                report.error(p, f"pictures are not allowed in '## Get help'. Fix: put it directly under the "
+                                "step, bullet or paragraph it shows, in another section.")
+            elif IMAGE_LINE_RE.match(lines[0].strip()):
+                report.error(p, f"a picture can't be the first thing in '## {name}'. Fix: put it directly under "
+                                "the bullet or paragraph it shows.")
         if name in LIST_SECTIONS:
             bad = [l for l in lines if not l.startswith("- ") and not IMAGE_LINE_RE.match(l.strip())]
             if bad:
