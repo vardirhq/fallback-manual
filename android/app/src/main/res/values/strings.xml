@@ -1,3 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Every piece of text the app itself shows. Articles are not here: they come from the knowledge base.
+  Translations live in values-<language>/strings.xml with the same names (values-nb is Norwegian Bokmål).
+  StringsTest checks that every translation has exactly the same names and placeholders as this file.
+-->
 <resources>
-    <string name="app_name">Fallback Manual</string>
+    <string name="app_name" translatable="false">Fallback Manual</string>
+
+    <!-- Shared -->
+    <string name="back">Back</string>
+    <string name="close">Close</string>
+    <string name="unavailable">Unavailable</string>
+    <string name="unknown">unknown</string>
+    <string name="article_not_found">Article \"%1$s\" was not found.</string>
+    <string name="load_failed">The manual could not be loaded</string>
+    <string name="draft_strip">DRAFT CONTENT · NOT YET REVIEWED</string>
+    <string name="row_draft">draft</string>
+    <plurals name="category_articles">
+        <item quantity="one">%1$d article</item>
+        <item quantity="other">%1$d articles</item>
+    </plurals>
+
+    <!-- Bottom navigation -->
+    <string name="tab_home">Home</string>
+    <string name="tab_manual">Manual</string>
+    <string name="tab_saved">Saved</string>
+    <string name="tab_share">Share</string>
+
+    <!-- Home -->
+    <string name="about">About</string>
+    <string name="home_question">What\'s happening?</string>
+    <string name="search_description">What\'s happening? Describe the problem</string>
+    <string name="search_hint">e.g. shivering and confused</string>
+    <string name="search_clear">Clear</string>
+    <string name="section_emergency">Emergency</string>
+    <string name="section_saved">Saved</string>
+    <string name="section_manual">Manual</string>
+
+    <!-- Manual and categories -->
+    <string name="bar_offline_manual">Offline manual</string>
+    <string name="bar_category">%1$s · manual</string>
+
+    <!-- Article -->
+    <string name="save_article">Save article</string>
+    <string name="remove_from_saved">Remove from saved</string>
+    <string name="chip_draft">Draft · not reviewed</string>
+    <plurals name="chip_steps">
+        <item quantity="one">%1$d step · v%2$d</item>
+        <item quantity="other">%1$d steps · v%2$d</item>
+    </plurals>
+    <string name="call_title">Call emergency services first</string>
+    <string name="call_body">If you can, do it now. Use speakerphone to keep your hands free.</string>
+    <string name="step_by_step">Step by step</string>
+    <string name="warning">Warning</string>
+    <string name="show_sources">Show sources</string>
+    <string name="hide_sources">Hide sources</string>
+    <string name="sources_review">SOURCES &amp; REVIEW</string>
+    <string name="source_line">%1$s, %2$s</string>
+    <string name="source_line_unchecked">%1$s, %2$s (not yet checked against the original)</string>
+    <string name="reviewed_by">Reviewed by %1$s on %2$s</string>
+    <string name="not_reviewed">Not reviewed</string>
+    <!-- Article code · version number · review status · license -->
+    <string name="article_meta">%1$s · version %2$d · %3$s · %4$s</string>
+
+    <!-- Linked-article sheet -->
+    <string name="sheet_back">Back to previous article</string>
+    <string name="sheet_from">From: %1$s</string>
+    <string name="sheet_open_full">Open as full article</string>
+
+    <!-- Pictures -->
+    <string name="picture_open">Open picture full screen</string>
+    <string name="picture_missing">Picture: %1$s</string>
+    <string name="picture_close">Close picture</string>
+
+    <!-- Step-by-step mode -->
+    <string name="step_close">Close step-by-step mode</string>
+    <!-- Article code, step number, number of steps -->
+    <string name="step_of">%1$s · STEP %2$s OF %3$d</string>
+    <string name="screen_on">SCREEN ON</string>
+    <!-- Read aloud before each step -->
+    <string name="step_spoken">Step %1$s. %2$s</string>
+    <string name="state_on">On</string>
+    <string name="state_off">Off</string>
+    <string name="voice_missing">No voice installed on this phone</string>
+    <string name="voice_reading">Reading aloud · tap to stop</string>
+    <string name="voice_read">Read steps aloud</string>
+    <string name="step_back">BACK</string>
+    <string name="step_next">Next</string>
+    <string name="step_done">Done</string>
+    <string name="beat_title">KEEP TO THE BEAT</string>
+    <string name="beat_rate">%1$d a minute</string>
+    <string name="no_steps">This article has no steps.</string>
+
+    <!-- Search -->
+    <string name="bar_search">Search · offline</string>
+    <string name="searched_for">Searched for: %1$s</string>
+    <string name="best_match">Best match</string>
+    <!-- Under the best match's title. The argument is the article's first sentence, starting lowercase. -->
+    <string name="best_match_lead">For when %1$s.</string>
+    <string name="matched">Matched: %1$s</string>
+    <string name="also_related">Also related</string>
+    <string name="no_match_title">No reviewed article matches this question</string>
+    <string name="no_match_body">Try other words, or browse the manual.</string>
+    <string name="closest">Closest (may not be relevant)</string>
+    <string name="not_what_you_need">NOT WHAT YOU NEED?</string>
+    <string name="search_disclaimer">This app only shows instructions from its own articles. When nothing fits, it says so instead of guessing.</string>
+    <string name="browse_manual">Browse the manual</string>
+
+    <!-- Saved -->
+    <string name="bar_on_this_phone">On this phone</string>
+    <string name="nothing_saved">Nothing saved yet. Tap the bookmark on an article to keep it here for quick access.</string>
+
+    <!-- About -->
+    <string name="about_tagline">Knowledge when everything else fails.</string>
+    <string name="about_not_substitute_title">Not a substitute for professional help</string>
+    <string name="about_not_substitute_body">This app does not replace emergency services, medical professionals or training. Contact them whenever you can.</string>
+    <string name="about_offline">Works fully offline. The app has no internet permission, no accounts, no ads and no tracking. Your searches and saved articles never leave this phone.</string>
+    <string name="about_fingerprint">Signing fingerprint</string>
+    <string name="about_fingerprint_body">A copy received from another phone is genuine if it shows the same fingerprint as the sender\'s.</string>
+    <string name="about_content">Content</string>
+    <!-- Number of articles, content hash, build type -->
+    <plurals name="about_content_line">
+        <item quantity="one">%1$d article · content %2$s · %3$s</item>
+        <item quantity="other">%1$d articles · content %2$s · %3$s</item>
+    </plurals>
+    <string name="build_release">release build</string>
+    <string name="build_development">development build (unreviewed drafts)</string>
+    <string name="about_fonts">Fonts</string>
+    <string name="about_fonts_body">Barlow and JetBrains Mono, under the SIL Open Font License 1.1.</string>
+    <string name="about_installation">Installation</string>
+    <!-- App version, then where it was installed from -->
+    <string name="about_version">Version %1$s. %2$s</string>
+    <string name="installed_play">Installed from Google Play.</string>
+    <string name="updates_play">Updates come through Google Play.</string>
+    <string name="installed_fdroid">Installed from F-Droid.</string>
+    <string name="updates_fdroid">Updates come through F-Droid.</string>
+    <string name="installed_apk">Installed from an app file (APK).</string>
+    <!-- The argument is the releases web address -->
+    <string name="updates_apk">This app never updates itself. To update, install a newer APK from %1$s, or get one from someone with a newer version using Share this app.</string>
+    <string name="installed_unknown">Android didn\'t record where this app came from.</string>
+    <string name="updates_unknown">This app never updates itself. To update, install a newer APK from %1$s.</string>
+    <string name="about_no_internet">The app has no internet access and never checks for updates.</string>
+
+    <!-- Share -->
+    <string name="bar_share">Share this app</string>
+    <string name="share_intro">Give Fallback Manual to a phone nearby. No internet or mobile signal is needed.</string>
+    <string name="share_size">Size: %1$.1f MB. The manual and everything in it are included.</string>
+    <string name="share_send">Send with Quick Share, Bluetooth…</string>
+    <string name="share_send_zip">Send as ZIP</string>
+    <string name="share_bluetooth_note">Some phones refuse to send or receive app files over Bluetooth. If that happens, send it as a ZIP; the other phone unzips it with its Files app.</string>
+    <string name="share_save_copy">Save a copy (SD card, USB, Downloads)</string>
+    <string name="share_no_app">No app on this phone can send files. Try \"Save a copy\" instead.</string>
+    <string name="share_prepare_failed">Could not prepare the file: %1$s</string>
+    <string name="share_saved">Saved. Copy it to the other phone and open it there.</string>
+    <string name="share_save_failed">Could not save: %1$s</string>
+    <string name="share_split_title">This copy can\'t be shared</string>
+    <string name="share_split_body">It was installed from an app store in several parts, and Android can\'t install those parts on another phone. Install the complete version from F-Droid or the project\'s releases page, and it can be shared from then on.</string>
+    <string name="share_missing_title">The app file could not be found</string>
+    <string name="share_missing_body">Sharing isn\'t available on this phone.</string>
+    <string name="share_other_phone">On the other phone</string>
+    <string name="share_other_1">Accept the file when it arrives. With Quick Share, both phones need Bluetooth on and must be close together.</string>
+    <string name="share_other_2">Open the file. If it arrived as a ZIP, open it in the Files app and extract it first.</string>
+    <string name="share_other_3">If Android asks, allow that app to install unknown apps. Android shows the setting.</string>
+    <string name="share_other_4">Tap Install, then open Fallback Manual. It works offline straight away.</string>
+    <string name="share_genuine">Check it\'s genuine</string>
+    <string name="share_genuine_body">Both phones should show the same signing fingerprint here, or under About. If they differ, the copy was rebuilt by someone else: don\'t rely on it.</string>
+    <string name="share_fingerprint_unavailable">Unavailable on this phone</string>
+    <string name="share_subject">Fallback Manual (offline emergency manual)</string>
+    <string name="share_chooser">Send Fallback Manual</string>
 </resources>

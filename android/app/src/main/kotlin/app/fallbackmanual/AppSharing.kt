@@ -7,12 +7,13 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.core.content.FileProvider
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import app.fallbackmanual.R
 import java.io.File
 import java.security.MessageDigest
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Passing the app to a nearby phone without internet.
@@ -72,11 +73,11 @@ class AppSharing(
         val send = Intent(Intent.ACTION_SEND).apply {
             type = if (file.extension == "zip") "application/zip" else APK_MIME
             putExtra(Intent.EXTRA_STREAM, uri)
-            putExtra(Intent.EXTRA_SUBJECT, "Fallback Manual (offline emergency manual)")
+            putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.share_subject))
             clipData = ClipData.newRawUri(file.name, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        return Intent.createChooser(send, "Send Fallback Manual")
+        return Intent.createChooser(send, context.getString(R.string.share_chooser))
     }
 
     /** Writes the APK to a location the user picked (SD card, USB stick, Downloads). */

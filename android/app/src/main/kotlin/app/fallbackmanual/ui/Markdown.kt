@@ -7,29 +7,31 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.unit.sp
-import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.TextLinkStyles
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import app.fallbackmanual.R
 
 /**
  * The small Markdown subset articles use: ## headings, numbered steps, bullets, paragraphs,
@@ -155,7 +157,7 @@ fun MarkdownBody(markdown: String, modifier: Modifier = Modifier, onLink: ((Stri
                 is Block.Bullet -> Row {
                     val warn = section == "Warnings"
                     if (warn) {
-                        Icon(FmIcons.stroke(FmIcons.WARNING), contentDescription = "Warning",
+                        Icon(FmIcons.stroke(FmIcons.WARNING), contentDescription = stringResource(R.string.warning),
                             tint = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 2.dp, end = 10.dp).size(20.dp))
                     } else {
                         Text("•", style = MaterialTheme.typography.bodyLarge, color = fm.muted, modifier = Modifier.padding(end = 10.dp))

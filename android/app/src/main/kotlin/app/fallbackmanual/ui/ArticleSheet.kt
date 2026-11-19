@@ -1,16 +1,15 @@
 package app.fallbackmanual.ui
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -28,7 +27,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.fallbackmanual.R
 import kotlinx.coroutines.launch
 
 /**
@@ -53,26 +55,26 @@ fun ArticleSheet(stack: SnapshotStateList<String>, fromTitle: String, openFull: 
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             if (stack.size > 1) {
                 IconButton(onClick = { stack.removeAt(stack.lastIndex) }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to previous article")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.sheet_back))
                 }
             } else {
                 Spacer(Modifier.width(12.dp))
             }
             Text(
-                "From: $fromTitle",
+                stringResource(R.string.sheet_from, fromTitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
-            IconButton(onClick = close) { Icon(Icons.Filled.Close, contentDescription = "Close") }
+            IconButton(onClick = close) { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.close)) }
         }
         key(id) {
             val data = load(id) { kb -> kb.article(id) }
             Loaded(data) { article ->
                 if (article == null) {
-                    LoadFailed(IllegalStateException("Article '$id' was not found."))
+                    LoadFailed(IllegalStateException(stringResource(R.string.article_not_found, id)))
                     return@Loaded
                 }
                 Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 32.dp)) {
@@ -83,7 +85,7 @@ fun ArticleSheet(stack: SnapshotStateList<String>, fromTitle: String, openFull: 
                             openFull(id)
                         },
                         modifier = Modifier.fillMaxWidth().padding(top = 20.dp).heightIn(min = 52.dp),
-                    ) { Text("Open as full article", style = MaterialTheme.typography.labelLarge) }
+                    ) { Text(stringResource(R.string.sheet_open_full), style = MaterialTheme.typography.labelLarge) }
                 }
             }
         }

@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
@@ -51,6 +52,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.fallbackmanual.R
 import app.fallbackmanual.core.Article
 import java.util.Locale
 
@@ -65,7 +67,7 @@ fun StepModeScreen(id: String, back: () -> Unit) {
     FallbackTheme(dark = true) {
         Box(Modifier.fillMaxSize().background(fm.bg)) {
             Loaded(data) { a ->
-                if (a == null) LoadFailed(IllegalStateException("Article '$id' was not found."))
+                if (a == null) LoadFailed(IllegalStateException(stringResource(R.string.article_not_found, id)))
                 else StepMode(a, back)
             }
         }
@@ -76,7 +78,7 @@ fun StepModeScreen(id: String, back: () -> Unit) {
 private fun StepMode(a: Article, close: () -> Unit) {
     val steps = remember(a.bodyMarkdown) { stepsOf(a.bodyMarkdown) }
     if (steps.isEmpty()) {
-        LoadFailed(IllegalStateException("This article has no steps."))
+        LoadFailed(IllegalStateException(stringResource(R.string.no_steps)))
         return
     }
     var index by rememberSaveable(a.id) { mutableIntStateOf(0) }
@@ -87,19 +89,21 @@ private fun StepMode(a: Article, close: () -> Unit) {
 
     KeepScreenOn()
     val voice = rememberVoice()
+    val spoken = stringResource(R.string.step_spoken, step.number, plain)
     LaunchedEffect(index, speaking, voice.ready) {
-        if (speaking && voice.ready) voice.say("Step ${step.number}. $plain") else voice.stop()
+        if (speaking && voice.ready) voice.say(spoken) else voice.stop()
     }
 
+    val onOff = stringResource(if (speaking) R.string.state_on else R.string.state_off)
     Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
         Row(Modifier.fillMaxWidth().padding(start = 8.dp, end = 16.dp, top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = close, modifier = Modifier.size(48.dp)) {
-                Icon(FmIcons.stroke(FmIcons.CLOSE, 2.2f), contentDescription = "Close step-by-step mode", tint = fm.ink)
+                Icon(FmIcons.stroke(FmIcons.CLOSE, 2.2f), contentDescription = stringResource(R.string.step_close), tint = fm.ink)
             }
-            Text("${a.code} · STEP ${step.number} OF ${steps.size}", style = MaterialTheme.typography.labelMedium.copy(fontSize = 13.sp),
+            Text(stringResource(R.string.step_of, a.code, step.number, steps.size), style = MaterialTheme.typography.labelMedium.copy(fontSize = 13.sp),
                 color = fm.ink, modifier = Modifier.weight(1f))
             Icon(FmIcons.stroke(FmIcons.SUN), contentDescription = null, tint = fm.muted, modifier = Modifier.size(14.dp))
-            Text("SCREEN ON", style = MaterialTheme.typography.labelSmall, color = fm.muted, modifier = Modifier.padding(start = 6.dp))
+            Text(stringResource(R.string.screen_on), style = MaterialTheme.typography.labelSmall, color = fm.muted, modifier = Modifier.padding(start = 6.dp))
         }
 
         Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -134,17 +138,19 @@ private fun StepMode(a: Article, close: () -> Unit) {
             Row(
                 Modifier.fillMaxWidth().height(52.dp).clip(Radius).border(2.dp, fm.rule, Radius)
                     .clickable(role = Role.Switch) { speaking = !speaking }
-                    .semantics { stateDescription = if (speaking) "On" else "Off" },
+                    .semantics { stateDescription = onOff },
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(FmIcons.stroke(FmIcons.SPEAKER), contentDescription = null, tint = fm.ink, modifier = Modifier.size(22.dp))
                 Text(
-                    when {
-                        speaking && voice.failed -> "No voice installed on this phone"
-                        speaking -> "Reading aloud · tap to stop"
-                        else -> "Read steps aloud"
-                    },
+                    stringResource(
+                        when {
+                            speaking && voice.failed -> R.string.voice_missing
+                            speaking -> R.string.voice_reading
+                            else -> R.string.voice_read
+                        },
+                    ),
                     style = MaterialTheme.typography.titleMedium, color = fm.ink, modifier = Modifier.padding(start = 10.dp),
                 )
             }
@@ -154,9 +160,9 @@ private fun StepMode(a: Article, close: () -> Unit) {
                         .clickable(enabled = index > 0, role = Role.Button) { index-- },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("BACK", style = MaterialTheme.typography.headlineSmall, color = if (index > 0) fm.ink else fm.rule)
+                    Text(stringResource(R.string.step_back), style = MaterialTheme.typography.headlineSmall, color = if (index > 0) fm.ink else fm.rule)
                 }
-                BigButton(if (last) "Done" else "Next", Modifier.weight(2f), height = 76) {
+                BigButton(stringResource(if (last) R.string.step_done else R.string.step_next), Modifier.weight(2f), height = 76) {
                     if (last) close() else index++
                 }
             }
@@ -187,8 +193,8 @@ private fun BeatGuide(bpm: Int) {
     ) {
         Box(Modifier.size(30.dp).scale(pulse).clip(CircleShape).background(fm.orange))
         Column(Modifier.padding(start = 14.dp)) {
-            Text("KEEP TO THE BEAT", style = MaterialTheme.typography.labelMedium, color = fm.ink)
-            Text("$bpm a minute", style = MaterialTheme.typography.bodyMedium, color = fm.muted)
+            Text(stringResource(R.string.beat_title), style = MaterialTheme.typography.labelMedium, color = fm.ink)
+            Text(stringResource(R.string.beat_rate, bpm), style = MaterialTheme.typography.bodyMedium, color = fm.muted)
         }
     }
 }

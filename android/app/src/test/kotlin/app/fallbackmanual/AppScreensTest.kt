@@ -167,12 +167,26 @@ class AppScreensTest {
         openCarbonMonoxideAndTapCprLink()
         rule.onNodeWithText("Open as full article").performScrollTo().performClick()
         rule.waitUntilDoesNotExist(hasText("Open as full article"), 5_000)
-        rule.onNodeWithText("CPR (adults)").assertExists()
+        // The sheet animates away while the full article opens: wait for the title rather than checking at once.
+        waitFor("CPR (adults)")
         rule.onNodeWithContentDescription("Back").performClick()
         // Back on the carbon monoxide article, still scrolled to the CPR link rather than the top.
         waitFor("start CPR")
         rule.onNodeWithText("start CPR", substring = true).assertIsDisplayed()
         rule.onNodeWithText("Carbon monoxide poisoning").assertIsNotDisplayed()
+    }
+
+    @Config(qualifiers = "+nb")
+    @Test
+    fun norwegianInterface() {
+        // Articles are still English; the app's own text follows the phone's language.
+        waitFor("NØDSITUASJON")
+        rule.onNodeWithText("Hva skjer?").assertExists()
+        shot("15-home-norwegian")
+        rule.onNodeWithText("Hypothermia").performClick()
+        waitFor("TRINN FOR TRINN")
+        rule.onNodeWithText("Ring nødnummeret først").assertExists()
+        shot("16-article-norwegian")
     }
 
     @Config(qualifiers = "+night")
