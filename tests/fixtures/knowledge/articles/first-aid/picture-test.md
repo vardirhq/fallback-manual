@@ -39,6 +39,7 @@ This article exists only for automated tests.
 ## Warnings
 
 - This is not real guidance.
+![The same test picture, placed under a warning](image:test-diagram)
 
 ## Common mistakes
 

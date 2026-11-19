@@ -180,12 +180,23 @@ This converts the picture to the right format and size, and records its license,
 
 ### Step 2. Put it in the article
 
-In `## Steps`, on its own line **directly under the step it belongs to**:
+Put it on its own line **directly under the thing it shows**:
+
+- a step in `## Steps`, for how to do something;
+- a bullet in `## What you need`, `## Warnings` or `## Common mistakes`;
+- a paragraph in `## When to use`, for a picture that helps people recognize the problem.
+
+A picture can't be the first thing in a section, and pictures are not allowed in `## Get help`. Only pictures under steps appear in step-by-step mode.
 
 ```markdown
 5. Put the heel of one hand on the center of the chest.
 ![Heel of one hand on the center of the chest, other hand on top](image:cpr-hand-position)
 6. Lock your fingers together.
+```
+
+```markdown
+- Place generators outdoors at least 6 m (20 ft) away from doors, windows and vents.
+![A generator outside, well away from the house's windows and doors](image:generator-distance)
 ```
 
 The text in the square brackets describes what the picture shows, in 10–200 characters. People using a screen reader hear only this, so describe the picture, not just "diagram".
