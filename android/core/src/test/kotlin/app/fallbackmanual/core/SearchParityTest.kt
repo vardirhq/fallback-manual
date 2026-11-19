@@ -66,6 +66,11 @@ class SearchParityTest {
         assertEquals("FA-02", cpr.code)
         assertEquals("First aid", cpr.categoryTitle)
         assertEquals(Rhythm(110, 9, 13), cpr.rhythm)
+        // "Call emergency services first" follows emergency, not high_risk: a generator article is about preparing.
+        assertTrue(cpr.emergency)
+        val generator = kb.article("generator-safety")!!
+        assertTrue(generator.highRisk)
+        assertFalse(generator.emergency)
         assertTrue(cpr.iconPath!!.startsWith("M"))
         assertTrue(cats.first { it.id == "first-aid" }.code == "FA")
         assertTrue(kb.summary("cpr")!!.lead.isNotEmpty())

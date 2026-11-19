@@ -152,8 +152,8 @@ def _is_date(value) -> bool:
         return False
 
 
-# emergency: true puts the article on the home screen's short list of act-now topics. A person
-# decides which articles are on it; it must also be high_risk.
+# emergency: true puts the article on the home screen's short list of act-now topics, and opens it
+# with "call emergency services first". A person decides which articles are on it; it must also be high_risk.
 ALLOWED_FIELDS = REQUIRED_FIELDS + ["diagrams_needed", "icon", "rhythm", "emergency"]
 CODE_RE = re.compile(r"^[A-Z]{2}-\d{2}$")
 RHYTHM_FIELDS = {"bpm", "from_step", "to_step"}

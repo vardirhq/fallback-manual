@@ -39,6 +39,8 @@ data class Article(
     val reviewed: Boolean,
     val version: Int,
     val highRisk: Boolean,
+    /** On the home screen's act-now list, and opens with "call emergency services first". */
+    val emergency: Boolean,
     val license: String,
     val bodyMarkdown: String,
     val sources: List<Source>,

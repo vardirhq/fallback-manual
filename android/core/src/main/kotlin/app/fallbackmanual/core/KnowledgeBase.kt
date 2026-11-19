@@ -48,7 +48,7 @@ class KnowledgeBase private constructor(private val connection: SQLiteConnection
 
     fun article(id: String): Article? = query(
         "SELECT a.id, a.title, a.category, a.status, a.version, a.high_risk, a.license, a.body_md, a.reviewer, " +
-            "a.review_date, a.review_by, a.code, i.path, a.rhythm_bpm, a.rhythm_from, a.rhythm_to, c.title " +
+            "a.review_date, a.review_by, a.code, i.path, a.rhythm_bpm, a.rhythm_from, a.rhythm_to, c.title, a.emergency " +
             "FROM articles a LEFT JOIN icons i ON i.name = a.icon LEFT JOIN categories c ON c.id = a.category " +
             "WHERE a.id = ?",
         id,
@@ -61,6 +61,7 @@ class KnowledgeBase private constructor(private val connection: SQLiteConnection
             reviewed = it.getText(3) == "reviewed",
             version = it.getLong(4).toInt(),
             highRisk = it.getLong(5) != 0L,
+            emergency = it.getLong(17) != 0L,
             license = it.getText(6),
             bodyMarkdown = it.getText(7),
             sources = emptyList(),
