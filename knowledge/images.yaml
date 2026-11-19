@@ -24,3 +24,15 @@ images:
   creator: Illinois Waterway Visitor Center, US Army Corps of Engineers
   source: https://commons.wikimedia.org/wiki/File:Cardiopulmonary_Resuscitation_Adult.jpg
   ai_generated: false
+- id: severe-bleeding-direct-pressure
+  file: severe-bleeding-direct-pressure.webp
+  license: CC-BY-SA-4.0
+  creator: Mike6271
+  source: https://commons.wikimedia.org/wiki/File:Direct-pressure-and-elevation.jpg
+  ai_generated: false
+- id: ground-air-survivor-signals
+  file: ground-air-survivor-signals.webp
+  license: public-domain
+  creator: Federal Aviation Administration
+  source: https://commons.wikimedia.org/wiki/File:Ground-Air_Visual_Code_for_Use_by_Survivors.png
+  ai_generated: false

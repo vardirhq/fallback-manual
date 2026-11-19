@@ -5,7 +5,7 @@ category: first-aid
 code: FA-05
 icon: droplet
 status: draft
-version: 2
+version: 3
 high_risk: true
 license: CC-BY-4.0
 situations:
@@ -15,7 +15,6 @@ situations:
   - bleeding from an arm or leg after an accident
 keywords: [blood, wound, cut, laceration, hemorrhage, tourniquet, pressure, injury]
 diagrams_needed:
-  - pressing directly on a wound with a pad
   - tourniquet position on an arm and a leg
 sources:
   - title: Stop the Bleed guidance
@@ -48,6 +47,7 @@ Use this when blood is flowing steadily, spurting, pooling on the ground, or soa
 2. Protect your hands if you can, but do not delay to find gloves.
 3. Find where the blood is coming from. Remove or cut clothing away if needed.
 4. Press hard, directly on the wound, with a pad of cloth. Use the heel of your hand and your body weight.
+![A gloved hand pressing a pad against an injured forearm](image:severe-bleeding-direct-pressure)
 5. Keep pressing without stopping for at least 10 minutes. Do not lift the pad to check.
 6. If blood soaks through, put more cloth on top and keep pressing. Do not remove the first pad.
 7. Use a tourniquet only if the wound is on an arm or leg, the bleeding is life-threatening, and pressure is not stopping it.
