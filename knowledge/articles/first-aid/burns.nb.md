@@ -4,13 +4,14 @@ lang: nb
 translation_of: 2
 title: Brannskader og skålding
 status: draft
-version: 1
+version: 2
 license: CC-BY-4.0
 situations:
   - noen har brent seg på ild eller noe varmt
   - skåldet av kokende vann eller damp
   - huden er rød, har blemmer eller er svidd etter varme
   - har sølt varm eller kokende væske på huden
+  - sølte kokende vann på armen
 keywords: [brannskade, brannsår, brent, brente seg, skålding, skåldet, blemme, brannblemme, ild, varmt vann, kokende vann, damp, sølt]
 sources:
   - title: Burns and scalds, treatment

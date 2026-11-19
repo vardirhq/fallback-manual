@@ -47,7 +47,7 @@ Use this before an emergency, so everyone in your household knows how to reach e
 6. Write down medical information: doctors, allergies, prescriptions, assistive devices and your veterinarian.
 7. Agree who will help whom, such as young children, older people and anyone with a disability.
 8. Plan for pets and service animals.
-9. Keep the plan where everyone can find it.
+9. Write the plan down, for example on a household plan form.
 10. Practice the plan with your household.
 
 ## Warnings

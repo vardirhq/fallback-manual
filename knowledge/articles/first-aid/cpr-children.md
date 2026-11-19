@@ -77,7 +77,7 @@ Use this when a child (1 year to puberty) or a baby (under 1 year) does not resp
 
 ## Common mistakes
 
-- Skipping the 5 rescue breaths at the start. Children's hearts usually stop because of breathing problems.
+- Skipping the 5 rescue breaths at the start.
 - Pressing too gently. Push firmly, one third of the depth of the chest.
 
 ## Get help

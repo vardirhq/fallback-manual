@@ -151,6 +151,63 @@ questions:
   # --- generator-safety (nb) ---
   - {set: dev, lang: nb, q: "hvor skal strømaggregatet stå under strømbruddet", expect: [generator-safety]}
   - {set: dev, lang: nb, q: "hvor langt unna huset skal aggregatet være", expect: [generator-safety]}
+  # --- unconscious-breathing (nb) ---
+  - {set: dev, lang: nb, q: "han er bevisstløs, men puster", expect: [unconscious-breathing]}
+  - {set: dev, lang: nb, q: "hvordan legge noen i sideleie", expect: [unconscious-breathing]}
+  # --- heart-attack (nb) ---
+  - {set: dev, lang: nb, q: "pappa har knusende smerter i brystet og svetter", expect: [heart-attack]}
+  - {set: dev, lang: nb, q: "tegn på hjerteinfarkt", expect: [heart-attack]}
+  # --- head-injury (nb) ---
+  - {set: dev, lang: nb, q: "ungen slo hodet og kaster opp", expect: [head-injury]}
+  - {set: dev, lang: nb, q: "hjernerystelse etter et fall", expect: [head-injury]}
+  # --- broken-bones (nb) ---
+  - {set: dev, lang: nb, q: "jeg tror håndleddet er brukket", expect: [broken-bones]}
+  - {set: dev, lang: nb, q: "ankelen står i en rar vinkel etter fallet", expect: [broken-bones]}
+  # --- cuts-and-scrapes (nb) ---
+  - {set: dev, lang: nb, q: "hvordan rense et lite kutt", expect: [cuts-and-scrapes]}
+  - {set: dev, lang: nb, q: "skrubbsår på kneet med grus i", expect: [cuts-and-scrapes]}
+  # --- anaphylaxis (nb) ---
+  - {set: dev, lang: nb, q: "ansiktet hovner opp etter at han spiste nøtter", expect: [anaphylaxis]}
+  - {set: dev, lang: nb, q: "når skal jeg bruke epipen", expect: [anaphylaxis]}
+  # --- poisoning (nb) ---
+  - {set: dev, lang: nb, q: "toddleren har drukket oppvaskmiddel", expect: [poisoning]}
+  - {set: dev, lang: nb, q: "hun har svelget mange tabletter", expect: [poisoning]}
+  # --- seizures (nb) ---
+  - {set: dev, lang: nb, q: "vennen min ligger og rister på gulvet og svarer ikke", expect: [seizures]}
+  - {set: dev, lang: nb, q: "hva gjør jeg ved et epileptisk anfall", expect: [seizures]}
+  # --- cpr-children (nb) ---
+  - {set: dev, lang: nb, q: "babyen min har sluttet å puste", expect: [cpr-children]}
+  - {set: dev, lang: nb, q: "hvordan gjøre hjerte-lunge-redning på et barn", expect: [cpr-children]}
+  # --- electric-shock (nb) ---
+  - {set: dev, lang: nb, q: "noen sitter fast i en strømførende ledning", expect: [electric-shock]}
+  - {set: dev, lang: nb, q: "fikk støt fra vaskemaskinen", expect: [electric-shock]}
+  # --- house-fire (nb) ---
+  - {set: dev, lang: nb, q: "huset vårt brenner", expect: [house-fire]}
+  - {set: dev, lang: nb, q: "det kommer røyk under soveromsdøra", expect: [house-fire]}
+  # --- flooding (nb) ---
+  - {set: dev, lang: nb, q: "vann fra elva renner inn i huset", expect: [flooding]}
+  - {set: dev, lang: nb, q: "er det trygt å kjøre gjennom en oversvømt vei", expect: [flooding]}
+  # --- thunderstorms (nb) ---
+  - {set: dev, lang: nb, q: "tordenvær mens vi er på tur", expect: [thunderstorms]}
+  - {set: dev, lang: nb, q: "er det trygt å dusje i tordenvær", expect: [thunderstorms]}
+  # --- power-outage (nb) ---
+  - {set: dev, lang: nb, q: "strømmen gikk akkurat", expect: [power-outage]}
+  - {set: dev, lang: nb, q: "hva gjør vi ved strømbrudd", expect: [power-outage, staying-warm-power-outage, food-safety-power-outage]}
+  # --- water-outage (nb) ---
+  - {set: dev, lang: nb, q: "det kommer ikke vann fra springen", expect: [water-outage]}
+  - {set: dev, lang: nb, q: "vannforsyningen er stengt", expect: [water-outage]}
+  # --- handwashing (nb) ---
+  - {set: dev, lang: nb, q: "hvordan vaske hendene uten rennende vann", expect: [handwashing]}
+  - {set: dev, lang: nb, q: "virker håndsprit", expect: [handwashing]}
+  # --- household-plan (nb) ---
+  - {set: dev, lang: nb, q: "møtested for familien i en krise", expect: [household-plan]}
+  - {set: dev, lang: nb, q: "hvordan får vi kontakt med hverandre i en katastrofe", expect: [household-plan]}
+  # --- pets (nb) ---
+  - {set: dev, lang: nb, q: "hva gjør jeg med hunden hvis vi må evakuere", expect: [pets]}
+  - {set: dev, lang: nb, q: "beredskapssekk til katten", expect: [pets]}
+  # --- lost-outdoors (nb) ---
+  - {set: dev, lang: nb, q: "gått meg bort i skogen", expect: [lost-outdoors]}
+  - {set: dev, lang: nb, q: "finner ikke stien tilbake til bilen", expect: [lost-outdoors]}
   # --- not in the library (nb) ---
   - {set: dev, lang: nb, q: "hvordan fikser jeg en punktert sykkel", expect: []}
   - {set: dev, lang: nb, q: "hvordan baker jeg brød", expect: []}

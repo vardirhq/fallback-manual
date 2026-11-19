@@ -510,3 +510,12 @@ def test_unknown_language_is_rejected(kb, tmp_path):
 def test_translations_skip_the_american_english_rule(kb_nb):
     report, _, _ = kb_nb(translation(body=NB_BODY.replace("Ring noen.", "Ring noen. Colour centre.")))
     assert report.errors == []
+
+
+def test_vocab_knows_the_parts_of_hyphenated_words(kb):
+    # Search splits "hjerte-lunge-redning" into three words; if "lunge" were unknown, spelling
+    # correction would turn it into some other known word.
+    report, out = kb(article(keywords=["hjerte-lunge-redning", "example", "sample"]))
+    assert report.errors == []
+    words = {w for (w,) in sqlite3.connect(out).execute("SELECT word FROM vocab")}
+    assert {"hjerte-lunge-redning", "hjerte", "lunge", "redning"} <= words

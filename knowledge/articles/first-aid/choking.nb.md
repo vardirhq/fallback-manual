@@ -4,13 +4,14 @@ lang: nb
 translation_of: 1
 title: Kvelning
 status: draft
-version: 1
+version: 2
 license: CC-BY-4.0
 situations:
   - noen har satt maten i halsen og får ikke puste
   - han tar seg til halsen og klarer ikke å snakke eller hoste
   - noe sitter fast i halsen hennes
   - barnet har fått mat i halsen og kveles
+  - har fått kjøtt i halsen
 keywords: [kvelning, kveles, satt i halsen, mat i halsen, noe i halsen, fast i halsen, får ikke puste, kan ikke hoste, slag mellom skulderbladene, bukstøt, heimlich]
 sources:
   - title: Choking first aid advice for an adult
