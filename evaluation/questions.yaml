@@ -214,6 +214,18 @@ questions:
   # --- explosive-remnants (nb) ---
   - {set: dev, lang: nb, q: "fant en bombe som ikke har eksplodert", expect: [explosive-remnants]}
   - {set: dev, lang: nb, q: "det ligger en mistenkelig granat på bakken", expect: [explosive-remnants]}
+  # --- war-first-day (nb) ---
+  - {set: dev, lang: nb, q: "krig har brutt ut hva gjør jeg først", expect: [war-first-day]}
+  - {set: dev, lang: nb, q: "angrepsvarsel familien trenger en plan", expect: [war-first-day]}
+  # --- extended-sheltering (nb) ---
+  - {set: dev, lang: nb, q: "opphold i tilfluktsrom under gjentatte angrep", expect: [extended-sheltering]}
+  - {set: dev, lang: nb, q: "hva trenger vi når vi må søke dekning lenge", expect: [extended-sheltering]}
+  # --- children-in-war (nb) ---
+  - {set: dev, lang: nb, q: "barnet mitt er redd fordi det er krig", expect: [children-in-war]}
+  - {set: dev, lang: nb, q: "hjelpe barna mens vi søker dekning", expect: [children-in-war]}
+  # --- medicines-emergency (nb) ---
+  - {set: dev, lang: nb, q: "avhengig av medisiner og apoteket kan stenge", expect: [medicines-emergency]}
+  - {set: dev, lang: nb, q: "strømmen er borte medisinsk utstyr og kjølemedisin", expect: [medicines-emergency]}
   # --- not in the library (nb) ---
   - {set: dev, lang: nb, q: "hvordan fikser jeg en punktert sykkel", expect: []}
   - {set: dev, lang: nb, q: "hvordan baker jeg brød", expect: []}
@@ -306,6 +318,18 @@ questions:
   # --- explosive-remnants ---
   - {set: dev, q: "found an unexploded shell after fighting", expect: [explosive-remnants]}
   - {set: dev, q: "what if I see a mine on the ground", expect: [explosive-remnants]}
+  # --- war-first-day ---
+  - {set: dev, q: "war has started what should I do first", expect: [war-first-day]}
+  - {set: dev, q: "attack warning my family needs a plan", expect: [war-first-day]}
+  # --- extended-sheltering ---
+  - {set: dev, q: "staying in a shelter during repeated attacks", expect: [extended-sheltering]}
+  - {set: dev, q: "what do we need shelter for a long time", expect: [extended-sheltering]}
+  # --- children-in-war ---
+  - {set: dev, q: "my child is scared because of war", expect: [children-in-war]}
+  - {set: dev, q: "how to help children cope while sheltering", expect: [children-in-war]}
+  # --- medicines-emergency ---
+  - {set: dev, q: "my medicine supply pharmacy may close", expect: [medicines-emergency]}
+  - {set: dev, q: "power is out medical equipment and refrigerated medicine", expect: [medicines-emergency]}
   # --- not in the library: the correct answer is "no match" ---
   - {set: dev, q: "how do I fix a flat bike tire", expect: []}
   - {set: dev, q: "snake bite", expect: []}
