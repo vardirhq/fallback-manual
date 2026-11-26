@@ -35,6 +35,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -254,6 +256,7 @@ private const val CHEVRON_UP = "M5 15l7-7 7 7"
 fun ArticleContent(a: Article, onLink: (String) -> Unit, modifier: Modifier = Modifier, onStepByStep: (() -> Unit)? = null) {
     val steps = remember(a.bodyMarkdown) { stepsOf(a.bodyMarkdown).size }
     val uriHandler = LocalUriHandler.current
+    var sourceToOpen by rememberSaveable(a.id) { mutableStateOf<String?>(null) }
     var sourcesOpen by rememberSaveable(a.id) { mutableStateOf(false) }
     val toggleLabel = stringResource(if (sourcesOpen) R.string.hide_sources else R.string.show_sources)
     Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -290,7 +293,7 @@ fun ArticleContent(a: Article, onLink: (String) -> Unit, modifier: Modifier = Mo
                     Text(
                         url,
                         modifier = Modifier.clickable(role = Role.Button) {
-                            runCatching { uriHandler.openUri(url) }
+                            sourceToOpen = url
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = fm.forest,
@@ -303,6 +306,29 @@ fun ArticleContent(a: Article, onLink: (String) -> Unit, modifier: Modifier = Mo
             Text(stringResource(R.string.article_meta, a.code, a.version, reviewed, a.license),
                 style = MaterialTheme.typography.labelSmall, color = fm.muted)
         }
+    }
+    sourceToOpen?.let { url ->
+        AlertDialog(
+            onDismissRequest = { sourceToOpen = null },
+            title = { Text(stringResource(R.string.source_external_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.source_external_message))
+                    Text(url, style = MaterialTheme.typography.bodySmall)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    sourceToOpen = null
+                    runCatching { uriHandler.openUri(url) }
+                }) { Text(stringResource(R.string.source_external_open)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { sourceToOpen = null }) {
+                    Text(stringResource(R.string.source_external_cancel))
+                }
+            },
+        )
     }
 }
 

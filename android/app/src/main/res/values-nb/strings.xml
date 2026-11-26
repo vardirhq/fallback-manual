@@ -52,6 +52,10 @@
     <string name="sources_review">KILDER OG GJENNOMGANG</string>
     <string name="source_line">%1$s, %2$s</string>
     <string name="source_line_unchecked">%1$s, %2$s (ikke kontrollert mot originalen ennå)</string>
+    <string name="source_external_title">Åpne ekstern nettside?</string>
+    <string name="source_external_message">Lenken åpnes i nettleseren og krever internettforbindelse. Håndboken er fortsatt tilgjengelig uten nett.</string>
+    <string name="source_external_open">Åpne nettside</string>
+    <string name="source_external_cancel">Avbryt</string>
     <string name="reviewed_by">Gjennomgått av %1$s %2$s</string>
     <string name="not_reviewed">Ikke gjennomgått</string>
     <string name="article_meta">%1$s · versjon %2$d · %3$s · %4$s</string>

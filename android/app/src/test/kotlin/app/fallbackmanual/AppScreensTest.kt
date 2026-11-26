@@ -74,7 +74,10 @@ class AppScreensTest {
         rule.onNodeWithText("SOURCES & REVIEW").performScrollTo().performClick()
         rule.onNodeWithText("Preventing Hypothermia", substring = true).assertExists()
         rule.onNodeWithText("https://www.cdc.gov/winter-weather/prevention/index.html")
-            .assertExists().assertHasClickAction()
+            .performScrollTo().assertExists().assertHasClickAction().performClick()
+        rule.onNodeWithText("Open external website?").assertExists()
+        rule.onNodeWithText("Cancel").performClick()
+        rule.onNodeWithText("Open external website?").assertDoesNotExist()
         rule.onNode(hasScrollAction()).performScrollToNode(hasText("Hypothermia", substring = false))
         shot("03-article")
     }
