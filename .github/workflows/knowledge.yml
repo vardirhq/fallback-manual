@@ -51,9 +51,15 @@ jobs:
       - name: Build debug APK
         working-directory: android
         run: ./gradlew --no-daemon :app:assembleDebug
+      - name: Verify debug APK signing
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs android/app/build/outputs/apk/debug/app-debug.apk > "$RUNNER_TEMP/apk-signature.txt"
+          cat "$RUNNER_TEMP/apk-signature.txt"
+          grep -F "Signer #1 certificate SHA-256 digest: bb898c739a6c191e4ac4e826276cc5376b9f97eb2a460828669434c108597b6c" "$RUNNER_TEMP/apk-signature.txt"
       - uses: actions/upload-artifact@v4
         with:
           name: app-debug
+          if-no-files-found: error
           path: android/app/build/outputs/apk/debug/*.apk
       - uses: actions/upload-artifact@v4
         if: always()

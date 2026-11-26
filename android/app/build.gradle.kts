@@ -1,4 +1,5 @@
 import com.android.build.api.variant.ApplicationVariant
+import java.util.Base64
 
 plugins {
     id("com.android.application")
@@ -17,6 +18,31 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64") }
+    }
+
+    // Public test key for repeatable debug installs. Never use it to sign releases.
+    val stableDebugKeystore = layout.buildDirectory.file("signing/fallback-debug.p12")
+    val prepareDebugKeystore = tasks.register("prepareDebugKeystore") {
+        val encoded = layout.projectDirectory.file("debug-keystore.b64")
+        inputs.file(encoded)
+        outputs.file(stableDebugKeystore)
+        doLast {
+            val output = stableDebugKeystore.get().asFile
+            output.parentFile.mkdirs()
+            output.writeBytes(Base64.getMimeDecoder().decode(encoded.asFile.readText()))
+        }
+    }
+    signingConfigs {
+        getByName("debug") {
+            storeFile = stableDebugKeystore.get().asFile
+            storeType = "PKCS12"
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+    tasks.matching { it.name == "validateSigningDebug" }.configureEach {
+        dependsOn(prepareDebugKeystore)
     }
 
     buildTypes {
