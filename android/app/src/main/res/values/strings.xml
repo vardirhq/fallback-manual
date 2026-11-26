@@ -59,7 +59,7 @@
     <string name="source_line">%1$s, %2$s</string>
     <string name="source_line_unchecked">%1$s, %2$s (not yet checked against the original)</string>
     <string name="source_external_title">Open external website?</string>
-    <string name="source_external_message">This link opens in your browser and requires an internet connection. The manual remains available offline.</string>
+    <string name="source_external_message">Fallback Manual does not access the internet. This link opens a separate browser app, which needs an internet connection to load the source.</string>
     <string name="source_external_open">Open website</string>
     <string name="source_external_cancel">Cancel</string>
     <string name="reviewed_by">Reviewed by %1$s on %2$s</string>
