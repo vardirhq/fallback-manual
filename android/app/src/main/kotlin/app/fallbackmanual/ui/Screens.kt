@@ -57,12 +57,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextDecoration
 import app.fallbackmanual.Bookmarks
 import app.fallbackmanual.InstallChannel
 import app.fallbackmanual.InstallSources
@@ -251,6 +253,7 @@ private const val CHEVRON_UP = "M5 15l7-7 7 7"
 @Composable
 fun ArticleContent(a: Article, onLink: (String) -> Unit, modifier: Modifier = Modifier, onStepByStep: (() -> Unit)? = null) {
     val steps = remember(a.bodyMarkdown) { stepsOf(a.bodyMarkdown).size }
+    val uriHandler = LocalUriHandler.current
     var sourcesOpen by rememberSaveable(a.id) { mutableStateOf(false) }
     val toggleLabel = stringResource(if (sourcesOpen) R.string.hide_sources else R.string.show_sources)
     Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -283,6 +286,17 @@ fun ArticleContent(a: Article, onLink: (String) -> Unit, modifier: Modifier = Mo
                     stringResource(if (s.checked) R.string.source_line else R.string.source_line_unchecked, s.title, s.publisher),
                     style = MaterialTheme.typography.bodyMedium, color = fm.ink,
                 )
+                s.url?.takeIf { it.startsWith("https://") }?.let { url ->
+                    Text(
+                        url,
+                        modifier = Modifier.clickable(role = Role.Button) {
+                            runCatching { uriHandler.openUri(url) }
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = fm.forest,
+                        textDecoration = TextDecoration.Underline,
+                    )
+                }
             }
             val reviewed = a.review.reviewer?.let { stringResource(R.string.reviewed_by, it, a.review.date ?: "") }
                 ?: stringResource(R.string.not_reviewed)

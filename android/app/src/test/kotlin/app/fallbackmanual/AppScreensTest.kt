@@ -1,6 +1,7 @@
 package app.fallbackmanual
 
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.onAllNodesWithText
 import org.junit.Assert.assertEquals
 import androidx.test.core.app.ApplicationProvider
@@ -72,6 +73,8 @@ class AppScreensTest {
         rule.onNodeWithText("Preventing Hypothermia", substring = true).assertDoesNotExist()
         rule.onNodeWithText("SOURCES & REVIEW").performScrollTo().performClick()
         rule.onNodeWithText("Preventing Hypothermia", substring = true).assertExists()
+        rule.onNodeWithText("https://www.cdc.gov/winter-weather/prevention/index.html")
+            .assertExists().assertHasClickAction()
         rule.onNode(hasScrollAction()).performScrollToNode(hasText("Hypothermia", substring = false))
         shot("03-article")
     }

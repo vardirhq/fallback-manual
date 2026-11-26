@@ -208,6 +208,12 @@ questions:
   # --- lost-outdoors (nb) ---
   - {set: dev, lang: nb, q: "gått meg bort i skogen", expect: [lost-outdoors]}
   - {set: dev, lang: nb, q: "finner ikke stien tilbake til bilen", expect: [lost-outdoors]}
+  # --- air-raid (nb) ---
+  - {set: dev, lang: nb, q: "flyalarmen går hvor søker vi dekning", expect: [air-raid]}
+  - {set: dev, lang: nb, q: "missiler og eksplosjoner hvor kan vi gjemme oss", expect: [air-raid]}
+  # --- explosive-remnants (nb) ---
+  - {set: dev, lang: nb, q: "fant en bombe som ikke har eksplodert", expect: [explosive-remnants]}
+  - {set: dev, lang: nb, q: "det ligger en mistenkelig granat på bakken", expect: [explosive-remnants]}
   # --- not in the library (nb) ---
   - {set: dev, lang: nb, q: "hvordan fikser jeg en punktert sykkel", expect: []}
   - {set: dev, lang: nb, q: "hvordan baker jeg brød", expect: []}
