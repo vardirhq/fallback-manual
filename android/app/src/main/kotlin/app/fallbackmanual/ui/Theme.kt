@@ -61,6 +61,14 @@ data class FmColors(
     val activePill: Color,
     val orange: Color = Color(0xFFFF5B1F),
     val onOrange: Color = Color(0xFF16181B),
+    /**
+     * Home screen emergency tiles. Light: dark text on solid orange. Dark: light text on a dark tile
+     * with an orange edge and icon, because eleven solid orange blocks on black glare at night.
+     */
+    val tileBg: Color = Color(0xFFFF5B1F),
+    val tileInk: Color = Color(0xFF16181B),
+    val tileIcon: Color = Color(0xFF16181B),
+    val tileEdge: Color = Color.Transparent,
     val emergency: Color = Color(0xFFB3261E),
     val onEmergency: Color = Color(0xFFFFFFFF),
 )
@@ -79,6 +87,7 @@ val DarkFm = FmColors(
     rule = Color(0xFF2A2D29), nav = Color(0xFF0B0C0B), forest = Color(0xFF8FD1AE), forestBg = Color(0xFF16261E),
     draftBg = Color(0xFF3A2E00), draftInk = Color(0xFFFFD966), chipBg = Color(0xFF1F221F), chipInk = Color(0xFFC9CCC3),
     accentText = Color(0xFFFF7A45), activePill = Color(0xFF2B1408),
+    tileBg = Color(0xFF1C1310), tileInk = Color(0xFFF7F4EE), tileIcon = Color(0xFFFF7A45), tileEdge = Color(0xFFFF5B1F),
 )
 
 val LocalFm = staticCompositionLocalOf { LightFm }

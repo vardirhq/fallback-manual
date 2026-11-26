@@ -1,6 +1,7 @@
 ---
 id: carbon-monoxide
 title: Carbon monoxide poisoning
+short_title: Carbon monoxide
 category: fire-warmth
 code: FW-01
 icon: cloud

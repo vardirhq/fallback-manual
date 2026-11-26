@@ -3,6 +3,7 @@ id: choking
 title: Choking
 category: first-aid
 code: FA-06
+icon: lungs
 status: draft
 version: 1
 high_risk: true

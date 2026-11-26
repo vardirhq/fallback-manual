@@ -3,6 +3,7 @@ id: cpr-children
 lang: nb
 translation_of: 1
 title: Hjerte-lunge-redning (barn og spedbarn)
+short_title: HLR barn og spedbarn
 status: draft
 version: 1
 license: CC-BY-4.0

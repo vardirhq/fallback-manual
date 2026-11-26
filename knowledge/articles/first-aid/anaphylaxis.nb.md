@@ -3,6 +3,7 @@ id: anaphylaxis
 lang: nb
 translation_of: 1
 title: Alvorlig allergisk reaksjon
+short_title: Allergisk sjokk
 status: draft
 version: 1
 license: CC-BY-4.0

@@ -3,6 +3,7 @@ id: cpr
 lang: nb
 translation_of: 7
 title: Hjerte-lunge-redning (voksne)
+short_title: HLR voksne
 status: draft
 version: 3
 license: CC-BY-4.0

@@ -37,7 +37,8 @@ class KnowledgeBase private constructor(private val connection: SQLiteConnection
         summaries("WHERE a.category = ? ORDER BY a.code", category)
 
     /** The home screen's short list of act-now topics (articles with emergency: true). */
-    fun emergencyArticles(): List<ArticleSummary> = summaries("WHERE a.emergency = 1 ORDER BY a.title")
+    fun emergencyArticles(): List<ArticleSummary> = summaries("WHERE a.emergency = 1")
+        .sortedWith(compareBy(java.text.Collator.getInstance()) { it.shortTitle ?: it.title }) // as shown on the tiles
 
     fun summaries(ids: Collection<String>): List<ArticleSummary> {
         val wanted = ids.toSet()
@@ -85,13 +86,13 @@ class KnowledgeBase private constructor(private val connection: SQLiteConnection
         query("SELECT title FROM categories WHERE id = ?", id) { it.getText(0) }.firstOrNull() ?: id
 
     private fun summaries(where: String, vararg args: String): List<ArticleSummary> = query(
-        "SELECT a.id, a.title, a.category, a.high_risk, a.status, a.code, i.path, a.lead " +
+        "SELECT a.id, a.title, a.category, a.high_risk, a.status, a.code, i.path, a.lead, a.short_title " +
             "FROM articles a LEFT JOIN icons i ON i.name = a.icon $where",
         *args,
     ) {
         ArticleSummary(
             it.getText(0), it.getText(1), it.getText(2), it.getLong(3) != 0L, it.getText(4) == "reviewed",
-            it.getText(5), it.textOrNull(6), it.getText(7),
+            it.getText(5), it.textOrNull(6), it.getText(7), it.textOrNull(8),
         )
     }
 
@@ -101,7 +102,7 @@ class KnowledgeBase private constructor(private val connection: SQLiteConnection
     override fun close() = connection.close()
 
     companion object {
-        const val SUPPORTED_SCHEMA = 4
+        const val SUPPORTED_SCHEMA = 5
 
         fun open(path: String): KnowledgeBase =
             KnowledgeBase(BundledSQLiteDriver().open(path, SQLITE_OPEN_READONLY))

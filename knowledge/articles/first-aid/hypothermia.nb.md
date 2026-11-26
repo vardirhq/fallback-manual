@@ -3,6 +3,7 @@ id: hypothermia
 lang: nb
 translation_of: 4
 title: Nedkjøling (hypotermi)
+short_title: Nedkjøling
 status: draft
 version: 2
 license: CC-BY-4.0

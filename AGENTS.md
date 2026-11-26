@@ -100,6 +100,7 @@ Replace every `TODO` between the two `---` lines:
 | `keywords` | 3–12 lowercase words or short phrases people might type, e.g. `[choking, food stuck, can't breathe, coughing]`. |
 | `diagrams_needed` | Pictures that would make the steps clearer, e.g. `where to place your hands`. Remove the field if none. |
 | `icon` (optional) | One icon name from `python -m tools.new_article --list`, e.g. `icon: snowflake`. Leave it out to use the category's icon. |
+| `short_title` (optional) | Only if the title is long: the few words shown on the home screen tile, at most 22 characters, e.g. `Child and baby CPR` for "CPR (children and babies)". Use a name people know. |
 | `sources` | One entry per source: `title` (the page title), `publisher` (the organisation), `url` (the full `https://` address, with no `?utm_source=...`), and `checked: false`. |
 
 Leave `code`, `status: draft`, `version: 1`, `license: CC-BY-4.0` and the `review` block exactly as they are.
@@ -238,6 +239,8 @@ Translations are separate files next to the English article. Today the only othe
    sources: <copied unchanged from the English article>
    review: <reviewer, date and review_by all null>
    ```
+
+   If the translated title is long, you may add `short_title:` after `title:`: the few words shown on the home screen tile, at most 22 characters (e.g. `HLR voksne`).
 
 3. Use these six headings, in this order: `## Når brukes dette`, `## Dette trenger du`, `## Trinn`, `## Advarsler`, `## Vanlige feil`, `## Få hjelp`.
 4. Translate every sentence. Keep **the same number of steps and the same number of warnings**, in the same order. Do not merge, split, add or drop any. The check rejects a translation whose counts differ.

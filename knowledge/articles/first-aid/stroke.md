@@ -3,6 +3,7 @@ id: stroke
 title: Stroke
 category: first-aid
 code: FA-07
+icon: brain
 status: draft
 version: 1
 high_risk: true

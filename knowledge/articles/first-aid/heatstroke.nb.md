@@ -3,6 +3,7 @@ id: heatstroke
 lang: nb
 translation_of: 1
 title: Heteutmattelse og heteslag
+short_title: Heteslag
 status: draft
 version: 1
 license: CC-BY-4.0

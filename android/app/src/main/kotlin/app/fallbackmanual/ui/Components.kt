@@ -1,5 +1,6 @@
 package app.fallbackmanual.ui
 
+import androidx.compose.ui.text.font.FontWeight
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -272,15 +273,18 @@ fun CategoryRow(c: Category, onClick: () -> Unit) {
 @Composable
 fun EmergencyTile(a: ArticleSummary, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Row(
-        modifier.heightIn(min = 64.dp).clip(Radius).background(fm.orange).clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 8.dp),
+        modifier.heightIn(min = 64.dp).clip(Radius).background(fm.tileBg).border(2.dp, fm.tileEdge, Radius)
+            .clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        a.iconPath?.let { Icon(FmIcons.stroke(it), contentDescription = null, tint = fm.onOrange, modifier = Modifier.size(22.dp)) }
-        WholeWordsTitle(a.title, MaterialTheme.typography.titleLarge.copy(fontSize = 18.sp, lineHeight = 19.sp), fm.onOrange,
-            Modifier.padding(start = 8.dp))
+        a.iconPath?.let { Icon(FmIcons.stroke(it), contentDescription = null, tint = fm.tileIcon, modifier = Modifier.size(24.dp)) }
+        // The short title, in a normal-width font: easier to read at a glance than the condensed
+        // heading font. Screen readers get the full title.
+        WholeWordsTitle(a.shortTitle ?: a.title, TileTitle, fm.tileInk, Modifier.padding(start = 10.dp), spoken = a.title)
     }
 }
+
+private val TileTitle = TextStyle(fontFamily = Barlow, fontWeight = FontWeight.Bold, fontSize = 17.sp, lineHeight = 21.sp)
 
 /**
  * A title that never breaks inside a word: long words (Norwegian compounds such as
@@ -288,7 +292,7 @@ fun EmergencyTile(a: ArticleSummary, modifier: Modifier = Modifier, onClick: () 
  * at spaces and after hyphens ("Hjerte-lunge-redning").
  */
 @Composable
-private fun WholeWordsTitle(text: String, style: TextStyle, color: Color, modifier: Modifier = Modifier) {
+private fun WholeWordsTitle(text: String, style: TextStyle, color: Color, modifier: Modifier = Modifier, spoken: String = text) {
     val measurer = rememberTextMeasurer()
     var available by remember { mutableIntStateOf(0) } // width in pixels, known after the first layout
     val fitted = remember(text, style, available) {
@@ -302,7 +306,7 @@ private fun WholeWordsTitle(text: String, style: TextStyle, color: Color, modifi
     Box(modifier.fillMaxWidth().onSizeChanged { available = it.width }) {
         // A zero-width space after each hyphen lets the line break there. Screen readers get the plain title.
         Text(text.replace("-", "-\u200B"), style = fitted, color = color,
-            modifier = Modifier.clearAndSetSemantics { this.text = AnnotatedString(text) })
+            modifier = Modifier.clearAndSetSemantics { this.text = AnnotatedString(spoken) })
     }
 }
 

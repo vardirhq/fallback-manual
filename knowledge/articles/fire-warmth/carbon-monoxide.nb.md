@@ -3,6 +3,7 @@ id: carbon-monoxide
 lang: nb
 translation_of: 6
 title: Kullosforgiftning
+short_title: Kullos
 status: draft
 version: 3
 license: CC-BY-4.0
