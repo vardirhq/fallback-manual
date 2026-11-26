@@ -294,6 +294,12 @@ questions:
   # --- lost-outdoors ---
   - {set: dev, q: "lost in the forest", expect: [lost-outdoors]}
   - {set: dev, q: "can't find the trail back to the car", expect: [lost-outdoors]}
+  # --- air-raid ---
+  - {set: dev, q: "the air raid siren is sounding where can I hide", expect: [air-raid]}
+  - {set: dev, q: "missiles are falling where do we take cover", expect: [air-raid]}
+  # --- explosive-remnants ---
+  - {set: dev, q: "found an unexploded shell after fighting", expect: [explosive-remnants]}
+  - {set: dev, q: "what if I see a mine on the ground", expect: [explosive-remnants]}
   # --- not in the library: the correct answer is "no match" ---
   - {set: dev, q: "how do I fix a flat bike tire", expect: []}
   - {set: dev, q: "snake bite", expect: []}
