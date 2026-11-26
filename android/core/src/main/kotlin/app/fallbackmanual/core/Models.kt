@@ -20,6 +20,8 @@ data class ArticleSummary(
     val iconPath: String?,
     /** The article's first "situation": a one-line description of when it applies. */
     val lead: String,
+    /** A few words for the home screen tile, when the title is too long to read at a glance there. */
+    val shortTitle: String? = null,
 )
 
 data class Source(val title: String, val publisher: String, val url: String?, val checked: Boolean)

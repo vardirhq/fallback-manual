@@ -1,6 +1,7 @@
 ---
 id: cpr-children
 title: CPR (children and babies)
+short_title: Child and baby CPR
 category: first-aid
 code: FA-18
 icon: heart-pulse

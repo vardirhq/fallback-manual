@@ -45,7 +45,7 @@ def approved_reviewers() -> set[str]:
     return {str(r["name"]).strip() for r in reviewer_records()}
 DEFAULT_OUT = ROOT / "build" / "knowledge.db"
 
-SCHEMA_VERSION = 4  # 2: images table; 3: codes, icons, rhythm, lead; 4: emergency
+SCHEMA_VERSION = 5  # 2: images table; 3: codes, icons, rhythm, lead; 4: emergency; 5: short_title
 REQUIRED_FIELDS = ["id", "title", "category", "code", "status", "version", "high_risk", "license",
                    "situations", "keywords", "sources", "review"]
 REQUIRED_SECTIONS = ["When to use", "What you need", "Steps", "Warnings", "Common mistakes", "Get help"]
@@ -62,6 +62,9 @@ LANGUAGES = {
 # icon, rhythm, diagrams_needed) always come from the English article, so they can't drift apart.
 TRANSLATION_REQUIRED = ["id", "lang", "translation_of", "title", "status", "version", "license",
                         "situations", "keywords", "sources", "review"]
+# Optional in any article or translation: short_title, the few words shown on a home screen tile
+# when the title is too long to read at a glance there ("HLR barn" for "Hjerte-lunge-redning (barn og spedbarn)").
+SHORT_TITLE_MAX = 22
 INHERITED_FIELDS = ["category", "code", "high_risk", "emergency", "icon", "rhythm", "diagrams_needed"]
 # Search: English words are stemmed ("burns" finds "burn"). SQLite has no stemmer for other
 # languages, so they are matched as whole words (with typo correction and synonyms).
@@ -160,7 +163,7 @@ def _is_date(value) -> bool:
 
 # emergency: true puts the article on the home screen's short list of act-now topics, and opens it
 # with "call emergency services first". A person decides which articles are on it; it must also be high_risk.
-ALLOWED_FIELDS = REQUIRED_FIELDS + ["diagrams_needed", "icon", "rhythm", "emergency"]
+ALLOWED_FIELDS = REQUIRED_FIELDS + ["diagrams_needed", "icon", "rhythm", "emergency", "short_title"]
 CODE_RE = re.compile(r"^[A-Z]{2}-\d{2}$")
 RHYTHM_FIELDS = {"bpm", "from_step", "to_step"}
 SOURCE_FIELDS = {"title", "publisher", "url", "checked"}
@@ -278,6 +281,12 @@ def validate(article: Article, report: Report, release: bool) -> None:
         report.error(p, "version must be a whole number of 1 or more, without quotes. Fix: version: 1 for a new article.")
     if has("high_risk") and not isinstance(meta["high_risk"], bool):
         report.error(p, "high_risk must be true or false (without quotes).")
+    if "short_title" in meta:
+        st = meta["short_title"]
+        if not isinstance(st, str) or not st.strip() or len(st) > SHORT_TITLE_MAX:
+            report.error(p, f"short_title must be a few words, at most {SHORT_TITLE_MAX} characters, or be left out.")
+        elif st.strip() == str(meta.get("title", "")).strip():
+            report.error(p, "short_title is the same as the title. Fix: remove short_title.")
     if "emergency" in meta:
         if not isinstance(meta["emergency"], bool):
             report.error(p, "emergency must be true or false (without quotes), or be left out.")
@@ -685,7 +694,7 @@ def load_translations(articles_dir: Path, originals: list[Article], report: Repo
             if f in INHERITED_FIELDS:
                 report.error(path, f"remove '{f}' from the header: a translation always takes it from the English "
                                    f"article ({base}.md).")
-            elif f not in TRANSLATION_REQUIRED:
+            elif f not in TRANSLATION_REQUIRED and f != "short_title":
                 report.error(path, f"unknown header field '{f}'. Allowed in a translation: "
                                    f"{', '.join(TRANSLATION_REQUIRED)}.")
         for f in TRANSLATION_REQUIRED:
@@ -831,6 +840,7 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
             version INTEGER NOT NULL,
             high_risk INTEGER NOT NULL,
             emergency INTEGER NOT NULL,
+            short_title TEXT,
             license TEXT NOT NULL,
             body_md TEXT NOT NULL,
             situations TEXT NOT NULL,
@@ -883,14 +893,14 @@ def write_db(articles: list[Article], synonyms: list[list[str]], out: Path, rele
         review = m["review"] or {}
         row = (
             m["id"], m["title"], m["category"], m["status"], m["version"], int(m["high_risk"]),
-            int(m.get("emergency") is True), m["license"], a.body,
+            int(m.get("emergency") is True), m.get("short_title"), m["license"], a.body,
             json.dumps(m["situations"]), json.dumps(m["keywords"]),
             _opt_str(review.get("reviewer")), _opt_str(review.get("date")), _opt_str(review.get("review_by")),
             json.dumps(m.get("diagrams_needed") or []),
             m["code"], m.get("icon") or cat_icon.get(m["category"]), m["situations"][0],
             *((m["rhythm"]["bpm"], m["rhythm"]["from_step"], m["rhythm"]["to_step"]) if m.get("rhythm") else (None, None, None)),
         )
-        con.execute("INSERT INTO articles VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", row)
+        con.execute("INSERT INTO articles VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", row)
         for i, src in enumerate(m["sources"]):
             con.execute("INSERT INTO sources VALUES (?,?,?,?,?,?)",
                         (m["id"], i, src["title"], src["publisher"], _opt_str(src.get("url")),

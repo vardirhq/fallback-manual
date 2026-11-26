@@ -3,6 +3,7 @@ id: burns
 lang: nb
 translation_of: 3
 title: Brannskader og skålding
+short_title: Brannskade
 status: draft
 version: 3
 license: CC-BY-4.0

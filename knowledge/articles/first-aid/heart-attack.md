@@ -3,6 +3,7 @@ id: heart-attack
 title: Heart attack
 category: first-aid
 code: FA-11
+icon: heart
 status: draft
 version: 1
 high_risk: true

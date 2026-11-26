@@ -1,6 +1,7 @@
 ---
 id: heatstroke
 title: Heat exhaustion and heatstroke
+short_title: Heatstroke
 category: first-aid
 code: FA-08
 icon: thermometer

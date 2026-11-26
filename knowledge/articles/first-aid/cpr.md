@@ -1,6 +1,7 @@
 ---
 id: cpr
 title: CPR (adults)
+short_title: Adult CPR
 category: first-aid
 code: FA-02
 icon: heart-pulse

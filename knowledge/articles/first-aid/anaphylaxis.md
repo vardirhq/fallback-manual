@@ -1,8 +1,10 @@
 ---
 id: anaphylaxis
 title: Severe allergic reaction
+short_title: Severe allergy
 category: first-aid
 code: FA-15
+icon: injector
 status: draft
 version: 1
 high_risk: true

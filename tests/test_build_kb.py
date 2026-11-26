@@ -233,6 +233,14 @@ def test_emergency_is_stored_and_only_for_high_risk(kb):
     assert "emergency must be true or false" in _errors(kb, article(high_risk=True, emergency="yes", sources=TWO_SOURCES))
 
 
+def test_short_title_is_stored_and_checked(kb):
+    report, out = kb(article(short_title="Test"))
+    assert report.errors == []
+    assert sqlite3.connect(out).execute("SELECT short_title FROM articles").fetchall() == [("Test",)]
+    assert "at most 22 characters" in _errors(kb, article(short_title="A short title that is far too long"))
+    assert "same as the title" in _errors(kb, article(short_title="Test article"))
+
+
 def test_all_problems_reported_in_one_pass(kb):
     text = article(id_="test-article", license="MIT", version="1").replace("situations:", "situation:")
     errs = _errors(kb, text)
