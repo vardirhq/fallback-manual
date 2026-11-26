@@ -161,8 +161,8 @@
     <string name="share_other_2">Åpne filen. Hvis den kom som ZIP, åpne den i Filer-appen og pakk den ut først.</string>
     <string name="share_other_3">Hvis Android spør, la den appen installere ukjente apper. Android viser innstillingen.</string>
     <string name="share_other_4">Trykk Installer, og åpne Fallback Manual. Den virker uten nett med en gang.</string>
-    <string name="share_genuine">Sjekk at den er ekte</string>
-    <string name="share_genuine_body">Begge telefonene skal vise samme signeringsfingeravtrykk her eller under Om appen. Hvis de er forskjellige, er kopien bygget på nytt av noen andre: ikke stol på den.</string>
+    <string name="share_genuine">Sammenlign signeringsfingeravtrykk</string>
+    <string name="share_genuine_body">Sammenlign fingeravtrykket med et fra en pålitelig kilde. Ulike fingeravtrykk betyr at signeringsnøklene er forskjellige. Like fingeravtrykk beviser ikke at en debugversjon er ekte, fordi signeringsnøkkelen er offentlig.</string>
     <string name="share_fingerprint_unavailable">Ikke tilgjengelig på denne telefonen</string>
     <string name="share_subject">Fallback Manual (nødhåndbok uten nett)</string>
     <string name="share_chooser">Send Fallback Manual</string>

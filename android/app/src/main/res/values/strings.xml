@@ -174,8 +174,8 @@
     <string name="share_other_2">Open the file. If it arrived as a ZIP, open it in the Files app and extract it first.</string>
     <string name="share_other_3">If Android asks, allow that app to install unknown apps. Android shows the setting.</string>
     <string name="share_other_4">Tap Install, then open Fallback Manual. It works offline straight away.</string>
-    <string name="share_genuine">Check it\'s genuine</string>
-    <string name="share_genuine_body">Both phones should show the same signing fingerprint here, or under About. If they differ, the copy was rebuilt by someone else: don\'t rely on it.</string>
+    <string name="share_genuine">Compare signing fingerprints</string>
+    <string name="share_genuine_body">Compare this fingerprint with one from a trusted source. A mismatch means the signing keys differ. Matching fingerprints do not prove a debug build is genuine because its signing key is public.</string>
     <string name="share_fingerprint_unavailable">Unavailable on this phone</string>
     <string name="share_subject">Fallback Manual (offline emergency manual)</string>
     <string name="share_chooser">Send Fallback Manual</string>
